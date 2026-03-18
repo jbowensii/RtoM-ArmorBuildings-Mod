@@ -36,8 +36,7 @@ Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
 PrivilegesRequired=lowest
-; Uncomment when app_icon.ico is available:
-; SetupIconFile=..\..\assets\icons\app_icon.ico
+SetupIconFile=..\..\assets\icons\app_icon.ico
 DisableProgramGroupPage=yes
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
@@ -88,7 +87,7 @@ begin
     ExamplePath := ExpandConstant('{app}\config.ini.example');
     if not FileExists(ConfigPath) then
     begin
-      FileCopy(ExamplePath, ConfigPath, False);
+      CopyFile(ExamplePath, ConfigPath, False);
     end;
   end;
 end;

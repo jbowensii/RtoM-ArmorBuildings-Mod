@@ -41,7 +41,7 @@ class Config:
         if not os.path.isfile(ini_path):
             print(
                 f"[config] ERROR: config.ini not found at {ini_path}\n"
-                "  Copy config.ini.example → config.ini and set your paths.",
+                "  Copy config.ini.example -> config.ini and set your paths.",
                 file=sys.stderr,
             )
             sys.exit(1)

@@ -3,7 +3,7 @@ build_release.py — Orchestrates the full build pipeline.
 
 Steps:
     1. Read version from src/__init__.py
-    2. Run sync export → build/staging/
+    2. Run sync export -> build/staging/
     3. Build exe with PyInstaller
     4. Copy exe to release/
     5. Compile Inno Setup installer (optional)
@@ -45,7 +45,7 @@ def run_cmd(cmd: list[str], description: str) -> None:
     """Run a command, printing status and raising on failure."""
     print(f"\n{'─' * 60}")
     print(f"  {description}")
-    print(f"  → {' '.join(cmd)}")
+    print(f"  -> {' '.join(cmd)}")
     print(f"{'─' * 60}")
 
     result = subprocess.run(cmd, cwd=PROJECT_ROOT, check=False)
@@ -55,7 +55,7 @@ def run_cmd(cmd: list[str], description: str) -> None:
 
 
 def step_sync() -> None:
-    """Step 1: Export repo → build/staging/."""
+    """Step 1: Export repo -> build/staging/."""
     from src.sync import sync_export  # pylint: disable=import-outside-toplevel
     staging = os.path.join(PROJECT_ROOT, "build", "staging")
     sync_export(target_root=staging)
@@ -86,7 +86,7 @@ def step_copy_to_release() -> None:
 
     shutil.copy2(src_exe, dst_exe)
     size_mb = os.path.getsize(dst_exe) / (1024 * 1024)
-    print(f"  Copied → {dst_exe} ({size_mb:.1f} MB)")
+    print(f"  Copied -> {dst_exe} ({size_mb:.1f} MB)")
 
 
 def step_inno_setup(version: str) -> None:
@@ -95,6 +95,7 @@ def step_inno_setup(version: str) -> None:
 
     # Try common Inno Setup install locations
     iscc_candidates = [
+        os.path.expandvars(r"%LOCALAPPDATA%\Programs\Inno Setup 6\ISCC.exe"),
         r"C:\Program Files (x86)\Inno Setup 6\ISCC.exe",
         r"C:\Program Files\Inno Setup 6\ISCC.exe",
     ]
@@ -136,13 +137,13 @@ def main() -> None:
 
     version = get_version()
 
-    print(f"\n{'═' * 60}")
+    print(f"\n{'=' * 60}")
     print(f"  RtoM Mod Tools — Build Pipeline v{version}")
-    print(f"{'═' * 60}")
+    print(f"{'=' * 60}")
 
     # Step 1: Sync
     if not args.skip_sync:
-        print("\n[1/4] Syncing repo → staging...")
+        print("\n[1/4] Syncing repo -> staging...")
         step_sync()
     else:
         print("\n[1/4] Skipping sync (--skip-sync)")
@@ -162,7 +163,7 @@ def main() -> None:
     else:
         print("\n[4/4] Skipping installer (--no-installer)")
 
-    divider = "═" * 60
+    divider = "=" * 60
     print(f"\n{divider}")
     print("  Build complete.")
     print(f"{divider}\n")

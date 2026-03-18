@@ -14,8 +14,9 @@ Build command:
 import os
 import sys
 
-# Project root is one level up from this spec file
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(SPECPATH)))
+# Project root is one level up from this spec file (build/ -> project root)
+# SPECPATH is the directory containing this .spec file
+PROJECT_ROOT = os.path.dirname(SPECPATH)
 
 block_cipher = None
 
@@ -60,5 +61,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    # icon=os.path.join(PROJECT_ROOT, 'assets', 'icons', 'app_icon.ico'),
+    icon=os.path.join(PROJECT_ROOT, 'assets', 'icons', 'app_icon.ico'),
 )

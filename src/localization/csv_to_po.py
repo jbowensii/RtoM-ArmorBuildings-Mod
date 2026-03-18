@@ -84,7 +84,7 @@ def run(
     with open(output_po, "w", encoding="utf-8") as fh:
         fh.writelines(output_lines)
 
-    print(f"PO updated successfully → {output_po}")
+    print(f"PO updated successfully -> {output_po}")
     print(f"Translations applied: {len(translations)}")
     return len(translations)
 

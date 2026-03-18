@@ -7,8 +7,8 @@ different tree under ``%LOCALAPPDATA%\\RtoMModTools\\``.  This module
 defines the canonical mapping between the two and provides three
 operations:
 
-  **export**  repo → install/staging dir  (for builds and local testing)
-  **import**  install dir → repo          (after UAssetGUI edits)
+  **export**  repo -> install/staging dir  (for builds and local testing)
+  **import**  install dir -> repo          (after UAssetGUI edits)
   **check**   diff the two trees, report what changed
 
 The mapping table lives in :data:`SYNC_MAP` — every other part of the
@@ -18,9 +18,9 @@ hardcoding paths.
 Usage::
 
     # CLI
-    python -m src.sync export                 # repo → default staging
-    python -m src.sync export --target D:/out # repo → custom dir
-    python -m src.sync import --source D:/out # custom dir → repo
+    python -m src.sync export                 # repo -> default staging
+    python -m src.sync export --target D:/out # repo -> custom dir
+    python -m src.sync import --source D:/out # custom dir -> repo
     python -m src.sync check                  # diff report
 
     # As a library (called by build_release.py)
@@ -60,7 +60,7 @@ class SyncEntry:
 
 
 SYNC_MAP: list[SyncEntry] = [
-    # ── Core mod data (modified-json/Moria → data/Moria) ──
+    # ── Core mod data (modified-json/Moria -> data/Moria) ──
     SyncEntry(
         repo="modified-json/Moria/Config",
         install="data/Moria/Config",
@@ -206,7 +206,7 @@ def _copy_entry(src_root: str, dst_root: str, entry: SyncEntry) -> int:
 
 
 def sync_export(target_root: str | None = None) -> int:
-    """Copy repo → install/staging directory.
+    """Copy repo -> install/staging directory.
 
     Args:
         target_root: Destination root.  Defaults to ``build/staging/``
@@ -218,7 +218,7 @@ def sync_export(target_root: str | None = None) -> int:
     if target_root is None:
         target_root = cfg.path("build", "staging")
 
-    print(f"EXPORT: repo → {target_root}")
+    print(f"EXPORT: repo -> {target_root}")
     os.makedirs(target_root, exist_ok=True)
 
     total = 0
@@ -248,7 +248,7 @@ def sync_export(target_root: str | None = None) -> int:
 
 
 def sync_import(source_root: str | None = None) -> int:
-    """Copy install/staging directory → repo.
+    """Copy install/staging directory -> repo.
 
     Args:
         source_root: Source root.  Defaults to ``build/staging/``.
@@ -259,7 +259,7 @@ def sync_import(source_root: str | None = None) -> int:
     if source_root is None:
         source_root = cfg.path("build", "staging")
 
-    print(f"IMPORT: {source_root} → repo")
+    print(f"IMPORT: {source_root} -> repo")
 
     total = 0
     for entry in SYNC_MAP:
@@ -383,11 +383,11 @@ def main() -> None:
     sub = parser.add_subparsers(dest="command", required=True)
 
     # export
-    p_export = sub.add_parser("export", help="Copy repo → staging/install dir")
+    p_export = sub.add_parser("export", help="Copy repo -> staging/install dir")
     p_export.add_argument("--target", default=None, help="Target directory")
 
     # import
-    p_import = sub.add_parser("import", help="Copy staging/install dir → repo")
+    p_import = sub.add_parser("import", help="Copy staging/install dir -> repo")
     p_import.add_argument("--source", default=None, help="Source directory")
 
     # check

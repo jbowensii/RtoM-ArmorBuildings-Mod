@@ -63,7 +63,7 @@ def run(
     entries = parse_po(po_file)
     write_entries_csv(entries, csv_file)
 
-    print(f"Converted: {len(entries)} entries → {csv_file}")
+    print(f"Converted: {len(entries)} entries -> {csv_file}")
     return len(entries)
 
 
