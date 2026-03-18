@@ -10,3 +10,5 @@
 Wiki/
 Maps/
 *.psd
+config.ini
+*.code-workspace

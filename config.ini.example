@@ -1,0 +1,27 @@
+[Paths]
+# ──────────────────────────────────────────────────────────────────────
+# Project root directory (where this repository is cloned)
+# ──────────────────────────────────────────────────────────────────────
+ProjectRoot = F:/RtoM/modsRepository
+
+# ──────────────────────────────────────────────────────────────────────
+# Unreal Engine 4.27 installation directory
+# ──────────────────────────────────────────────────────────────────────
+UE4Root = F:/Programas/UE_4.27
+
+[Localization]
+# ──────────────────────────────────────────────────────────────────────
+# Source language PO file used as the structural template for merging
+# translations. Path is relative to <ProjectRoot>/Localization/.
+# ──────────────────────────────────────────────────────────────────────
+SourcePO = en/Game.po
+
+# ──────────────────────────────────────────────────────────────────────
+# Target language code and files for CSV <-> PO conversion.
+# ──────────────────────────────────────────────────────────────────────
+TargetLang = de
+
+# ──────────────────────────────────────────────────────────────────────
+# Pak output filename (localization pak built by PakLocres)
+# ──────────────────────────────────────────────────────────────────────
+PakFileName = SecretsOfKhazadDum_Localization_P.pak
