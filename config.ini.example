@@ -1,3 +1,9 @@
+[General]
+# ──────────────────────────────────────────────────────────────────────
+# Enable debug logging to console and log file (true / false)
+# ──────────────────────────────────────────────────────────────────────
+Debug = false
+
 [Paths]
 # ──────────────────────────────────────────────────────────────────────
 # Project root directory (where this repository is cloned)

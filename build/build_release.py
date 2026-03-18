@@ -22,7 +22,7 @@ import shutil
 import subprocess
 import sys
 
-# ── Resolve project root (one level up from this script) ──
+# -- Resolve project root (one level up from this script) --
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 
@@ -43,10 +43,10 @@ def get_version() -> str:
 
 def run_cmd(cmd: list[str], description: str) -> None:
     """Run a command, printing status and raising on failure."""
-    print(f"\n{'─' * 60}")
+    print(f"\n{'-' * 60}")
     print(f"  {description}")
     print(f"  -> {' '.join(cmd)}")
-    print(f"{'─' * 60}")
+    print(f"{'-' * 60}")
 
     result = subprocess.run(cmd, cwd=PROJECT_ROOT, check=False)
     if result.returncode != 0:

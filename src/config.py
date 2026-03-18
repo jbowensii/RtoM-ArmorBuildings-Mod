@@ -17,12 +17,29 @@ Usage::
 """
 
 import configparser
+import logging
 import os
 import sys
 
-# Project root is one level up from this file (src/ lives inside root)
-_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-_DEFAULT_INI = os.path.join(_PROJECT_ROOT, "config.ini")
+log = logging.getLogger(__name__)
+
+
+def _resolve_app_root() -> str:
+    """Return the application root directory.
+
+    When running as a PyInstaller frozen exe the root is the directory
+    containing the .exe, NOT the temp extraction folder.  When running
+    from source the root is one level up from this file (src/ -> root).
+    """
+    if getattr(sys, "frozen", False):
+        # PyInstaller: sys.executable is the .exe path
+        return os.path.dirname(sys.executable)
+    # Running from source
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+_APP_ROOT = _resolve_app_root()
+_DEFAULT_INI = os.path.join(_APP_ROOT, "config.ini")
 
 
 class Config:
@@ -33,10 +50,17 @@ class Config:
 
         Args:
             ini_path: Override path to config.ini.  Defaults to
-                      ``<project_root>/config.ini``.
+                      ``<app_root>/config.ini``.
         """
         if ini_path is None:
             ini_path = _DEFAULT_INI
+
+        self.app_root: str = _APP_ROOT
+        self.ini_path: str = ini_path
+
+        log.debug("App root   : %s", self.app_root)
+        log.debug("Frozen exe : %s", getattr(sys, "frozen", False))
+        log.debug("INI path   : %s", ini_path)
 
         if not os.path.isfile(ini_path):
             print(
@@ -44,10 +68,14 @@ class Config:
                 "  Copy config.ini.example -> config.ini and set your paths.",
                 file=sys.stderr,
             )
+            input("Press Enter to exit...")
             sys.exit(1)
 
         parser = configparser.ConfigParser()
         parser.read(ini_path, encoding="utf-8")
+
+        # ── [General] section (optional) ──
+        self.debug: bool = parser.getboolean("General", "Debug", fallback=False)
 
         # ── [Paths] section ──
         self.project_root: str = os.path.normpath(
@@ -63,6 +91,10 @@ class Config:
             "target_lang": parser.get("Localization", "TargetLang"),
             "pak_filename": parser.get("Localization", "PakFileName"),
         }
+
+        log.debug("Debug      : %s", self.debug)
+        log.debug("ProjectRoot: %s", self.project_root)
+        log.debug("UE4Root    : %s", self.ue4_root)
 
     def path(self, *parts: str) -> str:
         """Join *parts* relative to ProjectRoot → absolute path."""
