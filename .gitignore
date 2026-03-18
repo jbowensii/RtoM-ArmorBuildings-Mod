@@ -19,3 +19,5 @@ build/staging/
 build/pyinstaller/
 dist/
 release/
+Saves/
+debug.log

@@ -1,20 +1,19 @@
 # -*- mode: python ; coding: utf-8 -*-
 """
-PyInstaller spec for RtoM Mod Tools.
+PyInstaller spec for RtoM Mod Tools v2 (PySide6 GUI).
 
-Builds a single-file Windows executable that bundles the src/ package.
-Data files (mod assets, localization) are NOT bundled in the exe —
-they are handled separately by the Inno Setup installer from
-build/staging/.
+Builds a single-file Windows executable that bundles src/, PySide6,
+and the data/ templates.  Saves/ and large mod assets are handled
+separately by the Inno Setup installer.
 
 Build command:
     pyinstaller build/RtoMModTools.spec --noconfirm
 """
 
 import os
-import sys
 
-# Project root is one level up from this spec file (build/ -> project root)
+from PyInstaller.utils.hooks import collect_data_files
+
 # SPECPATH is the directory containing this .spec file
 PROJECT_ROOT = os.path.dirname(SPECPATH)
 
@@ -25,14 +24,33 @@ a = Analysis(
     pathex=[PROJECT_ROOT],
     binaries=[],
     datas=[
-        # Bundle config template so the exe can create a default on first run
+        # Config template
         (os.path.join(PROJECT_ROOT, 'config.ini.example'), '.'),
+        # Data templates for construction/armor tools
+        (os.path.join(PROJECT_ROOT, 'data'), 'data'),
+        # App icon (for window icon at runtime)
+        (os.path.join(PROJECT_ROOT, 'assets', 'icons'), os.path.join('assets', 'icons')),
     ],
-    hiddenimports=[],
+    hiddenimports=[
+        'PySide6.QtCore',
+        'PySide6.QtGui',
+        'PySide6.QtWidgets',
+    ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=[
+        # Trim unused Qt modules to reduce bundle size
+        'PySide6.QtWebEngine',
+        'PySide6.QtWebEngineCore',
+        'PySide6.QtWebEngineWidgets',
+        'PySide6.Qt3DCore',
+        'PySide6.Qt3DRender',
+        'PySide6.QtMultimedia',
+        'PySide6.QtNetwork',
+        'PySide6.QtQml',
+        'PySide6.QtQuick',
+    ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=block_cipher,
@@ -55,7 +73,7 @@ exe = EXE(
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=True,  # CLI app for now; change to False when GUI is added
+    console=False,  # GUI application
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,

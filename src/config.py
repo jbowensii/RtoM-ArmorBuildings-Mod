@@ -92,9 +92,23 @@ class Config:
             "pak_filename": parser.get("Localization", "PakFileName"),
         }
 
+        # ── [ModTool] section (optional) ──
+        _data_raw = parser.get("ModTool", "DataDir", fallback="data")
+        _saves_raw = parser.get("ModTool", "SavesDir", fallback="Saves")
+        self.modtool_data_dir: str = os.path.normpath(
+            _data_raw if os.path.isabs(_data_raw)
+            else os.path.join(self.app_root, _data_raw)
+        )
+        self.modtool_saves_dir: str = os.path.normpath(
+            _saves_raw if os.path.isabs(_saves_raw)
+            else os.path.join(self.app_root, _saves_raw)
+        )
+
         log.debug("Debug      : %s", self.debug)
         log.debug("ProjectRoot: %s", self.project_root)
         log.debug("UE4Root    : %s", self.ue4_root)
+        log.debug("DataDir    : %s", self.modtool_data_dir)
+        log.debug("SavesDir   : %s", self.modtool_saves_dir)
 
     def path(self, *parts: str) -> str:
         """Join *parts* relative to ProjectRoot → absolute path."""

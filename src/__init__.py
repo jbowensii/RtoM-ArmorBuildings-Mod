@@ -1,11 +1,14 @@
 """
 RtoM Armor & Buildings Mod — tooling package.
 
-Provides three pipelines for maintaining the Return to Moria mod:
-  - localization : PO ↔ CSV translation management
-  - recipes      : automated recipe patching for colour variants
-  - packaging    : pak archive generation via UnrealPak
+PySide6 GUI combining:
+  - Construction adder / updater (from RtoM-Moding-Tool)
+  - Armor adder / updater (from RtoM-Moding-Tool)
+  - Localization : PO / CSV translation management
+  - Recipes      : automated recipe patching for colour variants
+  - Packaging    : pak archive generation via UnrealPak
+  - Sync         : repo / install layout synchronisation
 """
 
-APP_VERSION = "1.1.0"
-APP_NAME = "RtoMModTools"
+APP_VERSION = "2.0.0"
+APP_NAME = "RtoM Mod Tools"

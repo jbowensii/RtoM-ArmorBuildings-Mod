@@ -1,0 +1,37 @@
+{
+    "UnlockRequiredItems": {
+        "Ore.Granite": "Granite",
+        "Ore.Stone": "Stone",
+        "Tool.Restoration_Hammer_Gunmetal": "Shanôr Hammer",
+        "Tool.Restoration_Hammer_Starmetal": "Star-metal Hammer",
+        "Tool.Restoration_Hammer_Steel": "Steel Hammer",
+        "Tool.Restoration_Hammer_Adamant": "Adamant Hammer"
+    },
+    "UnlockRequiredConstructions": {
+        "CraftingStation_AdvancedForge": "Khuzdul Forge",
+        "CraftingStation_AdvancedFurnace": "Ufûhan Furnace",
+        "CraftingStation_BasicForge": "Forge",
+        "CraftingStation_BasicFurnace": "Furnace",
+        "CraftingStation_Campfire": "Camp Hearth Campaign",
+        "CraftingStation_Campfire_Sandbox": "Camp Hearth Sandbox",
+        "CraftingStation_DurinForge": "Great Forge of Durin",
+        "CraftingStation_FabricStation": "Loom",
+        "CraftingStation_FabricStation_Upgrade": "Spinning Wheel",
+        "CraftingStation_ForgeUpgrade_GemCutter": "Gem Cutter",
+        "CraftingStation_FurnaceUpgrade": "Bellows",
+        "CraftingStation_Hearth_Farm": "Farm Hearth",
+        "CraftingStation_Hearth_LargeHearth": "Grand Hearth",
+        "CraftingStation_Hearth_MediumHearth": "Tiled Hearth",
+        "CraftingStation_Hearth_MiniHearth": "Small Hearth",
+        "CraftingStation_Hearth_SmallHearth": "Stone Hearth",
+        "CraftingStation_Kitchen_Oven": "Oven",
+        "CraftingStation_Kitchen_PitBBQ": "Roasting Pit",
+        "CraftingStation_Kitchen_Stove": "Stove",
+        "CraftingStation_Mill": "Gristmill",
+        "CraftingStation_PurificationStation": "Salt Bath",
+        "CraftingStation_RepairStation": "Repair Smithy",
+        "CraftingStation_Rune": "Rune Table",
+        "CraftingStation_TintingStation": "Ink Grinder",
+        "CraftingStation_Workbench": "Workbench"
+    }
+}

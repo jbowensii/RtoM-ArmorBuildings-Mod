@@ -1,0 +1,1 @@
+"""Armor recipe domain logic."""

@@ -15,7 +15,7 @@
 #define MyAppExeName "RtoMModTools.exe"
 ; Version is overridden by build_release.py via /D flag
 #ifndef MyAppVersion
-  #define MyAppVersion "1.1.0"
+  #define MyAppVersion "2.0.0"
 #endif
 #define MyAppPublisher "TobiIchiro and Contributors"
 #define MyAppURL "https://github.com/TobiIchiro/RtoM-ArmorBuildings-Mod"
@@ -57,6 +57,9 @@ Source: "..\..\config.ini.example"; DestDir: "{app}"; Flags: ignoreversion
 ; ── License ──
 Source: "..\..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
 
+; ── ModTool data templates ──
+Source: "..\..\data\*"; DestDir: "{app}\data"; Flags: ignoreversion recursesubdirs createallsubdirs
+
 ; ── Data files from staging ──
 Source: "..\..\build\staging\data\*"; DestDir: "{app}\data"; Flags: ignoreversion recursesubdirs createallsubdirs
 
@@ -75,7 +78,7 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
 [Code]
-// Create config.ini from template on first install if it doesn't exist
+// Create config.ini from template and Saves directory skeleton on first install
 procedure CurStepChanged(CurStep: TSetupStep);
 var
   ConfigPath: String;
@@ -89,5 +92,11 @@ begin
     begin
       CopyFile(ExamplePath, ConfigPath, False);
     end;
+    // Create Saves directory skeleton
+    ForceDirectories(ExpandConstant('{app}\Saves\UpdateMods\MoreBuildings\moded'));
+    ForceDirectories(ExpandConstant('{app}\Saves\UpdateMods\MoreArmor\moded'));
+    ForceDirectories(ExpandConstant('{app}\Saves\UpdateMods\RestoreBuildings'));
+    ForceDirectories(ExpandConstant('{app}\Saves\newObjects\MoreBuildings'));
+    ForceDirectories(ExpandConstant('{app}\Saves\newObjects\MoreArmor'));
   end;
 end;
