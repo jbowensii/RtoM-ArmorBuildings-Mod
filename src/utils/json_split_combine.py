@@ -153,6 +153,12 @@ _COMBINE_MAP = [
     ("DT_Constructions", "Moria/Content/Tech/Data/Building/DT_Constructions", {"has_imports": True}),
     ("DT_ConstructionRecipes", "Moria/Content/Tech/Data/Building/DT_ConstructionRecipes", {}),
     ("DT_ItemRecipes", "Moria/Content/Tech/Data/Items/DT_ItemRecipes", {}),
+    ("DT_Armor", "Moria/Content/Tech/Data/Items/DT_Armor", {}),
+    ("DT_Weapons", "Moria/Content/Tech/Data/Items/DT_Weapons", {}),
+    ("DT_Items", "Moria/Content/Tech/Data/Items/DT_Items", {}),
+    ("DT_Tools", "Moria/Content/Tech/Data/Items/DT_Tools", {}),
+    ("DT_Loot", "Moria/Content/Character/AI/DT_Loot", {}),
+    ("DT_CategoryTags", "Moria/Content/Tech/Data/DT_CategoryTags", {}),
 ]
 
 
