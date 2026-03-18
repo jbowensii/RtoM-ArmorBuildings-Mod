@@ -19,5 +19,10 @@ build/staging/
 build/pyinstaller/
 dist/
 release/
-Saves/
+data/game_extract/
+data/Tobis_json/
+TobisMod/
+modified-json/
+utilities/*.exe
+utilities/*.dll
 debug.log

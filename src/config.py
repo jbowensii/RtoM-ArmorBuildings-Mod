@@ -94,21 +94,44 @@ class Config:
 
         # ── [ModTool] section (optional) ──
         _data_raw = parser.get("ModTool", "DataDir", fallback="data")
-        _saves_raw = parser.get("ModTool", "SavesDir", fallback="Saves")
-        self.modtool_data_dir: str = os.path.normpath(
+        self.data_dir: str = os.path.normpath(
             _data_raw if os.path.isabs(_data_raw)
             else os.path.join(self.app_root, _data_raw)
         )
-        self.modtool_saves_dir: str = os.path.normpath(
-            _saves_raw if os.path.isabs(_saves_raw)
-            else os.path.join(self.app_root, _saves_raw)
+
+        # Derived data subdirectories
+        self.templates_dir: str = os.path.join(self.data_dir, "templates")
+        self.game_extract_dir: str = os.path.join(self.data_dir, "game_extract")
+        self.tobis_json_dir: str = os.path.join(self.data_dir, "Tobis_json")
+
+        # TobisMod output directory
+        self.tobis_mod_dir: str = os.path.join(self.app_root, "TobisMod")
+
+        # ── [Game] section (optional — set on first run) ──
+        self.game_install_path: str = parser.get(
+            "Game", "InstallPath", fallback=""
+        )
+        self.game_install_type: str = parser.get(
+            "Game", "InstallType", fallback=""
         )
 
-        log.debug("Debug      : %s", self.debug)
-        log.debug("ProjectRoot: %s", self.project_root)
-        log.debug("UE4Root    : %s", self.ue4_root)
-        log.debug("DataDir    : %s", self.modtool_data_dir)
-        log.debug("SavesDir   : %s", self.modtool_saves_dir)
+        # Derived paths
+        self.utilities_dir: str = os.path.join(self.app_root, "utilities")
+        self.game_paks_dir: str = (
+            os.path.join(self.game_install_path, "Moria", "Content", "Paks")
+            if self.game_install_path else ""
+        )
+
+        log.debug("Debug       : %s", self.debug)
+        log.debug("ProjectRoot : %s", self.project_root)
+        log.debug("UE4Root     : %s", self.ue4_root)
+        log.debug("DataDir     : %s", self.data_dir)
+        log.debug("TemplatesDir: %s", self.templates_dir)
+        log.debug("GameExtract : %s", self.game_extract_dir)
+        log.debug("TobisJson   : %s", self.tobis_json_dir)
+        log.debug("TobisMod    : %s", self.tobis_mod_dir)
+        log.debug("GamePath    : %s", self.game_install_path)
+        log.debug("Utilities   : %s", self.utilities_dir)
 
     def path(self, *parts: str) -> str:
         """Join *parts* relative to ProjectRoot → absolute path."""
@@ -117,6 +140,21 @@ class Config:
     def ue4_path(self, *parts: str) -> str:
         """Join *parts* relative to UE4Root → absolute path."""
         return os.path.normpath(os.path.join(self.ue4_root, *parts))
+
+    def set_game_path(self, install_path: str, install_type: str) -> None:
+        """Write game path back to config.ini [Game] section."""
+        parser = configparser.ConfigParser()
+        parser.read(self.ini_path, encoding="utf-8")
+        if not parser.has_section("Game"):
+            parser.add_section("Game")
+        parser.set("Game", "InstallPath", install_path)
+        parser.set("Game", "InstallType", install_type)
+        with open(self.ini_path, "w", encoding="utf-8") as f:
+            parser.write(f)
+        self.game_install_path = install_path
+        self.game_install_type = install_type
+        self.game_paks_dir = os.path.join(install_path, "Moria", "Content", "Paks")
+        log.info("Game path set: %s (%s)", install_path, install_type)
 
 
 # Module-level singleton — import ``cfg`` from here.

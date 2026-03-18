@@ -13,17 +13,35 @@ from PySide6.QtWidgets import (
 
 from src.armor.mod_utils import sandbox_exclusive_items, unlock_conditions
 from src.utils.json_handler import load_json, save_json
+from src.utils.json_split_combine import combine_all
 
 
 class ArmorUpdaterTab(QWidget):
-    def __init__(self, saves_dir: str, data_dir: str) -> None:
+    def __init__(
+        self,
+        tobis_mod_dir: str,
+        templates_dir: str,
+        data_dir: str,
+        tobis_json_dir: str,
+        game_extract_dir: str,
+    ) -> None:
         super().__init__()
-        self.saves_dir = saves_dir
+        self.tobis_mod_dir = tobis_mod_dir
+        self.templates_dir = templates_dir
         self.data_dir = data_dir
+        self.tobis_json_dir = tobis_json_dir
+        self.game_extract_dir = game_extract_dir
         self._setup_ui()
 
     def _setup_ui(self) -> None:
         layout = QVBoxLayout()
+
+        self.build_btn = QPushButton("Build Combined Files")
+        self.build_btn.setFixedSize(300, 150)
+        self.build_btn.clicked.connect(self._build_combined)
+        self.build_btn.setToolTip(
+            "Combine per-item Tobis_json/ files into TobisMod/json_data/."
+        )
 
         self.restore_btn = QPushButton("Restore Shayar, Amzul and Masharuz armors")
         self.restore_btn.setFixedSize(300, 150)
@@ -39,6 +57,7 @@ class ArmorUpdaterTab(QWidget):
         self.cosmetic_btn.setEnabled(False)
         self.cosmetic_btn.clicked.connect(self._add_cosmetic)
 
+        layout.addWidget(self.build_btn, alignment=Qt.AlignHCenter)
         layout.addWidget(self.restore_btn, alignment=Qt.AlignHCenter)
         layout.addWidget(self.sandbox_btn, alignment=Qt.AlignHCenter)
         layout.addWidget(self.cosmetic_btn, alignment=Qt.AlignHCenter)
@@ -48,10 +67,33 @@ class ArmorUpdaterTab(QWidget):
     def _clean_name(name: str) -> str:
         return re.sub(r"_(White|Black|Gold)_", "_", name)
 
+    def _build_combined(self) -> None:
+        """Combine per-item Tobis_json/ files into TobisMod/json_data/."""
+        output = os.path.join(self.tobis_mod_dir, "json_data")
+
+        try:
+            results = combine_all(
+                self.tobis_json_dir, self.game_extract_dir, output,
+            )
+            total = sum(results.values())
+            detail = ", ".join(f"{k}: {v}" for k, v in results.items())
+            QMessageBox.information(
+                self, "Build Complete",
+                f"Combined {total} items into TobisMod/json_data/.\n\n{detail}",
+            )
+        except Exception as exc:
+            QMessageBox.critical(self, "Build Failed", str(exc))
+
     def _restore_bwg(self) -> None:
-        src_path = os.path.join(self.saves_dir, "UpdateMods", "MoreArmor", "DT_ItemRecipes.json")
-        tpl_path = os.path.join(self.data_dir, "MoreArmor", "UnlockRequiredItems.json")
-        dst_path = os.path.join(self.saves_dir, "UpdateMods", "MoreArmor", "moded", "DT_ItemRecipes.json")
+        src_path = os.path.join(
+            self.tobis_mod_dir, "UpdateMods", "MoreArmor", "DT_ItemRecipes.json",
+        )
+        tpl_path = os.path.join(
+            self.templates_dir, "MoreArmor", "UnlockRequiredItems.json",
+        )
+        dst_path = os.path.join(
+            self.tobis_mod_dir, "UpdateMods", "MoreArmor", "moded", "DT_ItemRecipes.json",
+        )
 
         dt = load_json(src_path)
         tpl = load_json(tpl_path)
@@ -81,9 +123,15 @@ class ArmorUpdaterTab(QWidget):
         self.sandbox_btn.setEnabled(True)
 
     def _sandbox_to_campaign(self) -> None:
-        moded_path = os.path.join(self.saves_dir, "UpdateMods", "MoreArmor", "moded", "DT_ItemRecipes.json")
-        u_structs = load_json(os.path.join(self.data_dir, "MoreArmor", "UnlockRequirementsStructs.json"))
-        dummy = load_json(os.path.join(self.data_dir, "MoreArmor", "DumyStructs.json"))
+        moded_path = os.path.join(
+            self.tobis_mod_dir, "UpdateMods", "MoreArmor", "moded", "DT_ItemRecipes.json",
+        )
+        u_structs = load_json(os.path.join(
+            self.templates_dir, "MoreArmor", "UnlockRequirementsStructs.json",
+        ))
+        dummy = load_json(os.path.join(
+            self.templates_dir, "MoreArmor", "DumyStructs.json",
+        ))
 
         dt = load_json(moded_path)
         recipes = dt.get("Exports", [{}])[0].get("Table", {}).get("Data", [])
@@ -103,8 +151,13 @@ class ArmorUpdaterTab(QWidget):
         self.cosmetic_btn.setEnabled(True)
 
     def _add_cosmetic(self) -> None:
-        moded_path = os.path.join(self.saves_dir, "UpdateMods", "MoreArmor", "moded", "DT_ItemRecipes.json")
-        new_path = os.path.join(self.saves_dir, "newObjects", "MoreArmor", "DT_ItemRecipes.json")
+        moded_path = os.path.join(
+            self.tobis_mod_dir, "UpdateMods", "MoreArmor", "moded", "DT_ItemRecipes.json",
+        )
+        new_path = os.path.join(
+            self.tobis_mod_dir, "json_data",
+            "Moria", "Content", "Tech", "Data", "Items", "DT_ItemRecipes.json",
+        )
 
         dt = load_json(moded_path)
         new_dt = load_json(new_path)

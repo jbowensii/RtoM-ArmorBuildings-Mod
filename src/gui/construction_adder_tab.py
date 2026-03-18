@@ -15,11 +15,11 @@ from src.construction.mod_utils import (
 
 
 class ConstructionAdderTab(QWidget):
-    def __init__(self, saves_dir: str, data_dir: str, items: dict,
+    def __init__(self, tobis_json_dir: str, templates_dir: str, items: dict,
                  category_tags: dict, unlock_requirements: dict) -> None:
         super().__init__()
-        self.saves_dir = saves_dir
-        self.data_dir = data_dir
+        self.tobis_json_dir = tobis_json_dir
+        self.templates_dir = templates_dir
         self.items = items
         self.materials_widgets: list = []
         self.category_tags_raw = category_tags
@@ -195,11 +195,11 @@ class ConstructionAdderTab(QWidget):
         cat_tag = self.category_tags_raw.get(cat_key, "")
         tag = f"{user_name}Pack_{name.title().replace(' ', '')}"
 
-        unique = architecture_handle(tag, name, desc, self.saves_dir)
+        unique = architecture_handle(tag, name, desc, self.tobis_json_dir)
         self.tag_display.setText(unique)
-        dt_constructions_handle(unique, asset, cat_tag, self.saves_dir, self.data_dir, user_name)
+        dt_constructions_handle(unique, asset, cat_tag, self.tobis_json_dir, self.templates_dir, user_name)
 
         sel = self.unlock_combo.currentText()
         unlock_req = self.visible_unlock_map.get(sel, sel)
-        dt_construction_recipes_handle(unique, self.saves_dir, self.data_dir, cat_key, materials, self.unlock_type, unlock_req)
+        dt_construction_recipes_handle(unique, self.tobis_json_dir, self.templates_dir, cat_key, materials, self.unlock_type, unlock_req)
         QMessageBox.information(self, "Saved", f"Construction '{unique}' added.")

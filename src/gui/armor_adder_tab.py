@@ -25,18 +25,18 @@ class ArmorAdderTab(QWidget):
         "CraftingStation_MithrilForge": "Great Mithril Forge",
     }
 
-    def __init__(self, saves_dir: str, data_dir: str, items: dict,
+    def __init__(self, tobis_json_dir: str, templates_dir: str, items: dict,
                  unlock_requirements: dict) -> None:
         super().__init__()
-        self.saves_dir = saves_dir
-        self.data_dir = data_dir
+        self.tobis_json_dir = tobis_json_dir
+        self.templates_dir = templates_dir
         self.items = items
         self.unlock_requirements = unlock_requirements
         self.unlock_type = "UnlockRequiredItems"
         self.visible_unlock_map: dict[str, str] = {}
         self.materials_widgets: list = []
         self.station_checkboxes: list[QCheckBox] = []
-        self.missing_armor = missing_armor_recipes(data_dir, saves_dir)
+        self.missing_armor = []  # populated after extraction
         self._setup_ui()
 
     def _setup_ui(self) -> None:
@@ -185,11 +185,13 @@ class ArmorAdderTab(QWidget):
         unlock_req = self.visible_unlock_map.get(sel, sel)
 
         dt_item_recipes_handle(
-            self.saves_dir, self.data_dir, armor_tag,
+            self.tobis_json_dir, self.templates_dir, armor_tag,
             stations, materials, self.unlock_type, unlock_req,
         )
 
-        self.missing_armor = missing_armor_recipes(self.data_dir, self.saves_dir)
+        self.missing_armor = missing_armor_recipes(
+            self.templates_dir, "", self.tobis_json_dir,
+        )
         self.armor_combo.clear()
         self.armor_combo.addItems([list(d.keys())[0] for d in self.missing_armor])
         QMessageBox.information(self, "Saved", f"Armor recipe '{armor_tag}' added.")

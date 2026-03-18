@@ -14,56 +14,51 @@ from src.utils.json_handler import load_json, save_json
 log = logging.getLogger(__name__)
 
 
-def missing_armor_recipes(data_dir: str, saves_dir: str) -> list[dict]:
+def missing_armor_recipes(templates_dir: str, tobis_mod_dir: str, tobis_json_dir: str) -> list[dict]:
     """Return a list of ``{display_name: tag}`` dicts for armors without recipes."""
     dt_path = os.path.join(
-        saves_dir, "UpdateMods", "MoreArmor", "DT_ItemRecipes.json"
+        tobis_mod_dir, "UpdateMods", "MoreArmor", "DT_ItemRecipes.json"
     )
-    new_path = os.path.join(
-        saves_dir, "newObjects", "MoreArmor", "DT_ItemRecipes.json"
-    )
-    armor_path = os.path.join(data_dir, "MoreArmor", "Armor.json")
+    armor_path = os.path.join(templates_dir, "MoreArmor", "Armor.json")
 
     dt = load_json(dt_path)
-    new_dt = load_json(new_path)
     armor = load_json(armor_path)
 
     recipe_names = {
         r.get("Name")
         for r in dt.get("Exports", [{}])[0].get("Table", {}).get("Data", [])
     }
-    new_names = {
-        r.get("Name")
-        for r in new_dt.get("Exports", [{}])[0].get("Table", {}).get("Data", [])
-    }
+
+    # Also check per-item files in Tobis_json
+    js_dir = os.path.join(tobis_json_dir, "DT_ItemRecipes")
+    per_item_names: set[str] = set()
+    if os.path.isdir(js_dir):
+        for fname in os.listdir(js_dir):
+            if fname.endswith(".json"):
+                per_item_names.add(fname[:-5])
 
     missing = []
     for tag, name in armor.items():
-        if tag not in recipe_names and tag not in new_names:
+        if tag not in recipe_names and tag not in per_item_names:
             missing.append({name: tag})
     return missing
 
 
 def dt_item_recipes_handle(
-    saves_dir: str,
-    data_dir: str,
+    tobis_json_dir: str,
+    templates_dir: str,
     armor_tag: str,
     crafting_stations: list[str],
     materials: list[tuple[str, int]],
     unlock_option: str,
     unlock_requirement: str,
 ) -> None:
-    """Add a new armor recipe entry to newObjects DT_ItemRecipes.json."""
-    tpl = load_json(os.path.join(data_dir, "MoreArmor", "ItemRecipeTemplate.json"))
-    cs_tpl = load_json(os.path.join(data_dir, "MoreArmor", "CraftingStationTemplate.json"))
-    mat_tpl = load_json(os.path.join(data_dir, "MoreArmor", "RequiredMaterialTemplate.json"))
-    dummy = load_json(os.path.join(data_dir, "MoreArmor", "DumyStructs.json"))
-    unlock_structs = load_json(os.path.join(data_dir, "MoreArmor", "UnlockRequirementsStructs.json"))
-
-    new_path = os.path.join(
-        saves_dir, "newObjects", "MoreArmor", "DT_ItemRecipes.json"
-    )
-    dt = load_json(new_path)
+    """Write a per-item DT_ItemRecipes file for an armor recipe."""
+    tpl = load_json(os.path.join(templates_dir, "MoreArmor", "ItemRecipeTemplate.json"))
+    cs_tpl = load_json(os.path.join(templates_dir, "MoreArmor", "CraftingStationTemplate.json"))
+    mat_tpl = load_json(os.path.join(templates_dir, "MoreArmor", "RequiredMaterialTemplate.json"))
+    dummy = load_json(os.path.join(templates_dir, "MoreArmor", "DumyStructs.json"))
+    unlock_structs = load_json(os.path.join(templates_dir, "MoreArmor", "UnlockRequirementsStructs.json"))
 
     tpl["Name"] = armor_tag
     tpl["Value"][0]["Value"][0]["Value"] = f"Armor.{armor_tag}"
@@ -72,11 +67,15 @@ def dt_item_recipes_handle(
     tpl["Value"][8]["Value"] = crafting_materials_array(materials, mat_tpl)
     unlock_conditions(tpl, unlock_option, unlock_requirement, unlock_structs, dummy)
 
-    dt["NameMap"].append(armor_tag)
-    dt["NameMap"].append(f"Armor.{armor_tag}")
-    dt["Exports"][0]["Table"]["Data"].append(tpl)
+    item_data = {
+        "NameMap": [armor_tag, f"Armor.{armor_tag}"],
+        "Imports": [],
+        "Row": tpl,
+    }
 
-    save_json(new_path, dt)
+    out_dir = os.path.join(tobis_json_dir, "DT_ItemRecipes")
+    os.makedirs(out_dir, exist_ok=True)
+    save_json(os.path.join(out_dir, f"{armor_tag}.json"), item_data)
     log.info("DT_ItemRecipes: added %s", armor_tag)
 
 

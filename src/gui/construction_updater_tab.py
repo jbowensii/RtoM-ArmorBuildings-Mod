@@ -11,26 +11,52 @@ from PySide6.QtWidgets import (
 
 from src.construction.mod_utils import advanced_bannister_post_stone_unlock
 from src.utils.json_handler import load_json, save_json
+from src.utils.json_split_combine import combine_all
 
 
 class ConstructionUpdaterTab(QWidget):
-    def __init__(self, saves_dir: str, data_dir: str) -> None:
+    def __init__(
+        self,
+        tobis_mod_dir: str,
+        templates_dir: str,
+        data_dir: str,
+        tobis_json_dir: str,
+        game_extract_dir: str,
+    ) -> None:
         super().__init__()
-        self.saves_dir = saves_dir
+        self.tobis_mod_dir = tobis_mod_dir
+        self.templates_dir = templates_dir
         self.data_dir = data_dir
+        self.tobis_json_dir = tobis_json_dir
+        self.game_extract_dir = game_extract_dir
         self._setup_ui()
 
     def _path(self, category: str, filename: str) -> str:
         base = {
-            "vanilla": os.path.join(self.saves_dir, "UpdateMods", "MoreBuildings"),
-            "new": os.path.join(self.saves_dir, "newObjects", "MoreBuildings"),
-            "moded": os.path.join(self.saves_dir, "UpdateMods", "MoreBuildings", "moded"),
-            "restore": os.path.join(self.saves_dir, "UpdateMods", "RestoreBuildings"),
+            "vanilla": os.path.join(self.tobis_mod_dir, "UpdateMods", "MoreBuildings"),
+            "new_building": os.path.join(
+                self.tobis_mod_dir, "json_data",
+                "Moria", "Content", "Tech", "Data", "Building",
+            ),
+            "new_items": os.path.join(
+                self.tobis_mod_dir, "json_data",
+                "Moria", "Content", "Tech", "Data", "Items",
+            ),
+            "moded": os.path.join(self.tobis_mod_dir, "UpdateMods", "MoreBuildings", "moded"),
+            "restore": os.path.join(self.tobis_mod_dir, "UpdateMods", "RestoreBuildings"),
         }[category]
         return os.path.abspath(os.path.join(base, filename))
 
     def _setup_ui(self) -> None:
         layout = QVBoxLayout()
+
+        self.build_btn = QPushButton("Build Combined Files")
+        self.build_btn.setFixedSize(300, 150)
+        self.build_btn.clicked.connect(self._build_combined)
+        self.build_btn.setToolTip(
+            "Combine per-item Tobis_json/ files into TobisMod/json_data/."
+        )
+
         self.restore_btn = QPushButton("Restore Constructions")
         self.restore_btn.setFixedSize(300, 150)
         self.restore_btn.clicked.connect(self._restore)
@@ -42,9 +68,27 @@ class ConstructionUpdaterTab(QWidget):
         self.update_btn.clicked.connect(self._update_mod)
         self.update_btn.setToolTip("Merge new constructions into the mod.")
 
+        layout.addWidget(self.build_btn, alignment=Qt.AlignHCenter)
         layout.addWidget(self.restore_btn, alignment=Qt.AlignHCenter)
         layout.addWidget(self.update_btn, alignment=Qt.AlignHCenter)
         self.setLayout(layout)
+
+    def _build_combined(self) -> None:
+        """Combine per-item Tobis_json/ files into TobisMod/json_data/."""
+        output = os.path.join(self.tobis_mod_dir, "json_data")
+
+        try:
+            results = combine_all(
+                self.tobis_json_dir, self.game_extract_dir, output,
+            )
+            total = sum(results.values())
+            detail = ", ".join(f"{k}: {v}" for k, v in results.items())
+            QMessageBox.information(
+                self, "Build Complete",
+                f"Combined {total} items into TobisMod/json_data/.\n\n{detail}",
+            )
+        except Exception as exc:
+            QMessageBox.critical(self, "Build Failed", str(exc))
 
     def _restore(self) -> None:
         data = load_json(self._path("vanilla", "DT_ConstructionRecipes.json"))
@@ -85,9 +129,9 @@ class ConstructionUpdaterTab(QWidget):
         recipes = load_json(self._path("moded", "DT_ConstructionRecipes.json"))
         constr = load_json(self._path("vanilla", "DT_Constructions.json"))
 
-        new_arch = load_json(self._path("new", "Architecture.json"))
-        new_recipes = load_json(self._path("new", "DT_ConstructionRecipes.json"))
-        new_constr = load_json(self._path("new", "DT_Constructions.json"))
+        new_arch = load_json(self._path("new_building", "Architecture.json"))
+        new_recipes = load_json(self._path("new_building", "DT_ConstructionRecipes.json"))
+        new_constr = load_json(self._path("new_building", "DT_Constructions.json"))
 
         st_imports = load_json(os.path.join(self.data_dir, "Imports.json"))
         arch_st = st_imports["Imports"][0:4]

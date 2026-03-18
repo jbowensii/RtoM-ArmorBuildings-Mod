@@ -41,12 +41,32 @@ def main() -> None:
     log.debug("sys.argv      : %s", sys.argv)
     log.debug("cwd           : %s", os.getcwd())
 
-    from PySide6.QtWidgets import QApplication
+    from PySide6.QtWidgets import QApplication, QDialog
     from src.gui.main_window import MainWindow
 
     log.debug("All modules imported successfully")
 
     app = QApplication(sys.argv)
+
+    # ── First-run: game path selection ──
+    if not cfg.game_install_path:
+        from src.gui.game_path_dialog import GamePathDialog
+        dlg = GamePathDialog(cfg)
+        if dlg.exec() != QDialog.Accepted:
+            sys.exit(0)
+
+    # ── Check if game files need extraction ──
+    from src.utils.game_extractor import load_manifest, validate_extraction
+    manifest_path = os.path.join(cfg.data_dir, "extraction_manifest.ini")
+    if os.path.isfile(manifest_path):
+        manifest = load_manifest(manifest_path)
+        missing = validate_extraction(cfg.game_extract_dir, manifest)
+        if missing:
+            from src.gui.extraction_dialog import ExtractionProgressDialog
+            dlg = ExtractionProgressDialog(cfg, missing)
+            if dlg.exec() != QDialog.Accepted:
+                sys.exit(0)
+
     window = MainWindow(cfg)
     window.showMaximized()
     sys.exit(app.exec())

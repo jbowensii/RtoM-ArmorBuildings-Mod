@@ -32,15 +32,17 @@ TargetLang = de
 # ──────────────────────────────────────────────────────────────────────
 PakFileName = SecretsOfKhazadDum_Localization_P.pak
 
+[Game]
+# ──────────────────────────────────────────────────────────────────────
+# Game installation path (set automatically on first run)
+# InstallType: "Steam", "Epic Games", or "Custom"
+# ──────────────────────────────────────────────────────────────────────
+InstallPath =
+InstallType =
+
 [ModTool]
 # ──────────────────────────────────────────────────────────────────────
-# Data templates directory (JSON templates for construction/armor tools)
+# Root data directory. Contains templates/, game_extract/, Tobis_json/.
 # Relative paths are resolved from the install/app directory.
 # ──────────────────────────────────────────────────────────────────────
 DataDir = data
-
-# ──────────────────────────────────────────────────────────────────────
-# Working saves directory (vanilla JSON files for mod building)
-# Relative paths are resolved from the install/app directory.
-# ──────────────────────────────────────────────────────────────────────
-SavesDir = Saves

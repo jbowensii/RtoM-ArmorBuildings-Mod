@@ -57,17 +57,21 @@ Source: "..\..\config.ini.example"; DestDir: "{app}"; Flags: ignoreversion
 ; ── License ──
 Source: "..\..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
 
-; ── ModTool data templates ──
-Source: "..\..\data\*"; DestDir: "{app}\data"; Flags: ignoreversion recursesubdirs createallsubdirs
+; ── Data templates ──
+Source: "..\..\data\templates\*"; DestDir: "{app}\data\templates"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\..\data\Imports.json"; DestDir: "{app}\data"; Flags: ignoreversion
+Source: "..\..\data\extraction_manifest.ini"; DestDir: "{app}\data"; Flags: ignoreversion
 
-; ── Data files from staging ──
-Source: "..\..\build\staging\data\*"; DestDir: "{app}\data"; Flags: ignoreversion recursesubdirs createallsubdirs
+; ── Extraction utilities (retoc, UAssetGUI) ──
+Source: "..\..\utilities\retoc.exe"; DestDir: "{app}\utilities"; Flags: ignoreversion
+Source: "..\..\utilities\UAssetGUI.exe"; DestDir: "{app}\utilities"; Flags: ignoreversion
+Source: "..\..\utilities\oo2core_9_win64.dll"; DestDir: "{app}\utilities"; Flags: ignoreversion
+
+; ── Per-item Tobis_json files (Tobi's custom items) ──
+Source: "..\..\data\Tobis_json\*"; DestDir: "{app}\data\Tobis_json"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 ; ── Localization files from staging ──
 Source: "..\..\build\staging\localization\*"; DestDir: "{app}\localization"; Flags: ignoreversion recursesubdirs createallsubdirs
-
-; ── Documentation from staging ──
-Source: "..\..\build\staging\docs\*"; DestDir: "{app}\docs"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
@@ -92,11 +96,18 @@ begin
     begin
       CopyFile(ExamplePath, ConfigPath, False);
     end;
-    // Create Saves directory skeleton
-    ForceDirectories(ExpandConstant('{app}\Saves\UpdateMods\MoreBuildings\moded'));
-    ForceDirectories(ExpandConstant('{app}\Saves\UpdateMods\MoreArmor\moded'));
-    ForceDirectories(ExpandConstant('{app}\Saves\UpdateMods\RestoreBuildings'));
-    ForceDirectories(ExpandConstant('{app}\Saves\newObjects\MoreBuildings'));
-    ForceDirectories(ExpandConstant('{app}\Saves\newObjects\MoreArmor'));
+    // Create TobisMod directory skeleton
+    ForceDirectories(ExpandConstant('{app}\TobisMod\json_data'));
+    ForceDirectories(ExpandConstant('{app}\TobisMod\UpdateMods\MoreBuildings\moded'));
+    ForceDirectories(ExpandConstant('{app}\TobisMod\UpdateMods\MoreArmor\moded'));
+    ForceDirectories(ExpandConstant('{app}\TobisMod\UpdateMods\RestoreBuildings'));
+    // Per-item Tobis_json directories
+    ForceDirectories(ExpandConstant('{app}\data\Tobis_json\Architecture'));
+    ForceDirectories(ExpandConstant('{app}\data\Tobis_json\DT_Constructions'));
+    ForceDirectories(ExpandConstant('{app}\data\Tobis_json\DT_ConstructionRecipes'));
+    ForceDirectories(ExpandConstant('{app}\data\Tobis_json\DT_ItemRecipes'));
+    // Game extract directories (populated on first run)
+    ForceDirectories(ExpandConstant('{app}\data\game_extract\retoc'));
+    ForceDirectories(ExpandConstant('{app}\data\game_extract\uassetgui'));
   end;
 end;
