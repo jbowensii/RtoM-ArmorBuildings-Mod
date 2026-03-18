@@ -29,23 +29,13 @@ class ConstructionUpdaterTab(QWidget):
         self.data_dir = data_dir
         self.tobis_json_dir = tobis_json_dir
         self.game_extract_dir = game_extract_dir
-        self._setup_ui()
 
-    def _path(self, category: str, filename: str) -> str:
-        base = {
-            "vanilla": os.path.join(self.tobis_mod_dir, "UpdateMods", "MoreBuildings"),
-            "new_building": os.path.join(
-                self.tobis_mod_dir, "json_data",
-                "Moria", "Content", "Tech", "Data", "Building",
-            ),
-            "new_items": os.path.join(
-                self.tobis_mod_dir, "json_data",
-                "Moria", "Content", "Tech", "Data", "Items",
-            ),
-            "moded": os.path.join(self.tobis_mod_dir, "UpdateMods", "MoreBuildings", "moded"),
-            "restore": os.path.join(self.tobis_mod_dir, "UpdateMods", "RestoreBuildings"),
-        }[category]
-        return os.path.abspath(os.path.join(base, filename))
+        # Paths within TobisMod/json_data/ (game path structure)
+        self._building_dir = os.path.join(
+            tobis_mod_dir, "json_data",
+            "Moria", "Content", "Tech", "Data", "Building",
+        )
+        self._setup_ui()
 
     def _setup_ui(self) -> None:
         layout = QVBoxLayout()
@@ -66,7 +56,7 @@ class ConstructionUpdaterTab(QWidget):
         self.update_btn.setFixedSize(300, 150)
         self.update_btn.setEnabled(False)
         self.update_btn.clicked.connect(self._update_mod)
-        self.update_btn.setToolTip("Merge new constructions into the mod.")
+        self.update_btn.setToolTip("Apply import fixes and string table entries.")
 
         layout.addWidget(self.build_btn, alignment=Qt.AlignHCenter)
         layout.addWidget(self.restore_btn, alignment=Qt.AlignHCenter)
@@ -91,7 +81,10 @@ class ConstructionUpdaterTab(QWidget):
             QMessageBox.critical(self, "Build Failed", str(exc))
 
     def _restore(self) -> None:
-        data = load_json(self._path("vanilla", "DT_ConstructionRecipes.json"))
+        """Restore constructions removed in game patch 1.2 directly in json_data/."""
+        recipes_path = os.path.join(self._building_dir, "DT_ConstructionRecipes.json")
+        data = load_json(recipes_path)
+
         constructions = [
             "Elder_Archway_A", "Advanced_Column_Wood_A", "Advanced_Column_Wood_D",
             "Advanced_Fence_Wood_1m", "Advanced_Fence_Wood", "Crude_Column",
@@ -118,63 +111,35 @@ class ConstructionUpdaterTab(QWidget):
                         except (KeyError, IndexError, TypeError):
                             continue
 
-        save_json(self._path("moded", "DT_ConstructionRecipes.json"), data)
-        save_json(self._path("restore", "DT_ConstructionRecipes.json"), data)
+        save_json(recipes_path, data)
         QMessageBox.information(self, "Done", "Constructions removed in 1.2 have been restored.")
         self.restore_btn.setEnabled(False)
         self.update_btn.setEnabled(True)
 
     def _update_mod(self) -> None:
-        arch = load_json(self._path("vanilla", "Architecture.json"))
-        recipes = load_json(self._path("moded", "DT_ConstructionRecipes.json"))
-        constr = load_json(self._path("vanilla", "DT_Constructions.json"))
+        """Apply string table imports to DT_Constructions in json_data/."""
+        arch_path = os.path.join(self._building_dir, "Architecture.json")
+        constr_path = os.path.join(self._building_dir, "DT_Constructions.json")
 
-        new_arch = load_json(self._path("new_building", "Architecture.json"))
-        new_recipes = load_json(self._path("new_building", "DT_ConstructionRecipes.json"))
-        new_constr = load_json(self._path("new_building", "DT_Constructions.json"))
+        arch = load_json(arch_path)
+        constr = load_json(constr_path)
 
         st_imports = load_json(os.path.join(self.data_dir, "Imports.json"))
         arch_st = st_imports["Imports"][0:4]
 
-        # Architecture
-        arch["Exports"][0]["Table"]["Value"].extend(new_arch["Exports"][0]["Table"]["Value"])
-
-        # Constructions — fix import indices
-        vanilla_len = len(constr["Imports"])
-        serial_deps: list[int] = []
-        for imp in new_constr["Imports"]:
-            if imp["OuterIndex"] < 0:
-                imp["OuterIndex"] = -(vanilla_len + abs(imp["OuterIndex"]))
-                serial_deps.append(imp["OuterIndex"] - 1)
-
-        for item in new_constr["Exports"][0]["Table"]["Data"]:
-            for prop in item["Value"]:
-                if prop["$type"] == "UAssetAPI.PropertyTypes.Objects.ObjectPropertyData, UAssetAPI":
-                    if isinstance(prop.get("Value"), int) and prop["Value"] < 0:
-                        prop["Value"] = -(vanilla_len + abs(prop["Value"]))
-
-        constr["NameMap"].extend(new_constr["NameMap"])
-        constr["Exports"][0]["Table"]["Data"].extend(new_constr["Exports"][0]["Table"]["Data"])
-        constr["Imports"].extend(new_constr["Imports"])
-
+        # Add string table imports to constructions
         moded_len = len(constr["Imports"])
+        serial_deps: list[int] = []
         for i, imp in enumerate(arch_st):
             if imp["OuterIndex"] < 0:
                 imp["OuterIndex"] = -(moded_len + i)
                 serial_deps.append(imp["OuterIndex"] - 1)
 
         constr["Imports"].extend(arch_st)
-        constr["Exports"][0]["SerializationBeforeCreateDependencies"].extend(serial_deps)
+        if "SerializationBeforeCreateDependencies" in constr["Exports"][0]:
+            constr["Exports"][0]["SerializationBeforeCreateDependencies"].extend(serial_deps)
 
-        # Recipes
-        for nm in new_recipes["NameMap"]:
-            if nm not in recipes["NameMap"]:
-                recipes["NameMap"].append(nm)
-        recipes["Exports"][0]["Table"]["Data"].extend(new_recipes["Exports"][0]["Table"]["Data"])
-
-        save_json(self._path("moded", "Architecture.json"), arch)
-        save_json(self._path("moded", "DT_ConstructionRecipes.json"), recipes)
-        save_json(self._path("moded", "DT_Constructions.json"), constr)
-        QMessageBox.information(self, "Done", "More Buildings mod files have been created.")
+        save_json(constr_path, constr)
+        QMessageBox.information(self, "Done", "More Buildings mod files have been updated.")
         self.restore_btn.setEnabled(True)
         self.update_btn.setEnabled(False)

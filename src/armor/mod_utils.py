@@ -1,6 +1,6 @@
 """Armor recipe logic — refactored from RtoM-Moding-Tool armorModUtils.py.
 
-All path construction uses explicit *saves_dir* and *data_dir* parameters.
+Per-item JSON files are written to ``data/Tobis_json/DT_ItemRecipes/{tag}.json``.
 """
 
 from __future__ import annotations
@@ -14,22 +14,13 @@ from src.utils.json_handler import load_json, save_json
 log = logging.getLogger(__name__)
 
 
-def missing_armor_recipes(templates_dir: str, tobis_mod_dir: str, tobis_json_dir: str) -> list[dict]:
+def missing_armor_recipes(templates_dir: str, tobis_json_dir: str) -> list[dict]:
     """Return a list of ``{display_name: tag}`` dicts for armors without recipes."""
-    dt_path = os.path.join(
-        tobis_mod_dir, "UpdateMods", "MoreArmor", "DT_ItemRecipes.json"
-    )
     armor_path = os.path.join(templates_dir, "MoreArmor", "Armor.json")
 
-    dt = load_json(dt_path)
     armor = load_json(armor_path)
 
-    recipe_names = {
-        r.get("Name")
-        for r in dt.get("Exports", [{}])[0].get("Table", {}).get("Data", [])
-    }
-
-    # Also check per-item files in Tobis_json
+    # Check per-item files in Tobis_json
     js_dir = os.path.join(tobis_json_dir, "DT_ItemRecipes")
     per_item_names: set[str] = set()
     if os.path.isdir(js_dir):
@@ -39,7 +30,7 @@ def missing_armor_recipes(templates_dir: str, tobis_mod_dir: str, tobis_json_dir
 
     missing = []
     for tag, name in armor.items():
-        if tag not in recipe_names and tag not in per_item_names:
+        if tag not in per_item_names:
             missing.append({name: tag})
     return missing
 

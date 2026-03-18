@@ -44,7 +44,6 @@ class _ExtractWorker(QThread):
                 retoc_exe=retoc,
                 uassetgui_exe=uassetgui,
                 game_extract_dir=self.cfg.game_extract_dir,
-                tobis_mod_dir=self.cfg.tobis_mod_dir,
                 manifest=self.manifest,
                 progress=lambda msg, cur, tot: self.progress.emit(msg, cur, tot),
             )

@@ -98,9 +98,6 @@ begin
     end;
     // Create TobisMod directory skeleton
     ForceDirectories(ExpandConstant('{app}\TobisMod\json_data'));
-    ForceDirectories(ExpandConstant('{app}\TobisMod\UpdateMods\MoreBuildings\moded'));
-    ForceDirectories(ExpandConstant('{app}\TobisMod\UpdateMods\MoreArmor\moded'));
-    ForceDirectories(ExpandConstant('{app}\TobisMod\UpdateMods\RestoreBuildings'));
     // Per-item Tobis_json directories
     ForceDirectories(ExpandConstant('{app}\data\Tobis_json\Architecture'));
     ForceDirectories(ExpandConstant('{app}\data\Tobis_json\DT_Constructions'));

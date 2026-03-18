@@ -1,18 +1,13 @@
 """Construction recipe logic — refactored from RtoM-Moding-Tool modUtils.py.
 
-All path construction uses explicit *saves_dir* and *data_dir* parameters
-instead of relative ``../`` navigation.
-
-Saves are written as **per-item JSON files** under
-``saves_dir/json_source/MoreBuildings/{table}/{tag}.json``.
-Use :func:`src.utils.json_split_combine.combine_all` to merge them into the
-combined format expected by the updater/game.
+Per-item JSON files are written to ``data/Tobis_json/{table}/{tag}.json``.
+Use :func:`src.utils.json_split_combine.combine_all` to merge them with
+vanilla game data into ``TobisMod/json_data/``.
 """
 
 from __future__ import annotations
 
 import copy
-import json
 import logging
 import os
 from string import ascii_uppercase

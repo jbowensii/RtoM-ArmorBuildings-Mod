@@ -1,9 +1,9 @@
 """Extract game DataTable files using retoc + UAssetGUI.
 
 Reads the extraction manifest (``data/extraction_manifest.ini``) to know
-which files to pull from the game's IoStore paks, converts them to JSON,
-and optionally generates vanilla-only shell templates and populates the
-UpdateMods directory.
+which files to pull from the game's IoStore paks and converts them to JSON.
+Extracted files land in ``data/game_extract/`` with both the retoc .uasset
+intermediates and the final UAssetGUI JSON output preserved.
 """
 
 from __future__ import annotations
@@ -11,9 +11,7 @@ from __future__ import annotations
 import configparser
 import logging
 import os
-import shutil
 import subprocess
-import tempfile
 from typing import Any, Callable
 
 log = logging.getLogger(__name__)
@@ -132,7 +130,6 @@ def extract_all(
     retoc_exe: str,
     uassetgui_exe: str,
     game_extract_dir: str,
-    tobis_mod_dir: str,
     manifest: list[dict[str, Any]],
     progress: ProgressCallback | None = None,
 ) -> dict[str, str]:
@@ -141,14 +138,12 @@ def extract_all(
     Outputs:
         - retoc .uasset/.uexp → ``game_extract_dir/retoc/{game_path}.*``
         - UAssetGUI .json     → ``game_extract_dir/uassetgui/{game_path}.json``
-        - UpdateMods copy      → ``tobis_mod_dir/UpdateMods/{group}/{stem}.json``
 
     Args:
         paks_dir: Path to game's Moria/Content/Paks/ directory.
         retoc_exe: Path to retoc.exe.
         uassetgui_exe: Path to UAssetGUI.exe.
         game_extract_dir: data/game_extract/ directory.
-        tobis_mod_dir: TobisMod/ directory.
         manifest: Parsed extraction targets from load_manifest().
         progress: Optional callback for progress updates.
 
@@ -212,16 +207,6 @@ def extract_all(
 
         results[name] = json_output
         log.info("Extracted: %s -> %s", stem, json_output)
-
-        # 4. Copy to TobisMod/UpdateMods/ if needed
-        if entry["update_mods_group"]:
-            um_path = os.path.join(
-                tobis_mod_dir, "UpdateMods", entry["update_mods_group"],
-                f"{stem}.json",
-            )
-            os.makedirs(os.path.dirname(um_path), exist_ok=True)
-            shutil.copy2(json_output, um_path)
-            log.info("Copied vanilla to UpdateMods: %s", um_path)
 
     if progress:
         progress("Extraction complete.", total, total)

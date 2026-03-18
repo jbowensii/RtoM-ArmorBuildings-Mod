@@ -190,7 +190,7 @@ class ArmorAdderTab(QWidget):
         )
 
         self.missing_armor = missing_armor_recipes(
-            self.templates_dir, "", self.tobis_json_dir,
+            self.templates_dir, self.tobis_json_dir,
         )
         self.armor_combo.clear()
         self.armor_combo.addItems([list(d.keys())[0] for d in self.missing_armor])

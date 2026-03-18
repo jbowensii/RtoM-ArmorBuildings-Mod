@@ -8,7 +8,7 @@ import re
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
-    QLabel, QMessageBox, QPushButton, QVBoxLayout, QWidget,
+    QMessageBox, QPushButton, QVBoxLayout, QWidget,
 )
 
 from src.armor.mod_utils import sandbox_exclusive_items, unlock_conditions
@@ -31,6 +31,12 @@ class ArmorUpdaterTab(QWidget):
         self.data_dir = data_dir
         self.tobis_json_dir = tobis_json_dir
         self.game_extract_dir = game_extract_dir
+
+        # Path to DT_ItemRecipes in TobisMod/json_data/
+        self._recipes_path = os.path.join(
+            tobis_mod_dir, "json_data",
+            "Moria", "Content", "Tech", "Data", "Items", "DT_ItemRecipes.json",
+        )
         self._setup_ui()
 
     def _setup_ui(self) -> None:
@@ -52,15 +58,9 @@ class ArmorUpdaterTab(QWidget):
         self.sandbox_btn.setEnabled(False)
         self.sandbox_btn.clicked.connect(self._sandbox_to_campaign)
 
-        self.cosmetic_btn = QPushButton("Add Cosmetic Armors")
-        self.cosmetic_btn.setFixedSize(300, 150)
-        self.cosmetic_btn.setEnabled(False)
-        self.cosmetic_btn.clicked.connect(self._add_cosmetic)
-
         layout.addWidget(self.build_btn, alignment=Qt.AlignHCenter)
         layout.addWidget(self.restore_btn, alignment=Qt.AlignHCenter)
         layout.addWidget(self.sandbox_btn, alignment=Qt.AlignHCenter)
-        layout.addWidget(self.cosmetic_btn, alignment=Qt.AlignHCenter)
         self.setLayout(layout)
 
     @staticmethod
@@ -85,17 +85,12 @@ class ArmorUpdaterTab(QWidget):
             QMessageBox.critical(self, "Build Failed", str(exc))
 
     def _restore_bwg(self) -> None:
-        src_path = os.path.join(
-            self.tobis_mod_dir, "UpdateMods", "MoreArmor", "DT_ItemRecipes.json",
-        )
+        """Restore BWG colour variants directly in json_data/."""
         tpl_path = os.path.join(
             self.templates_dir, "MoreArmor", "UnlockRequiredItems.json",
         )
-        dst_path = os.path.join(
-            self.tobis_mod_dir, "UpdateMods", "MoreArmor", "moded", "DT_ItemRecipes.json",
-        )
 
-        dt = load_json(src_path)
+        dt = load_json(self._recipes_path)
         tpl = load_json(tpl_path)
 
         for item in dt.get("Exports", [{}])[0].get("Table", {}).get("Data", []):
@@ -117,15 +112,13 @@ class ArmorUpdaterTab(QWidget):
                 except (IndexError, KeyError, TypeError):
                     pass
 
-        save_json(dst_path, dt)
+        save_json(self._recipes_path, dt)
         QMessageBox.information(self, "Success", "Shayar, Amzul and Masharuz armors restored.")
         self.restore_btn.setEnabled(False)
         self.sandbox_btn.setEnabled(True)
 
     def _sandbox_to_campaign(self) -> None:
-        moded_path = os.path.join(
-            self.tobis_mod_dir, "UpdateMods", "MoreArmor", "moded", "DT_ItemRecipes.json",
-        )
+        """Unlock sandbox-exclusive items for campaign directly in json_data/."""
         u_structs = load_json(os.path.join(
             self.templates_dir, "MoreArmor", "UnlockRequirementsStructs.json",
         ))
@@ -133,7 +126,7 @@ class ArmorUpdaterTab(QWidget):
             self.templates_dir, "MoreArmor", "DumyStructs.json",
         ))
 
-        dt = load_json(moded_path)
+        dt = load_json(self._recipes_path)
         recipes = dt.get("Exports", [{}])[0].get("Table", {}).get("Data", [])
 
         for item in sandbox_exclusive_items():
@@ -145,27 +138,7 @@ class ArmorUpdaterTab(QWidget):
                     if recipe["Value"][13]["Value"] != "ERowEnabledState::Live":
                         recipe["Value"][13]["Value"] = "ERowEnabledState::Live"
 
-        save_json(moded_path, dt)
+        save_json(self._recipes_path, dt)
         QMessageBox.information(self, "Success", "Sandbox items unlocked for campaign.")
         self.sandbox_btn.setEnabled(False)
-        self.cosmetic_btn.setEnabled(True)
-
-    def _add_cosmetic(self) -> None:
-        moded_path = os.path.join(
-            self.tobis_mod_dir, "UpdateMods", "MoreArmor", "moded", "DT_ItemRecipes.json",
-        )
-        new_path = os.path.join(
-            self.tobis_mod_dir, "json_data",
-            "Moria", "Content", "Tech", "Data", "Items", "DT_ItemRecipes.json",
-        )
-
-        dt = load_json(moded_path)
-        new_dt = load_json(new_path)
-
-        dt["NameMap"].extend(new_dt["NameMap"])
-        dt["Exports"][0]["Table"]["Data"].extend(new_dt["Exports"][0]["Table"]["Data"])
-
-        save_json(moded_path, dt)
-        QMessageBox.information(self, "Success", "Cosmetic armor recipes added.")
-        self.cosmetic_btn.setEnabled(False)
         self.restore_btn.setEnabled(True)
