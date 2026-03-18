@@ -15,3 +15,6 @@ config.ini
 __pycache__/
 *.pyc
 .pytest_cache/
+build/staging/
+dist/
+release/

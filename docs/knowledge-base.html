@@ -37,6 +37,7 @@
         <li><a href="#directory-structure">Directory Structure</a></li>
         <li><a href="#config">Configuration System</a></li>
         <li><a href="#scripts">Script Reference</a></li>
+        <li><a href="#install-layout">Install Layout &amp; Sync</a></li>
         <li><a href="#data-formats">Data Formats</a></li>
         <li><a href="#workflow-localization">Workflow: Localization</a></li>
         <li><a href="#workflow-recipes">Workflow: Recipe Automation</a></li>
@@ -126,6 +127,7 @@ RtoM-ArmorBuildings-Mod/
 ├── src/                        # ══ Python Package ══
 │   ├── __init__.py
 │   ├── config.py               #   Configuration loader (Config class)
+│   ├── sync.py                 #   Repo ↔ install layout sync tool
 │   ├── localization/           #   ── Localization Pipeline ──
 │   │   ├── __init__.py
 │   │   ├── po_parser.py        #     Shared PO parsing (POEntry, parse, merge)
@@ -138,12 +140,16 @@ RtoM-ArmorBuildings-Mod/
 │       ├── __init__.py
 │       └── pak_locres.py       #     Paklist generation + UnrealPak
 │
+├── build/                      # ══ Build Pipeline (gitignored output) ══
+│   └── staging/                #   Install-layout mirror for packaging
+│
 ├── tests/                      # ══ Test Suite ══
 │   ├── conftest.py             #   Shared fixtures
 │   ├── test_po_parser.py
 │   ├── test_csv_to_po.py
 │   ├── test_po_to_csv.py
-│   └── test_colour_variants.py
+│   ├── test_colour_variants.py
+│   └── test_sync.py
 │
 ├── Localization/               # ── Localization Data + Legacy Wrappers ──
 │   ├── CSVTOPo.py              #   (wrapper → src.localization.csv_to_po)
@@ -152,14 +158,21 @@ RtoM-ArmorBuildings-Mod/
 │   ├── ModLocalization/        #   Packaged .locres output
 │   ├── en/ de/ es/ fr/         #   Language PO/CSV/locres files
 │
-├── modified-json/              # ── Asset Data ──
+├── modified-json/              # ── Asset Data (repo layout) ──
 │   ├── autoWhiteBlackBold.py   #   (wrapper → src.recipes.colour_variants)
 │   ├── UnlockRequiredItems.json#   Template for recipe dependencies
-│   └── Moria/                  #   UAssetAPI JSON exports (262 files)
+│   └── Moria/                  #   UAssetAPI JSON exports (385 files)
+│       ├── Config/             #     DefaultGameplayTags.ini
+│       └── Content/
+│           ├── Character/AI/   #     Loot tables
+│           ├── Items/Effects/  #     Item effects
+│           ├── LevelDesign/    #     Crafting station blueprints
+│           ├── Mods/           #     28 building packs (147 MB)
+│           └── Tech/Data/      #     Master DataTables (106 MB)
 │
 ├── ConstructiondDT/            # Construction DataTables
-├── RtoMMoreBuildings_P/        # "More Buildings" plugin content
-├── OldMods/                    # Archived/superseded mod versions
+├── RtoMMoreBuildings_P/        # "More Buildings" plugin recipes (_P = UE4 plugin)
+├── OldMods/                    # Archived (not bundled in installer)
 ├── docs/                       # Documentation &amp; wiki
 └── .github/                    # Issue templates
 </pre>
@@ -280,6 +293,77 @@ msgstr  "Translated text"
 <pre>
 "absolute/path/to/file.locres" "../../../relative/mount/path.locres"
 </pre>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2 id="install-layout">Install Layout</h2>
+
+<p>
+    The installer places files into <code>%LOCALAPPDATA%\RtoMModTools\</code>.
+    This layout differs from the repo layout — the
+    <code>src/sync.py</code> module maps between them.
+</p>
+
+<pre>
+%LOCALAPPDATA%\RtoMModTools\
+├── RtoMModTools.exe                # Application executable
+├── config.ini                      # User config (created on first run)
+├── config.ini.example              # Reference template
+├── LICENSE                         # MIT license
+│
+├── data/                           # ── All Mod Asset Data ──
+│   ├── Moria/                      #   Core mod assets (255 MB)
+│   │   ├── Config/                 #     DefaultGameplayTags.ini
+│   │   └── Content/
+│   │       ├── Character/AI/       #     Loot tables
+│   │       ├── Items/Effects/      #     Item effects
+│   │       ├── LevelDesign/        #     Crafting station blueprints
+│   │       ├── Mods/               #     28 building packs (147 MB)
+│   │       └── Tech/Data/          #     Master DataTables (106 MB)
+│   ├── ConstructiondDT/            #   Construction definitions
+│   ├── RtoMMoreBuildings_P/        #   More Buildings recipe table
+│   └── templates/                  #   Reusable JSON templates
+│       └── UnlockRequiredItems.json
+│
+├── localization/                   # ── Translation Data ──
+│   ├── en/ de/ es/ fr/             #   PO/CSV source files
+│   └── ModLocalization/            #   Packaged .locres output
+│
+└── docs/                           # ── Documentation ──
+    ├── knowledge-base.html
+    └── style.css
+</pre>
+
+<h3>Repo ↔ Install Mapping (src/sync.py)</h3>
+<p>
+    The <code>SYNC_MAP</code> table in <code>src/sync.py</code> is the single
+    source of truth for how repo paths map to install paths.  All tools
+    (installer, build script, tests) reference this table.
+</p>
+<table>
+    <tr><th>Repo Path</th><th>Install Path</th><th>Description</th></tr>
+    <tr><td><code>modified-json/Moria/</code></td><td><code>data/Moria/</code></td><td>Core mod assets (6 subdirectories)</td></tr>
+    <tr><td><code>ConstructiondDT/</code></td><td><code>data/ConstructiondDT/</code></td><td>Construction DataTables</td></tr>
+    <tr><td><code>RtoMMoreBuildings_P/.../Items/</code></td><td><code>data/RtoMMoreBuildings_P/</code></td><td>More Buildings recipes</td></tr>
+    <tr><td><code>modified-json/UnlockRequiredItems.json</code></td><td><code>data/templates/UnlockRequiredItems.json</code></td><td>Recipe dependency template</td></tr>
+    <tr><td><code>Localization/{lang}/</code></td><td><code>localization/{lang}/</code></td><td>Translation files (4 languages)</td></tr>
+    <tr><td><code>Localization/ModLocalization/</code></td><td><code>localization/ModLocalization/</code></td><td>Packaged .locres</td></tr>
+</table>
+
+<h3>Sync Commands</h3>
+<pre>
+python -m src.sync export                 # repo → build/staging/
+python -m src.sync export --target D:/out # repo → custom dir
+python -m src.sync import --source D:/out # custom dir → repo
+python -m src.sync check                  # diff repo vs staging
+</pre>
+
+<h3>Build Pipeline Integration</h3>
+<p>
+    <code>sync export</code> runs as the <strong>first step</strong> of the build
+    process, populating <code>build/staging/</code> with the install-layout data.
+    PyInstaller then bundles the exe, and Inno Setup packages exe + staging
+    into the final installer.
+</p>
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <h2 id="workflow-localization">Workflow: Localization</h2>
