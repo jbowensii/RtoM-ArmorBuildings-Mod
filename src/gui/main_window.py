@@ -6,7 +6,7 @@ import logging
 import os
 
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QMainWindow, QMessageBox, QTabWidget
+from PySide6.QtWidgets import QMainWindow, QTabWidget
 
 from src import APP_NAME, APP_VERSION
 from src.config import Config

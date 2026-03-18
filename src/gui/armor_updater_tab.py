@@ -12,8 +12,8 @@ from PySide6.QtWidgets import (
 )
 
 from src.armor.mod_utils import sandbox_exclusive_items, unlock_conditions
+from src.gui.shared import build_combined
 from src.utils.json_handler import load_json, save_json
-from src.utils.json_split_combine import combine_all
 
 
 class ArmorUpdaterTab(QWidget):
@@ -69,20 +69,8 @@ class ArmorUpdaterTab(QWidget):
 
     def _build_combined(self) -> None:
         """Combine per-item Tobis_json/ files into TobisMod/json_data/."""
-        output = os.path.join(self.tobis_mod_dir, "json_data")
-
-        try:
-            results = combine_all(
-                self.tobis_json_dir, self.game_extract_dir, output,
-            )
-            total = sum(results.values())
-            detail = ", ".join(f"{k}: {v}" for k, v in results.items())
-            QMessageBox.information(
-                self, "Build Complete",
-                f"Combined {total} items into TobisMod/json_data/.\n\n{detail}",
-            )
-        except Exception as exc:
-            QMessageBox.critical(self, "Build Failed", str(exc))
+        build_combined(self, self.tobis_json_dir,
+                       self.game_extract_dir, self.tobis_mod_dir)
 
     def _restore_bwg(self) -> None:
         """Restore BWG colour variants directly in json_data/."""

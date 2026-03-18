@@ -6,12 +6,12 @@ import os
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
-    QLabel, QMessageBox, QPushButton, QVBoxLayout, QWidget,
+    QMessageBox, QPushButton, QVBoxLayout, QWidget,
 )
 
 from src.construction.mod_utils import advanced_bannister_post_stone_unlock
+from src.gui.shared import build_combined
 from src.utils.json_handler import load_json, save_json
-from src.utils.json_split_combine import combine_all
 
 
 class ConstructionUpdaterTab(QWidget):
@@ -65,20 +65,8 @@ class ConstructionUpdaterTab(QWidget):
 
     def _build_combined(self) -> None:
         """Combine per-item Tobis_json/ files into TobisMod/json_data/."""
-        output = os.path.join(self.tobis_mod_dir, "json_data")
-
-        try:
-            results = combine_all(
-                self.tobis_json_dir, self.game_extract_dir, output,
-            )
-            total = sum(results.values())
-            detail = ", ".join(f"{k}: {v}" for k, v in results.items())
-            QMessageBox.information(
-                self, "Build Complete",
-                f"Combined {total} items into TobisMod/json_data/.\n\n{detail}",
-            )
-        except Exception as exc:
-            QMessageBox.critical(self, "Build Failed", str(exc))
+        build_combined(self, self.tobis_json_dir,
+                       self.game_extract_dir, self.tobis_mod_dir)
 
     def _restore(self) -> None:
         """Restore constructions removed in game patch 1.2 directly in json_data/."""
@@ -118,10 +106,8 @@ class ConstructionUpdaterTab(QWidget):
 
     def _update_mod(self) -> None:
         """Apply string table imports to DT_Constructions in json_data/."""
-        arch_path = os.path.join(self._building_dir, "Architecture.json")
         constr_path = os.path.join(self._building_dir, "DT_Constructions.json")
 
-        arch = load_json(arch_path)
         constr = load_json(constr_path)
 
         st_imports = load_json(os.path.join(self.data_dir, "Imports.json"))

@@ -3,489 +3,265 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RtoM Armor &amp; Buildings Mod — Knowledge Base</title>
+    <title>RtoM Mod Tools &mdash; Knowledge Base</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* Inline overrides for KB page */
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 960px; margin: 0 auto; padding: 2em; color: #e0e0e0; background: #1a1a2e; }
-        h1 { color: #c9a227; border-bottom: 2px solid #c9a227; padding-bottom: .3em; }
-        h2 { color: #d4a843; margin-top: 2em; }
-        h3 { color: #e8c56d; }
-        code, pre { background: #16213e; padding: 2px 6px; border-radius: 4px; font-size: 0.95em; }
-        pre { padding: 1em; overflow-x: auto; }
-        table { border-collapse: collapse; width: 100%; margin: 1em 0; }
-        th, td { border: 1px solid #444; padding: .5em .75em; text-align: left; }
-        th { background: #16213e; color: #c9a227; }
-        tr:nth-child(even) { background: #16213e33; }
-        a { color: #6db3f2; }
-        .toc { background: #16213e; padding: 1em 1.5em; border-radius: 8px; margin-bottom: 2em; }
-        .toc ul { list-style: none; padding-left: 0; }
-        .toc li { margin: .3em 0; }
-        .toc li::before { content: "— "; color: #c9a227; }
-        .note { background: #16213e; border-left: 4px solid #c9a227; padding: .75em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; }
-    </style>
 </head>
 <body>
-
-<h1>RtoM Armor &amp; Buildings Mod — Knowledge Base</h1>
-
-<div class="toc">
-    <strong>Contents</strong>
+<header><h1>RtoM Mod Tools &mdash; Knowledge Base</h1></header>
+<nav id="sidebar">
+    <h3>Contents</h3>
     <ul>
-        <li><a href="#overview">Project Overview</a></li>
-        <li><a href="#architecture">Application Architecture</a></li>
-        <li><a href="#directory-structure">Directory Structure</a></li>
-        <li><a href="#config">Configuration System</a></li>
-        <li><a href="#scripts">Script Reference</a></li>
-        <li><a href="#install-layout">Install Layout &amp; Sync</a></li>
-        <li><a href="#data-formats">Data Formats</a></li>
-        <li><a href="#workflow-localization">Workflow: Localization</a></li>
-        <li><a href="#workflow-recipes">Workflow: Recipe Automation</a></li>
-        <li><a href="#workflow-packaging">Workflow: Pak Packaging</a></li>
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#directory-layout">Directory Layout</a></li>
+        <li><a href="#first-run">First Run &amp; Extraction</a></li>
+        <li><a href="#construction-workflow">Construction Workflow</a></li>
+        <li><a href="#armor-workflow">Armor Workflow</a></li>
+        <li><a href="#build-process">Build Process</a></li>
+        <li><a href="#maintainer-tabs">Maintainer Tabs</a></li>
+        <li><a href="#localization">Localization Pipeline</a></li>
+        <li><a href="#config">Configuration</a></li>
+        <li><a href="#file-formats">File Formats</a></li>
         <li><a href="#toolchain">External Toolchain</a></li>
         <li><a href="#mod-packs">Mod Pack Registry</a></li>
         <li><a href="#glossary">Glossary</a></li>
     </ul>
-</div>
+</nav>
+<main>
 
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<h2 id="overview">Project Overview</h2>
-
-<p>
-    This project is a content mod for <strong>The Lord of the Rings: Return to Moria</strong>,
-    built on Unreal Engine 4.27.  It adds:
-</p>
+<section id="overview">
+<h2>Overview</h2>
+<p>RtoM Mod Tools is a PySide6 desktop application for managing the
+<strong>Secrets of Khazad-D&ucirc;m</strong> mod for
+<em>The Lord of the Rings: Return to Moria</em>. The mod adds cosmetic
+armour sets and 28+ building/construction packs to the game.</p>
+<p>The tool provides:</p>
 <ul>
-    <li><strong>Cosmetic armour sets</strong> — craftable armour pieces themed after LotR factions
-        (Gondor, Rohan, Erebor, Khazad-d&ucirc;m, Eregion, Iron Hills, etc.).</li>
-    <li><strong>28+ building/construction packs</strong> — walls, floors, doors, decorations,
-        lamps, banners, and more contributed by the modding community.</li>
-    <li><strong>Multi-language localisation</strong> — English, German, Spanish, and French.</li>
+    <li><strong>New Construction</strong> &mdash; Add custom constructions with materials, categories, and unlock conditions</li>
+    <li><strong>New Armor</strong> &mdash; Add custom armor recipes with crafting stations and materials</li>
+    <li><strong>Buildings Maintainer</strong> &mdash; Restore 1.2-removed constructions, apply string table imports</li>
+    <li><strong>Armor Maintainer</strong> &mdash; Restore BWG colour variants, unlock sandbox items for campaign</li>
+    <li><strong>Localization</strong> &mdash; PO/CSV conversion and pak packaging</li>
+    <li><strong>Recipes</strong> &mdash; Auto-link colour variants to base recipes</li>
 </ul>
+</section>
 
-<p>
-    The mod works by replacing and extending <strong>DataTable</strong> assets in the game's
-    pak files.  Asset editing is done through JSON exports (via UAssetGUI / UAssetAPI),
-    and final distribution uses IoStore <code>.pak</code> / <code>.ucas</code> / <code>.utoc</code> archives.
-</p>
-
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<h2 id="architecture">Application Architecture</h2>
-
-<p>The project has three functional pipelines:</p>
-
+<section id="architecture">
+<h2>Architecture</h2>
+<p>The application is a Python package installed to <code>%LOCALAPPDATA%\RtoMModTools\</code>.</p>
 <table>
-    <tr>
-        <th>Pipeline</th>
-        <th>Purpose</th>
-        <th>Scripts &amp; Files</th>
-    </tr>
-    <tr>
-        <td><strong>Localization</strong></td>
-        <td>Manage translations between PO files (for translators) and CSV files (for spreadsheets), then package them into a distributable <code>.pak</code>.</td>
-        <td>
-            <code>src/localization/po_to_csv.py</code><br>
-            <code>src/localization/csv_to_po.py</code><br>
-            <code>src/localization/po_parser.py</code> (shared)<br>
-            <code>src/packaging/pak_locres.py</code><br>
-            <em>Legacy wrappers:</em> <code>Localization/PoToCSV.py</code>,
-            <code>CSVTOPo.py</code>, <code>PakLocres.bat</code>
-        </td>
-    </tr>
-    <tr>
-        <td><strong>Recipe Automation</strong></td>
-        <td>Automatically link colour-variant armour recipes (_White_, _Black_, _Gold_) to their base item so they unlock via discovery rather than manually.</td>
-        <td>
-            <code>src/recipes/colour_variants.py</code><br>
-            <em>Legacy wrapper:</em> <code>modified-json/autoWhiteBlackBold.py</code>
-        </td>
-    </tr>
-    <tr>
-        <td><strong>Asset Data</strong></td>
-        <td>JSON-exported UE4 DataTables that define items, recipes, construction blueprints, loot, crafting stations, and gameplay tags.</td>
-        <td>
-            <code>modified-json/</code> (262 JSON files)<br>
-            <code>ConstructiondDT/</code><br>
-            <code>RtoMMoreBuildings_P/</code>
-        </td>
-    </tr>
+<tr><th>Module</th><th>Purpose</th></tr>
+<tr><td><code>main.py</code></td><td>Entry point &mdash; first-run checks, launches GUI</td></tr>
+<tr><td><code>src/config.py</code></td><td>Config singleton &mdash; reads config.ini, exposes all paths</td></tr>
+<tr><td><code>src/gui/main_window.py</code></td><td>Main window with tabbed interface</td></tr>
+<tr><td><code>src/gui/shared.py</code></td><td>Shared GUI helpers &mdash; material pickers, item list, build action</td></tr>
+<tr><td><code>src/gui/construction_adder_tab.py</code></td><td>New Construction tab</td></tr>
+<tr><td><code>src/gui/armor_adder_tab.py</code></td><td>New Armor tab</td></tr>
+<tr><td><code>src/gui/construction_updater_tab.py</code></td><td>Buildings Maintainer tab</td></tr>
+<tr><td><code>src/gui/armor_updater_tab.py</code></td><td>Armor Maintainer tab</td></tr>
+<tr><td><code>src/gui/game_path_dialog.py</code></td><td>First-run game path selection</td></tr>
+<tr><td><code>src/gui/extraction_dialog.py</code></td><td>Extraction progress dialog</td></tr>
+<tr><td><code>src/construction/mod_utils.py</code></td><td>Construction per-item file writers</td></tr>
+<tr><td><code>src/armor/mod_utils.py</code></td><td>Armor per-item file writers</td></tr>
+<tr><td><code>src/utils/json_split_combine.py</code></td><td>Combine per-item files with vanilla base</td></tr>
+<tr><td><code>src/utils/game_extractor.py</code></td><td>Game file extraction via retoc + UAssetGUI</td></tr>
+<tr><td><code>src/utils/json_handler.py</code></td><td>JSON load/save utilities</td></tr>
+<tr><td><code>src/recipes/colour_variants.py</code></td><td>Auto-link BWG colour variants</td></tr>
+<tr><td><code>src/localization/</code></td><td>PO/CSV conversion modules</td></tr>
+<tr><td><code>src/packaging/pak_locres.py</code></td><td>Pak file packaging</td></tr>
 </table>
+</section>
 
-<p>All scripts share configuration through a central <code>config.ini</code> file,
-   loaded by <code>src/config.py</code> (or the legacy shim <code>config_loader.py</code>).</p>
+<section id="directory-layout">
+<h2>Directory Layout</h2>
+<p>Installed application directory (<code>%LOCALAPPDATA%\RtoMModTools\</code>):</p>
+<pre><code>RtoMModTools/
++-- RtoMModTools.exe
++-- config.ini
++-- utilities/
+|   +-- retoc.exe
+|   +-- UAssetGUI.exe
+|   +-- oo2core_9_win64.dll
++-- data/
+|   +-- extraction_manifest.ini
+|   +-- Imports.json
+|   +-- templates/                  [shipped with installer]
+|   |   +-- MoreBuildings/          Construction JSON templates
+|   |   +-- MoreArmor/              Armor JSON templates
+|   |   +-- ConstructiondDT/        Single-row DT templates
+|   |   +-- RtoMMoreBuildings_P/    More Buildings plugin
+|   +-- game_extract/               [generated on first run]
+|   |   +-- retoc/                  .uasset/.uexp intermediates
+|   |   |   +-- Moria/Content/...
+|   |   +-- uassetgui/              Vanilla JSON DataTables
+|   |       +-- Moria/Content/Tech/Data/Building/
+|   |       +-- Moria/Content/Tech/Data/Items/
+|   |       +-- Moria/Content/Character/AI/
+|   +-- Tobis_json/                 [per-item source files]
+|       +-- Architecture/           Name/description pairs
+|       +-- DT_Constructions/       Construction definitions
+|       +-- DT_ConstructionRecipes/ Construction recipes
+|       +-- DT_ItemRecipes/         Armor recipes
++-- TobisMod/
+|   +-- json_data/                  [build output]
+|       +-- Moria/Content/...       Combined DataTables
++-- localization/
+    +-- en/, de/, es/, fr/
+    +-- ModLocalization/</code></pre>
+</section>
 
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<h2 id="directory-structure">Directory Structure</h2>
-
-<pre>
-RtoM-ArmorBuildings-Mod/
-├── config.ini                  # Machine-specific paths (gitignored)
-├── config.ini.example          # Template with Tobi's defaults
-├── config_loader.py            # Legacy shim → src/config.py
-├── pyproject.toml              # Project metadata and tool config
-│
-├── src/                        # ══ Python Package ══
-│   ├── __init__.py
-│   ├── config.py               #   Configuration loader (Config class)
-│   ├── sync.py                 #   Repo ↔ install layout sync tool
-│   ├── localization/           #   ── Localization Pipeline ──
-│   │   ├── __init__.py
-│   │   ├── po_parser.py        #     Shared PO parsing (POEntry, parse, merge)
-│   │   ├── po_to_csv.py        #     Export PO → CSV for translators
-│   │   └── csv_to_po.py        #     Merge CSV translations → PO
-│   ├── recipes/                #   ── Recipe Automation ──
-│   │   ├── __init__.py
-│   │   └── colour_variants.py  #     Colour-variant unlock patching
-│   └── packaging/              #   ── Pak Packaging ──
-│       ├── __init__.py
-│       └── pak_locres.py       #     Paklist generation + UnrealPak
-│
-├── build/                      # ══ Build Pipeline (gitignored output) ══
-│   └── staging/                #   Install-layout mirror for packaging
-│
-├── tests/                      # ══ Test Suite ══
-│   ├── conftest.py             #   Shared fixtures
-│   ├── test_po_parser.py
-│   ├── test_csv_to_po.py
-│   ├── test_po_to_csv.py
-│   ├── test_colour_variants.py
-│   └── test_sync.py
-│
-├── Localization/               # ── Localization Data + Legacy Wrappers ──
-│   ├── CSVTOPo.py              #   (wrapper → src.localization.csv_to_po)
-│   ├── PoToCSV.py              #   (wrapper → src.localization.po_to_csv)
-│   ├── PakLocres.bat           #   Batch wrapper for pak builds
-│   ├── ModLocalization/        #   Packaged .locres output
-│   ├── en/ de/ es/ fr/         #   Language PO/CSV/locres files
-│
-├── modified-json/              # ── Asset Data (repo layout) ──
-│   ├── autoWhiteBlackBold.py   #   (wrapper → src.recipes.colour_variants)
-│   ├── UnlockRequiredItems.json#   Template for recipe dependencies
-│   └── Moria/                  #   UAssetAPI JSON exports (385 files)
-│       ├── Config/             #     DefaultGameplayTags.ini
-│       └── Content/
-│           ├── Character/AI/   #     Loot tables
-│           ├── Items/Effects/  #     Item effects
-│           ├── LevelDesign/    #     Crafting station blueprints
-│           ├── Mods/           #     28 building packs (147 MB)
-│           └── Tech/Data/      #     Master DataTables (106 MB)
-│
-├── ConstructiondDT/            # Construction DataTables
-├── RtoMMoreBuildings_P/        # "More Buildings" plugin recipes (_P = UE4 plugin)
-├── OldMods/                    # Archived (not bundled in installer)
-├── docs/                       # Documentation &amp; wiki
-└── .github/                    # Issue templates
-</pre>
-
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<h2 id="config">Configuration System</h2>
-
-<p>
-    All machine-specific paths live in <code>config.ini</code> at the project root.
-    This file should <strong>not</strong> be committed to git — each contributor
-    sets their own paths once.
-</p>
-
-<h3>config.ini Sections</h3>
-
-<table>
-    <tr><th>Section</th><th>Key</th><th>Description</th></tr>
-    <tr><td>[Paths]</td><td>ProjectRoot</td><td>Absolute path to this repository</td></tr>
-    <tr><td>[Paths]</td><td>UE4Root</td><td>UE4.27 installation directory</td></tr>
-    <tr><td>[Localization]</td><td>SourcePO</td><td>Template PO file (relative to Localization/)</td></tr>
-    <tr><td>[Localization]</td><td>TargetLang</td><td>Language code to process (de, es, fr)</td></tr>
-    <tr><td>[Localization]</td><td>PakFileName</td><td>Output .pak filename</td></tr>
-</table>
-
-<h3>src/config.py API</h3>
-<pre>
-from src.config import cfg
-
-cfg.project_root                   # "C:/Users/.../RtoM-ArmorBuildings-Mod"
-cfg.ue4_root                       # "C:/Program Files/Epic Games/UE_4.27"
-cfg.localization["target_lang"]    # "de"
-cfg.path("Localization", "en")     # absolute path to Localization/en/
-cfg.ue4_path("Engine", "Binaries") # absolute path inside UE4 install
-</pre>
-
-<div class="note">
-    <strong>Legacy shim:</strong> <code>config_loader.py</code> at the project root
-    re-exports <code>cfg</code> so older scripts that do
-    <code>from config_loader import cfg</code> still work.
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<h2 id="scripts">Script Reference</h2>
-
-<h3>src/localization/po_to_csv.py</h3>
-<p><strong>Purpose:</strong> Export a PO translation file to CSV so translators can work in a spreadsheet.</p>
-<p><strong>Input:</strong> <code>Localization/{lang}/Game.po</code></p>
-<p><strong>Output:</strong> <code>Localization/{lang}/Game_{lang}.csv</code> (UTF-8 with BOM for Excel)</p>
-<p><strong>Run:</strong> <code>python -m src.localization.po_to_csv</code> or <code>python Localization/PoToCSV.py</code></p>
-
-<h3>src/localization/csv_to_po.py</h3>
-<p><strong>Purpose:</strong> Merge completed CSV translations back into a PO file.</p>
-<p><strong>Input:</strong> Source PO template + <code>Localization/{lang}/Game_{lang}.csv</code></p>
-<p><strong>Output:</strong> <code>Localization/{lang}/Game.po</code> (updated with translations)</p>
-<p><strong>Run:</strong> <code>python -m src.localization.csv_to_po</code> or <code>python Localization/CSVTOPo.py</code></p>
-
-<h3>src/localization/po_parser.py</h3>
-<p><strong>Purpose:</strong> Shared PO-file parsing utilities — <code>POEntry</code> dataclass, <code>parse_po()</code>, <code>merge_translations()</code>.</p>
-<p><strong>Used by:</strong> <code>po_to_csv.py</code> and <code>csv_to_po.py</code></p>
-
-<h3>src/recipes/colour_variants.py</h3>
-<p><strong>Purpose:</strong> Auto-configure colour-variant armour recipes for discovery-based unlocking.</p>
-<p><strong>Input:</strong> <code>modified-json/Moria/Content/Tech/Data/Items/DT_ItemRecipes.json</code></p>
-<p><strong>Output:</strong> Same file, modified in-place.</p>
-<p><strong>Run:</strong> <code>python -m src.recipes.colour_variants</code> or <code>python modified-json/autoWhiteBlackBold.py</code></p>
-
-<h3>src/packaging/pak_locres.py</h3>
-<p><strong>Purpose:</strong> Generate Paklist.txt and invoke UnrealPak to build a localisation .pak.</p>
-<p><strong>Run:</strong> <code>python -m src.packaging.pak_locres</code> or <code>Localization\PakLocres.bat</code></p>
-
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<h2 id="data-formats">Data Formats</h2>
-
-<h3>UAssetAPI JSON</h3>
-<p>
-    The JSON files in <code>modified-json/</code> are serialised using
-    <a href="https://github.com/atenfyr/UAssetAPI">UAssetAPI</a>'s JSON export format.
-    Key structural elements:
-</p>
-<pre>
-{
-  "Imports": [...],          // External object references
-  "Exports": [               // The actual data
-    {
-      "Table": {
-        "Data": [            // Array of DataTable rows
-          {
-            "Name": "RowName",
-            "Value": [...]   // Ordered array of property values
-          }
-        ]
-      }
-    }
-  ]
-}
-</pre>
-
-<div class="note">
-    <strong>Important:</strong> Properties in <code>Value</code> arrays are accessed by
-    numeric index, not by name.  Index positions are stable within a game version but
-    may shift after game updates.  If scripts produce unexpected results after a patch,
-    re-export a clean DataTable and verify the indices.
-</div>
-
-<h3>PO Files (Portable Object)</h3>
-<p>Standard GNU gettext format used by UE4's localisation system:</p>
-<pre>
-msgctxt "StringTable,Key"
-msgid   "English source text"
-msgstr  "Translated text"
-</pre>
-
-<h3>Paklist.txt</h3>
-<p>
-    Consumed by <code>UnrealPak.exe</code>.  Each line maps a source file on disk
-    to its mount path inside the pak:
-</p>
-<pre>
-"absolute/path/to/file.locres" "../../../relative/mount/path.locres"
-</pre>
-
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<h2 id="install-layout">Install Layout</h2>
-
-<p>
-    The installer places files into <code>%LOCALAPPDATA%\RtoMModTools\</code>.
-    This layout differs from the repo layout — the
-    <code>src/sync.py</code> module maps between them.
-</p>
-
-<pre>
-%LOCALAPPDATA%\RtoMModTools\
-├── RtoMModTools.exe                # Application executable
-├── config.ini                      # User config (created on first run)
-├── config.ini.example              # Reference template
-├── LICENSE                         # MIT license
-│
-├── data/                           # ── All Mod Asset Data ──
-│   ├── Moria/                      #   Core mod assets (255 MB)
-│   │   ├── Config/                 #     DefaultGameplayTags.ini
-│   │   └── Content/
-│   │       ├── Character/AI/       #     Loot tables
-│   │       ├── Items/Effects/      #     Item effects
-│   │       ├── LevelDesign/        #     Crafting station blueprints
-│   │       ├── Mods/               #     28 building packs (147 MB)
-│   │       └── Tech/Data/          #     Master DataTables (106 MB)
-│   ├── ConstructiondDT/            #   Construction definitions
-│   ├── RtoMMoreBuildings_P/        #   More Buildings recipe table
-│   └── templates/                  #   Reusable JSON templates
-│       └── UnlockRequiredItems.json
-│
-├── localization/                   # ── Translation Data ──
-│   ├── en/ de/ es/ fr/             #   PO/CSV source files
-│   └── ModLocalization/            #   Packaged .locres output
-│
-└── docs/                           # ── Documentation ──
-    ├── knowledge-base.html
-    └── style.css
-</pre>
-
-<h3>Repo ↔ Install Mapping (src/sync.py)</h3>
-<p>
-    The <code>SYNC_MAP</code> table in <code>src/sync.py</code> is the single
-    source of truth for how repo paths map to install paths.  All tools
-    (installer, build script, tests) reference this table.
-</p>
-<table>
-    <tr><th>Repo Path</th><th>Install Path</th><th>Description</th></tr>
-    <tr><td><code>modified-json/Moria/</code></td><td><code>data/Moria/</code></td><td>Core mod assets (6 subdirectories)</td></tr>
-    <tr><td><code>ConstructiondDT/</code></td><td><code>data/ConstructiondDT/</code></td><td>Construction DataTables</td></tr>
-    <tr><td><code>RtoMMoreBuildings_P/.../Items/</code></td><td><code>data/RtoMMoreBuildings_P/</code></td><td>More Buildings recipes</td></tr>
-    <tr><td><code>modified-json/UnlockRequiredItems.json</code></td><td><code>data/templates/UnlockRequiredItems.json</code></td><td>Recipe dependency template</td></tr>
-    <tr><td><code>Localization/{lang}/</code></td><td><code>localization/{lang}/</code></td><td>Translation files (4 languages)</td></tr>
-    <tr><td><code>Localization/ModLocalization/</code></td><td><code>localization/ModLocalization/</code></td><td>Packaged .locres</td></tr>
-</table>
-
-<h3>Sync Commands</h3>
-<pre>
-python -m src.sync export                 # repo → build/staging/
-python -m src.sync export --target D:/out # repo → custom dir
-python -m src.sync import --source D:/out # custom dir → repo
-python -m src.sync check                  # diff repo vs staging
-</pre>
-
-<h3>Build Pipeline Integration</h3>
-<p>
-    <code>sync export</code> runs as the <strong>first step</strong> of the build
-    process, populating <code>build/staging/</code> with the install-layout data.
-    PyInstaller then bundles the exe, and Inno Setup packages exe + staging
-    into the final installer.
-</p>
-
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<h2 id="workflow-localization">Workflow: Localization</h2>
-
+<section id="first-run">
+<h2>First Run &amp; Game Extraction</h2>
+<p>On first launch:</p>
 <ol>
-    <li><strong>Export</strong> — Run <code>PoToCSV.py</code> to create a CSV from the current PO file.</li>
-    <li><strong>Translate</strong> — Send the CSV to a translator or edit in Excel/Google Sheets.
-        Fill in the <em>Translation</em> column.</li>
-    <li><strong>Import</strong> — Run <code>CSVTOPo.py</code> to merge translations back into the PO.</li>
-    <li><strong>Convert</strong> — Use UE4's <code>UnrealLocres</code> or equivalent tool to compile
-        the PO into a <code>.locres</code> binary.</li>
-    <li><strong>Package</strong> — Run <code>PakLocres.bat</code> to bundle all <code>.locres</code>
-        files into a distributable <code>.pak</code>.</li>
+    <li><strong>Game Path Dialog</strong> &mdash; Select game installation (Steam, Epic Games, or custom). Auto-detects known locations. Saved to <code>config.ini [Game]</code>.</li>
+    <li><strong>Extraction</strong> &mdash; Uses retoc to extract .uasset files from the game's IoStore paks, then UAssetGUI to convert to JSON. The manifest (<code>data/extraction_manifest.ini</code>) defines 11 DataTables to extract.</li>
 </ol>
+<p>Extracted files serve as the vanilla baseline for Build. Extraction only runs when files are missing.</p>
+<h3>Extracted DataTables</h3>
+<ul>
+    <li>DT_Constructions, DT_ConstructionRecipes (Building)</li>
+    <li>DT_ItemRecipes, DT_Armor, DT_Weapons, DT_Items, DT_Consumables, DT_Ores, DT_Tools (Items)</li>
+    <li>DT_CategoryTags (Tech Data)</li>
+    <li>DT_Loot (Character/AI)</li>
+</ul>
+</section>
 
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<h2 id="workflow-recipes">Workflow: Recipe Automation</h2>
-
+<section id="construction-workflow">
+<h2>Construction Workflow</h2>
+<p>Adding a new construction creates <strong>three per-item files</strong>:</p>
 <ol>
-    <li>Add new armour base recipes to <code>DT_ItemRecipes.json</code> via UAssetGUI.</li>
-    <li>Create _White_, _Black_, _Gold_ colour variants with <code>UnlockType = Manual</code>.</li>
-    <li>Run <code>autoWhiteBlackBold.py</code> — it finds every colour variant, changes the
-        unlock type to <code>DiscoverDependencies</code>, and links it to the base recipe.</li>
-    <li>Re-import the JSON back into the <code>.uasset</code> via UAssetGUI, then repack.</li>
+    <li><code>Tobis_json/Architecture/{tag}.json</code> &mdash; Display name and description</li>
+    <li><code>Tobis_json/DT_Constructions/{tag}.json</code> &mdash; Definition (asset, icon, category, imports)</li>
+    <li><code>Tobis_json/DT_ConstructionRecipes/{tag}.json</code> &mdash; Recipe (materials, flags, unlock)</li>
 </ol>
+<p>Tag format: <code>{UserName}Pack_{Name}_{Letter}</code> where the letter (A-Z) is auto-assigned.</p>
+<h3>Per-Item File Format (DT row)</h3>
+<pre><code>{
+    "NameMap": ["TobiPack_AleKeg", "/Game/path/..."],
+    "Imports": [{"Package..."}, {"Texture2D..."}],
+    "Row": { "Name": "TobiPack_AleKeg", "Value": [...] }
+}</code></pre>
+<h3>Per-Item File Format (Architecture)</h3>
+<pre><code>{
+    "Entries": [
+        ["TobiPack_AleKeg.Name", "Ale Keg"],
+        ["TobiPack_AleKeg.Description", "A keg of ale"]
+    ]
+}</code></pre>
+</section>
 
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<h2 id="workflow-packaging">Workflow: Pak Packaging</h2>
+<section id="armor-workflow">
+<h2>Armor Workflow</h2>
+<p>Adding a new armor recipe creates <strong>one per-item file</strong>:</p>
+<ul><li><code>Tobis_json/DT_ItemRecipes/{armor_tag}.json</code></li></ul>
+<p>Available armor tags come from <code>data/templates/MoreArmor/Armor.json</code>. Items with existing per-item files are excluded from the dropdown.</p>
+</section>
 
+<section id="build-process">
+<h2>Build Process</h2>
+<p><strong>Build Combined Files</strong> runs <code>combine_all()</code>:</p>
 <ol>
-    <li>Edit JSON assets as needed.</li>
-    <li>Use <strong>UAssetGUI</strong> to import JSON back into <code>.uasset</code> files.</li>
-    <li>Use <strong>retoc</strong> to convert legacy <code>.uasset</code> files into IoStore format
-        (<code>.pak</code> / <code>.ucas</code> / <code>.utoc</code>).</li>
-    <li>Copy the resulting pak to the game's mod folder:
-        <code>[GameInstall]/Moria/Content/Packs/~mods/</code></li>
+    <li>For each table (Architecture, DT_Constructions, DT_ConstructionRecipes, DT_ItemRecipes):
+        <ul>
+            <li>Load vanilla base from <code>game_extract/uassetgui/</code></li>
+            <li>Read all per-item files from <code>Tobis_json/{table}/</code></li>
+            <li>Merge NameMap, append rows, reindex imports (DT_Constructions)</li>
+        </ul>
+    </li>
+    <li>Write to <code>TobisMod/json_data/{game_path}.json</code></li>
 </ol>
+<p>Architecture uses an empty scaffold since it's a mod-only string table.</p>
+</section>
 
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<h2 id="toolchain">External Toolchain</h2>
+<section id="maintainer-tabs">
+<h2>Maintainer Tabs</h2>
+<p>After Build, Maintainer tabs patch <code>TobisMod/json_data/</code> in place:</p>
+<h3>Buildings Maintainer</h3>
+<ol>
+    <li><strong>Restore Constructions</strong> &mdash; Re-enables 33 constructions removed in patch 1.2</li>
+    <li><strong>Update Mod</strong> &mdash; Applies string table imports to DT_Constructions</li>
+</ol>
+<h3>Armor Maintainer</h3>
+<ol>
+    <li><strong>Restore BWG</strong> &mdash; Re-enables White/Black/Gold colour variants</li>
+    <li><strong>Sandbox to Campaign</strong> &mdash; Unlocks 21 sandbox-exclusive items for campaign</li>
+</ol>
+</section>
 
+<section id="localization">
+<h2>Localization Pipeline</h2>
+<ol>
+    <li><strong>PO to CSV</strong> &mdash; Converts PO translation files to CSV</li>
+    <li><strong>CSV to PO</strong> &mdash; Converts back for translator editing</li>
+    <li><strong>Pak Locres</strong> &mdash; Packages CSVs into .pak using UnrealPak</li>
+</ol>
+<p>Supported: English (source), German, Spanish, French.</p>
+</section>
+
+<section id="config">
+<h2>Configuration</h2>
 <table>
-    <tr><th>Tool</th><th>Purpose</th><th>Location</th></tr>
-    <tr>
-        <td><strong>UAssetGUI</strong></td>
-        <td>GUI editor for .uasset files; exports/imports JSON</td>
-        <td><code>Moria_Mods/UAssetGUI.exe</code></td>
-    </tr>
-    <tr>
-        <td><strong>retoc</strong></td>
-        <td>Converts legacy .uasset to IoStore format and repacks</td>
-        <td><code>Moria_Mods/retoc.exe</code></td>
-    </tr>
-    <tr>
-        <td><strong>UnrealPak</strong></td>
-        <td>Official UE4 tool to create .pak archives</td>
-        <td><code>{UE4Root}/Engine/Binaries/Win64/UnrealPak.exe</code></td>
-    </tr>
-    <tr>
-        <td><strong>RtoM-Moding-Tool</strong></td>
-        <td>Tobi's custom modding toolkit</td>
-        <td><code>Moria_Mods/RtoM-Moding-Tool/</code></td>
-    </tr>
+<tr><th>Section</th><th>Key</th><th>Purpose</th></tr>
+<tr><td>[General]</td><td>Debug</td><td>Enable debug logging (true/false)</td></tr>
+<tr><td>[Paths]</td><td>ProjectRoot</td><td>Repository root directory</td></tr>
+<tr><td>[Paths]</td><td>UE4Root</td><td>UE4.27 installation</td></tr>
+<tr><td>[Localization]</td><td>SourcePO, TargetLang, PakFileName</td><td>Localization settings</td></tr>
+<tr><td>[Game]</td><td>InstallPath</td><td>Game install path (set on first run)</td></tr>
+<tr><td>[Game]</td><td>InstallType</td><td>Steam, Epic Games, or Custom</td></tr>
+<tr><td>[ModTool]</td><td>DataDir</td><td>Root data directory (default: data)</td></tr>
 </table>
+</section>
 
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<h2 id="mod-packs">Mod Pack Registry</h2>
+<section id="file-formats">
+<h2>File Formats</h2>
+<p>All JSON files use UAssetAPI serialization format:</p>
+<ul>
+    <li><strong>DataTable</strong> &mdash; <code>Exports[0].Table.Data[]</code> array of row objects with <code>Name</code> key</li>
+    <li><strong>Architecture</strong> &mdash; <code>Exports[0].Table.Value[]</code> array of <code>[key, value]</code> pairs</li>
+    <li><strong>NameMap</strong> &mdash; String identifiers used by the asset</li>
+    <li><strong>Imports</strong> &mdash; External asset references with negative index linking</li>
+</ul>
+</section>
 
-<p>Building packs live under <code>modified-json/Moria/Content/Mods/</code>.  Each pack
-is a self-contained directory with blueprint JSONs and icon PNGs.</p>
-
+<section id="toolchain">
+<h2>External Toolchain</h2>
 <table>
-    <tr><th>Pack</th><th>Contents</th><th>Contributor</th></tr>
-    <tr><td>100BuildingsPack</td><td>Large mixed collection</td><td>Community</td></tr>
-    <tr><td>AradrenPack</td><td>Columns, walls, decorations</td><td>Aradren</td></tr>
-    <tr><td>BearGuildPack</td><td>Gloves, shields, effects</td><td>Bear Guild</td></tr>
-    <tr><td>CeibaPack</td><td>Beams, flora, items</td><td>Ceiba</td></tr>
-    <tr><td>CurvedPack</td><td>Curved walls, stairs</td><td>Community</td></tr>
-    <tr><td>DrainPumpPack</td><td>Utility drainage</td><td>Community</td></tr>
-    <tr><td>FungalPack</td><td>Fungal-themed builds</td><td>Community</td></tr>
-    <tr><td>GlitteringCavesLampsPack</td><td>Cave lighting</td><td>Community</td></tr>
-    <tr><td>JuboPack</td><td>Miscellaneous items</td><td>Jubo</td></tr>
-    <tr><td>KelaerielPack</td><td>Kingdom decorations</td><td>Kelaeriel</td></tr>
-    <tr><td>KingdomBannersPack</td><td>Gondor, Rivendell, Erebor, Lothlorien banners</td><td>Community</td></tr>
-    <tr><td>KingsWeaponsPack</td><td>Dain's weapons, Thrain's warhammer</td><td>Community</td></tr>
-    <tr><td>MereakAxePack</td><td>Axe-themed constructions</td><td>Mereak</td></tr>
-    <tr><td>MereakPack</td><td>Detailed construction assets</td><td>Mereak</td></tr>
-    <tr><td>MithrilWallsPack</td><td>Mithril construction walls</td><td>Community</td></tr>
-    <tr><td>NoobDelux_Banner</td><td>Banner packs</td><td>NoobDelux</td></tr>
-    <tr><td>OlfahrPack</td><td>Large building pack</td><td>Olfahr</td></tr>
-    <tr><td>RailingsPack</td><td>Railing variants</td><td>Community</td></tr>
-    <tr><td>SeraniPack</td><td>Cabinets, glass furniture</td><td>Serani</td></tr>
-    <tr><td>SilverWallsPack</td><td>Silver construction walls</td><td>Community</td></tr>
-    <tr><td>StreetLampPack</td><td>Street/ambient lighting</td><td>Community</td></tr>
-    <tr><td>TobiDoorsPack</td><td>Door variants</td><td>Tobi</td></tr>
-    <tr><td>TobiFloorPack</td><td>Floor variants</td><td>Tobi</td></tr>
-    <tr><td>TobiPack</td><td>Doors, floors, ceilings</td><td>Tobi</td></tr>
-    <tr><td>UzbadPack</td><td>Kitchen items</td><td>Uzbad</td></tr>
-    <tr><td>VasePack</td><td>Decorative vases</td><td>Community</td></tr>
-    <tr><td>ZetaPack</td><td>White granite constructions</td><td>Zeta</td></tr>
+<tr><th>Tool</th><th>Purpose</th><th>Command</th></tr>
+<tr><td>retoc</td><td>Extract .uasset from IoStore</td><td><code>retoc to-legacy --version UE4_27 --filter {stem} {paks} {out}</code></td></tr>
+<tr><td>UAssetGUI</td><td>Convert .uasset to JSON</td><td><code>UAssetGUI tojson {in} {out} VER_UE4_27</code></td></tr>
+<tr><td>UnrealPak</td><td>Package .pak files</td><td>Via <code>src/packaging/pak_locres.py</code></td></tr>
 </table>
+<p><strong>Note:</strong> retoc uses <code>UE4_27</code>, UAssetGUI uses <code>VER_UE4_27</code>.</p>
+</section>
 
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<h2 id="glossary">Glossary</h2>
+<section id="mod-packs">
+<h2>Mod Pack Registry</h2>
+<p>28+ building/construction packs:</p>
+<ul>
+<li>100BuildingsPack, AradrenPack, BearGuildPack, CeibaPack, CurvedPack</li>
+<li>DrainPumpPack, FungalPack, GlitteringCavesLampsPack, JuboPack, KelaerielPack</li>
+<li>KingdomBannersPack, KingsWeaponsPack, MereakPack, MithrilWallsPack</li>
+<li>NoobDelux_Banner, OlfahrPack, RailingsPack, SeraniPack, SilverWallsPack</li>
+<li>StreetLampPack, TobiDoorsPack, TobiDurinPack, TobiFloorPack, TobiPack</li>
+<li>UzbadPack, VasePack, ZetaPack</li>
+</ul>
+</section>
 
-<table>
-    <tr><th>Term</th><th>Definition</th></tr>
-    <tr><td>DataTable</td><td>UE4 asset type that stores tabular data (like a database table). Prefixed <code>DT_</code>.</td></tr>
-    <tr><td>IoStore</td><td>UE4.26+ container format (<code>.ucas</code>/<code>.utoc</code>) that replaces traditional <code>.pak</code> for faster loading.</td></tr>
-    <tr><td>.locres</td><td>UE4 binary localisation resource compiled from PO files.</td></tr>
-    <tr><td>PO / Portable Object</td><td>GNU gettext text format for translations; human-readable and diffable.</td></tr>
-    <tr><td>retoc</td><td>Community tool to repack UE4 assets into IoStore format.</td></tr>
-    <tr><td>UAssetAPI</td><td>.NET library for reading/writing UE4 <code>.uasset</code> files; exports JSON.</td></tr>
-    <tr><td>UAssetGUI</td><td>GUI front-end for UAssetAPI.</td></tr>
-    <tr><td>Blueprint (BP_)</td><td>UE4 visual scripting asset; in this project, exported as JSON.</td></tr>
-    <tr><td>DiscoverDependencies</td><td>UE4 recipe unlock mode: the recipe unlocks automatically when the player discovers its dependency item.</td></tr>
-    <tr><td>Pak</td><td>UE4 archive file (<code>.pak</code>) containing game assets.</td></tr>
-    <tr><td>~mods folder</td><td><code>[GameInstall]/Moria/Content/Packs/~mods/</code> — where mod paks are placed.</td></tr>
-</table>
+<section id="glossary">
+<h2>Glossary</h2>
+<dl>
+    <dt>DataTable</dt><dd>UE4 data structure storing typed rows. Exported as JSON by UAssetGUI.</dd>
+    <dt>IoStore</dt><dd>UE4 packaging format (.ucas/.utoc). Extracted by retoc.</dd>
+    <dt>Per-item file</dt><dd>Single JSON in <code>Tobis_json/</code> representing one custom item.</dd>
+    <dt>Vanilla base</dt><dd>Extracted game DataTable from <code>game_extract/uassetgui/</code>.</dd>
+    <dt>Combined file</dt><dd>Build output: vanilla + per-item rows merged at <code>TobisMod/json_data/</code>.</dd>
+    <dt>BWG</dt><dd>Black/White/Gold colour variants of cosmetic armour.</dd>
+    <dt>retoc</dt><dd>IoStore to legacy .uasset converter.</dd>
+    <dt>UAssetGUI</dt><dd>.uasset to JSON converter (uses <code>VER_UE4_27</code>).</dd>
+</dl>
+</section>
 
-<hr>
-<p><em>Last updated: 2026-03-18 — Knowledge base v1.0</em></p>
-
+</main>
 </body>
 </html>

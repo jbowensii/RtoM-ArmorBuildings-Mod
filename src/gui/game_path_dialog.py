@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import os
 
-from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QButtonGroup, QDialog, QFileDialog, QHBoxLayout, QLabel, QLineEdit,
     QMessageBox, QPushButton, QRadioButton, QVBoxLayout,
@@ -78,9 +77,7 @@ class GamePathDialog(QDialog):
         custom_row.addWidget(browse_btn)
         layout.addLayout(custom_row)
 
-        self.radio_custom.toggled.connect(
-            lambda checked: self.custom_edit.setEnabled(checked)
-        )
+        self.radio_custom.toggled.connect(self.custom_edit.setEnabled)
 
         # Pre-select first detected path
         if self._detected:

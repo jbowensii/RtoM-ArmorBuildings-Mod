@@ -45,7 +45,7 @@ class _ExtractWorker(QThread):
                 uassetgui_exe=uassetgui,
                 game_extract_dir=self.cfg.game_extract_dir,
                 manifest=self.manifest,
-                progress=lambda msg, cur, tot: self.progress.emit(msg, cur, tot),
+                progress=self.progress.emit,
             )
             self.finished.emit(results)
         except Exception as exc:

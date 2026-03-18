@@ -1,4 +1,4 @@
-"""Tab 1 — New Construction Adder (from RtoM-Moding-Tool constructionUI.py)."""
+"""Tab — New Construction: add constructions, view/delete saved items, build."""
 
 from __future__ import annotations
 
@@ -7,18 +7,24 @@ import os
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
-    QButtonGroup, QComboBox, QCompleter, QFormLayout, QGroupBox,
-    QHBoxLayout, QLabel, QLineEdit, QListWidget, QMessageBox, QPushButton,
-    QRadioButton, QSpinBox, QSplitter, QVBoxLayout, QWidget,
+    QButtonGroup, QComboBox, QFormLayout, QGroupBox,
+    QHBoxLayout, QLabel, QLineEdit, QMessageBox, QPushButton,
+    QRadioButton, QSplitter, QVBoxLayout, QWidget,
 )
 
 from src.construction.mod_utils import (
     architecture_handle, dt_constructions_handle, dt_construction_recipes_handle,
 )
-from src.utils.json_split_combine import combine_all
+from src.gui.shared import (
+    add_material_row, build_combined, collect_materials,
+    create_item_list_pane, delete_per_item, refresh_item_list,
+    remove_material_row,
+)
 
 
 class ConstructionAdderTab(QWidget):
+    """New Construction tab with left item list and right form."""
+
     def __init__(self, tobis_json_dir: str, templates_dir: str,
                  game_extract_dir: str, tobis_mod_dir: str,
                  items: dict, category_tags: dict,
@@ -41,32 +47,20 @@ class ConstructionAdderTab(QWidget):
         self.visible_unlock_map: dict[str, str] = {}
         self._setup_ui()
 
-    # ── UI ─────────────────────────────────────────────────────────
     def _setup_ui(self) -> None:
         outer = QHBoxLayout()
 
-        # ── Left pane: Build button + item list ──
-        left = QVBoxLayout()
-
-        self.build_btn = QPushButton("Build Combined Files")
-        self.build_btn.setStyleSheet("font-weight: bold; padding: 8px;")
-        self.build_btn.clicked.connect(self._build_combined)
-        left.addWidget(self.build_btn)
-
-        left.addWidget(QLabel("Saved Constructions:"))
-        self.item_list = QListWidget()
+        # Left pane
+        left_widget, self.build_btn, self.item_list, self.delete_btn = \
+            create_item_list_pane("Saved Constructions:")
+        self.build_btn.clicked.connect(
+            lambda: build_combined(self, self.tobis_json_dir,
+                                   self.game_extract_dir, self.tobis_mod_dir)
+        )
         self.item_list.currentItemChanged.connect(self._on_item_selected)
-        left.addWidget(self.item_list)
-
-        self.delete_btn = QPushButton("Delete Selected")
         self.delete_btn.clicked.connect(self._delete_selected)
-        left.addWidget(self.delete_btn)
 
-        left_widget = QWidget()
-        left_widget.setLayout(left)
-        left_widget.setMaximumWidth(280)
-
-        # ── Right pane: form ──
+        # Right pane: form
         right = QVBoxLayout()
 
         self.user_name = QLineEdit()
@@ -102,9 +96,15 @@ class ConstructionAdderTab(QWidget):
 
         btn_row = QHBoxLayout()
         add_btn = QPushButton("Add Material")
-        add_btn.clicked.connect(self._add_material)
+        add_btn.clicked.connect(
+            lambda: add_material_row(self.mat_layout, self.materials_widgets,
+                                     self.items, parent=self)
+        )
         rm_btn = QPushButton("Remove Material")
-        rm_btn.clicked.connect(self._remove_material)
+        rm_btn.clicked.connect(
+            lambda: remove_material_row(self.mat_layout, self.materials_widgets,
+                                        parent=self)
+        )
         btn_row.addWidget(add_btn)
         btn_row.addWidget(rm_btn)
         right.addLayout(btn_row)
@@ -136,50 +136,34 @@ class ConstructionAdderTab(QWidget):
         right_widget = QWidget()
         right_widget.setLayout(right)
 
-        # ── Splitter ──
         splitter = QSplitter(Qt.Horizontal)
         splitter.addWidget(left_widget)
         splitter.addWidget(right_widget)
         splitter.setStretchFactor(0, 0)
         splitter.setStretchFactor(1, 1)
-
         outer.addWidget(splitter)
         self.setLayout(outer)
 
-        self._add_material()
+        add_material_row(self.mat_layout, self.materials_widgets, self.items)
         self._update_unlock_items()
-        self._refresh_item_list()
+        refresh_item_list(self.item_list, self.tobis_json_dir, "DT_Constructions")
 
-    # ── Item list ───────────────────────────────────────────────────
-    def _refresh_item_list(self) -> None:
-        """Reload the list of per-item construction files."""
-        self.item_list.clear()
-        dt_dir = os.path.join(self.tobis_json_dir, "DT_Constructions")
-        if os.path.isdir(dt_dir):
-            for fname in sorted(os.listdir(dt_dir)):
-                if fname.endswith(".json"):
-                    self.item_list.addItem(fname[:-5])
-
+    # ── Item list callbacks ─────────────────────────────────────────
     def _on_item_selected(self, current, _previous) -> None:
-        """Load and display the selected per-item file in the form."""
+        """Load and display the selected construction in the form."""
         if not current:
             return
         tag = current.text()
-
-        # Load from DT_Constructions per-item file
         dt_path = os.path.join(
             self.tobis_json_dir, "DT_Constructions", f"{tag}.json",
         )
         if not os.path.isfile(dt_path):
             return
-
         with open(dt_path, "r", encoding="utf-8") as f:
             dt_data = json.load(f)
-
         row = dt_data.get("Row", {})
         self.tag_display.setText(row.get("Name", tag))
 
-        # Try to extract display name from Architecture file
         arch_path = os.path.join(
             self.tobis_json_dir, "Architecture", f"{tag}.json",
         )
@@ -191,11 +175,8 @@ class ConstructionAdderTab(QWidget):
                     self.name_input.setText(entry[1])
                 elif entry[0].endswith(".Description"):
                     self.desc_input.setText(entry[1])
-
-        # Extract asset path from row
         try:
             asset = row["Value"][3]["Value"]["AssetPath"]["AssetName"]
-            # Strip the _C suffix
             if asset.endswith("_C"):
                 asset = asset.rsplit(".", 1)[0]
             self.asset_input.setText(asset)
@@ -203,46 +184,17 @@ class ConstructionAdderTab(QWidget):
             pass
 
     def _delete_selected(self) -> None:
-        """Delete the selected item's per-item files."""
-        current = self.item_list.currentItem()
-        if not current:
-            QMessageBox.warning(self, "No Selection", "Select an item to delete.")
-            return
-
-        tag = current.text()
-        reply = QMessageBox.question(
-            self, "Confirm Delete",
-            f"Delete '{tag}' from all construction tables?",
-            QMessageBox.Yes | QMessageBox.No,
+        tag = delete_per_item(
+            self, self.item_list, self.tobis_json_dir,
+            ["DT_Constructions", "DT_ConstructionRecipes", "Architecture"],
         )
-        if reply != QMessageBox.Yes:
-            return
-
-        for table in ("DT_Constructions", "DT_ConstructionRecipes", "Architecture"):
-            path = os.path.join(self.tobis_json_dir, table, f"{tag}.json")
-            if os.path.isfile(path):
-                os.remove(path)
-
-        self._refresh_item_list()
-        QMessageBox.information(self, "Deleted", f"'{tag}' removed.")
-
-    def _build_combined(self) -> None:
-        """Combine per-item files into TobisMod/json_data/."""
-        output = os.path.join(self.tobis_mod_dir, "json_data")
-        try:
-            results = combine_all(
-                self.tobis_json_dir, self.game_extract_dir, output,
+        if tag:
+            refresh_item_list(
+                self.item_list, self.tobis_json_dir, "DT_Constructions",
             )
-            total = sum(results.values())
-            detail = ", ".join(f"{k}: {v}" for k, v in results.items())
-            QMessageBox.information(
-                self, "Build Complete",
-                f"Combined {total} items into TobisMod/json_data/.\n\n{detail}",
-            )
-        except Exception as exc:
-            QMessageBox.critical(self, "Build Failed", str(exc))
+            QMessageBox.information(self, "Deleted", f"'{tag}' removed.")
 
-    # ── Slots ──────────────────────────────────────────────────────
+    # ── Form callbacks ──────────────────────────────────────────────
     def _update_subcategories(self, main: str) -> None:
         self.cat_sub.clear()
         self.cat_sub.addItems(self.sub_categories.get(main, []))
@@ -262,56 +214,6 @@ class ConstructionAdderTab(QWidget):
             self.visible_unlock_map[name] = tag
             self.unlock_combo.addItem(name)
 
-    def _add_material(self) -> None:
-        if len(self.materials_widgets) >= 6:
-            QMessageBox.warning(self, "Limit", "Max 6 materials.")
-            return
-        row = QHBoxLayout()
-        cat_cb = QComboBox()
-        cat_cb.addItems(list(self.items.keys()))
-        name_cb = QComboBox()
-        name_cb.setEditable(True)
-        visible_map: dict[str, str] = {}
-
-        def _update(category: str) -> None:
-            tags = self.items.get(category, {})
-            name_cb.clear()
-            visible_map.clear()
-            names = []
-            for t, n in tags.items():
-                visible_map[n] = t
-                names.append(n)
-            names.sort()
-            name_cb.addItems(names)
-            name_cb.setCompleter(QCompleter(names))
-
-        cat_cb.currentTextChanged.connect(_update)
-        _update(cat_cb.currentText())
-
-        count = QSpinBox()
-        count.setRange(1, 999)
-
-        row.addWidget(cat_cb)
-        row.addWidget(name_cb)
-        row.addWidget(QLabel("x"))
-        row.addWidget(count)
-        self.mat_layout.addLayout(row)
-        self.materials_widgets.append((name_cb, count, visible_map))
-
-    def _remove_material(self) -> None:
-        if len(self.materials_widgets) <= 1:
-            QMessageBox.warning(self, "Minimum", "At least one material required.")
-            return
-        idx = self.mat_layout.count() - 1
-        item = self.mat_layout.itemAt(idx)
-        if item and item.layout():
-            while item.layout().count():
-                w = item.layout().takeAt(0).widget()
-                if w:
-                    w.setParent(None)
-            self.mat_layout.removeItem(item.layout())
-        self.materials_widgets.pop()
-
     def _save(self) -> None:
         user_name = self.user_name.text().strip()
         name = self.name_input.text().strip()
@@ -321,11 +223,7 @@ class ConstructionAdderTab(QWidget):
             QMessageBox.warning(self, "Empty Fields", "Please fill all fields.")
             return
 
-        materials = []
-        for name_w, count_w, vmap in self.materials_widgets:
-            vis = name_w.currentText().strip()
-            materials.append((vmap.get(vis, vis), count_w.value()))
-
+        materials = collect_materials(self.materials_widgets)
         cat_key = f"{self.cat_main.currentText()}.{self.cat_sub.currentText()}"
         cat_tag = self.category_tags_raw.get(cat_key, "")
         tag = f"{user_name}Pack_{name.title().replace(' ', '')}"
@@ -336,13 +234,11 @@ class ConstructionAdderTab(QWidget):
             unique, asset, cat_tag,
             self.tobis_json_dir, self.templates_dir, user_name,
         )
-
         sel = self.unlock_combo.currentText()
         unlock_req = self.visible_unlock_map.get(sel, sel)
         dt_construction_recipes_handle(
             unique, self.tobis_json_dir, self.templates_dir,
             cat_key, materials, self.unlock_type, unlock_req,
         )
-
-        self._refresh_item_list()
+        refresh_item_list(self.item_list, self.tobis_json_dir, "DT_Constructions")
         QMessageBox.information(self, "Saved", f"Construction '{unique}' added.")
