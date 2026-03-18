@@ -1,0 +1,31 @@
+[project]
+name = "rtom-armor-buildings-mod"
+version = "1.1.0"
+description = "Tooling for the Return to Moria Armor & Buildings Mod"
+requires-python = ">=3.10"
+# All dependencies are Python standard library — no extras needed.
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pylint>=4.0",
+    "pytest>=9.0",
+]
+
+[tool.pylint.main]
+# Only lint the src package and tests — skip legacy wrappers and data dirs
+source-roots = ["."]
+
+[tool.pylint."messages control"]
+disable = [
+    "C0114",  # missing-module-docstring  (we have them, but wrappers are thin)
+    "C0115",  # missing-class-docstring
+    "R0801",  # duplicate-code (legacy wrappers intentionally repeat a pattern)
+]
+
+[tool.pylint.format]
+max-line-length = 100
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

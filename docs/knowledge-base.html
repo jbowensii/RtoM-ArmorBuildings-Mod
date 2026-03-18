@@ -83,15 +83,21 @@
         <td><strong>Localization</strong></td>
         <td>Manage translations between PO files (for translators) and CSV files (for spreadsheets), then package them into a distributable <code>.pak</code>.</td>
         <td>
-            <code>Localization/PoToCSV.py</code><br>
-            <code>Localization/CSVTOPo.py</code><br>
-            <code>Localization/PakLocres.bat</code>
+            <code>src/localization/po_to_csv.py</code><br>
+            <code>src/localization/csv_to_po.py</code><br>
+            <code>src/localization/po_parser.py</code> (shared)<br>
+            <code>src/packaging/pak_locres.py</code><br>
+            <em>Legacy wrappers:</em> <code>Localization/PoToCSV.py</code>,
+            <code>CSVTOPo.py</code>, <code>PakLocres.bat</code>
         </td>
     </tr>
     <tr>
         <td><strong>Recipe Automation</strong></td>
         <td>Automatically link colour-variant armour recipes (_White_, _Black_, _Gold_) to their base item so they unlock via discovery rather than manually.</td>
-        <td><code>modified-json/autoWhiteBlackBold.py</code></td>
+        <td>
+            <code>src/recipes/colour_variants.py</code><br>
+            <em>Legacy wrapper:</em> <code>modified-json/autoWhiteBlackBold.py</code>
+        </td>
     </tr>
     <tr>
         <td><strong>Asset Data</strong></td>
@@ -105,44 +111,54 @@
 </table>
 
 <p>All scripts share configuration through a central <code>config.ini</code> file,
-   loaded by <code>config_loader.py</code>.</p>
+   loaded by <code>src/config.py</code> (or the legacy shim <code>config_loader.py</code>).</p>
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <h2 id="directory-structure">Directory Structure</h2>
 
 <pre>
 RtoM-ArmorBuildings-Mod/
-├── config.ini                  # Machine-specific paths (not committed)
-├── config_loader.py            # Shared Python config reader
+├── config.ini                  # Machine-specific paths (gitignored)
+├── config.ini.example          # Template with Tobi's defaults
+├── config_loader.py            # Legacy shim → src/config.py
+├── pyproject.toml              # Project metadata and tool config
 │
-├── Localization/               # ── Localization Pipeline ──
-│   ├── CSVTOPo.py              #   Merge CSV translations → PO
-│   ├── PoToCSV.py              #   Export PO → CSV for translators
-│   ├── PakLocres.bat           #   Package .locres into .pak
+├── src/                        # ══ Python Package ══
+│   ├── __init__.py
+│   ├── config.py               #   Configuration loader (Config class)
+│   ├── localization/           #   ── Localization Pipeline ──
+│   │   ├── __init__.py
+│   │   ├── po_parser.py        #     Shared PO parsing (POEntry, parse, merge)
+│   │   ├── po_to_csv.py        #     Export PO → CSV for translators
+│   │   └── csv_to_po.py        #     Merge CSV translations → PO
+│   ├── recipes/                #   ── Recipe Automation ──
+│   │   ├── __init__.py
+│   │   └── colour_variants.py  #     Colour-variant unlock patching
+│   └── packaging/              #   ── Pak Packaging ──
+│       ├── __init__.py
+│       └── pak_locres.py       #     Paklist generation + UnrealPak
+│
+├── tests/                      # ══ Test Suite ══
+│   ├── conftest.py             #   Shared fixtures
+│   ├── test_po_parser.py
+│   ├── test_csv_to_po.py
+│   ├── test_po_to_csv.py
+│   └── test_colour_variants.py
+│
+├── Localization/               # ── Localization Data + Legacy Wrappers ──
+│   ├── CSVTOPo.py              #   (wrapper → src.localization.csv_to_po)
+│   ├── PoToCSV.py              #   (wrapper → src.localization.po_to_csv)
+│   ├── PakLocres.bat           #   Batch wrapper for pak builds
 │   ├── ModLocalization/        #   Packaged .locres output
-│   │   └── Moria/Content/Localization/Game/{lang}/
-│   ├── en/Game.po              #   English source strings
-│   ├── de/                     #   German translations
-│   ├── es/                     #   Spanish translations
-│   └── fr/                     #   French translations
+│   ├── en/ de/ es/ fr/         #   Language PO/CSV/locres files
 │
 ├── modified-json/              # ── Asset Data ──
-│   ├── autoWhiteBlackBold.py   #   Recipe colour-variant automation
-│   └── Moria/
-│       ├── Config/             #     Gameplay tag definitions
-│       └── Content/
-│           ├── Items/          #     Item effect DataTables
-│           ├── LevelDesign/    #     Crafting station blueprints
-│           ├── Mods/           #     28 building packs (see registry)
-│           └── Tech/Data/Items/#     Master recipe table
+│   ├── autoWhiteBlackBold.py   #   (wrapper → src.recipes.colour_variants)
+│   ├── UnlockRequiredItems.json#   Template for recipe dependencies
+│   └── Moria/                  #   UAssetAPI JSON exports (262 files)
 │
 ├── ConstructiondDT/            # Construction DataTables
-│   ├── DT_Const.json
-│   └── DT_ConstRecipe.json
-│
 ├── RtoMMoreBuildings_P/        # "More Buildings" plugin content
-│   └── Moria/Content/Tech/Data/Items/DT_ItemRecipes.json
-│
 ├── OldMods/                    # Archived/superseded mod versions
 ├── docs/                       # Documentation &amp; wiki
 └── .github/                    # Issue templates
@@ -168,9 +184,9 @@ RtoM-ArmorBuildings-Mod/
     <tr><td>[Localization]</td><td>PakFileName</td><td>Output .pak filename</td></tr>
 </table>
 
-<h3>config_loader.py API</h3>
+<h3>src/config.py API</h3>
 <pre>
-from config_loader import cfg
+from src.config import cfg
 
 cfg.project_root                   # "C:/Users/.../RtoM-ArmorBuildings-Mod"
 cfg.ue4_root                       # "C:/Program Files/Epic Games/UE_4.27"
@@ -179,30 +195,40 @@ cfg.path("Localization", "en")     # absolute path to Localization/en/
 cfg.ue4_path("Engine", "Binaries") # absolute path inside UE4 install
 </pre>
 
+<div class="note">
+    <strong>Legacy shim:</strong> <code>config_loader.py</code> at the project root
+    re-exports <code>cfg</code> so older scripts that do
+    <code>from config_loader import cfg</code> still work.
+</div>
+
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <h2 id="scripts">Script Reference</h2>
 
-<h3>PoToCSV.py</h3>
+<h3>src/localization/po_to_csv.py</h3>
 <p><strong>Purpose:</strong> Export a PO translation file to CSV so translators can work in a spreadsheet.</p>
 <p><strong>Input:</strong> <code>Localization/{lang}/Game.po</code></p>
 <p><strong>Output:</strong> <code>Localization/{lang}/Game_{lang}.csv</code> (UTF-8 with BOM for Excel)</p>
-<p><strong>Run:</strong> <code>python Localization/PoToCSV.py</code></p>
+<p><strong>Run:</strong> <code>python -m src.localization.po_to_csv</code> or <code>python Localization/PoToCSV.py</code></p>
 
-<h3>CSVTOPo.py</h3>
+<h3>src/localization/csv_to_po.py</h3>
 <p><strong>Purpose:</strong> Merge completed CSV translations back into a PO file.</p>
 <p><strong>Input:</strong> Source PO template + <code>Localization/{lang}/Game_{lang}.csv</code></p>
 <p><strong>Output:</strong> <code>Localization/{lang}/Game.po</code> (updated with translations)</p>
-<p><strong>Run:</strong> <code>python Localization/CSVTOPo.py</code></p>
+<p><strong>Run:</strong> <code>python -m src.localization.csv_to_po</code> or <code>python Localization/CSVTOPo.py</code></p>
 
-<h3>autoWhiteBlackBold.py</h3>
+<h3>src/localization/po_parser.py</h3>
+<p><strong>Purpose:</strong> Shared PO-file parsing utilities — <code>POEntry</code> dataclass, <code>parse_po()</code>, <code>merge_translations()</code>.</p>
+<p><strong>Used by:</strong> <code>po_to_csv.py</code> and <code>csv_to_po.py</code></p>
+
+<h3>src/recipes/colour_variants.py</h3>
 <p><strong>Purpose:</strong> Auto-configure colour-variant armour recipes for discovery-based unlocking.</p>
 <p><strong>Input:</strong> <code>modified-json/Moria/Content/Tech/Data/Items/DT_ItemRecipes.json</code></p>
 <p><strong>Output:</strong> Same file, modified in-place.</p>
-<p><strong>Run:</strong> <code>python modified-json/autoWhiteBlackBold.py</code></p>
+<p><strong>Run:</strong> <code>python -m src.recipes.colour_variants</code> or <code>python modified-json/autoWhiteBlackBold.py</code></p>
 
-<h3>PakLocres.bat</h3>
-<p><strong>Purpose:</strong> Package localisation files into a compressed .pak for distribution.</p>
-<p><strong>Run:</strong> <code>Localization\PakLocres.bat</code> (Windows only)</p>
+<h3>src/packaging/pak_locres.py</h3>
+<p><strong>Purpose:</strong> Generate Paklist.txt and invoke UnrealPak to build a localisation .pak.</p>
+<p><strong>Run:</strong> <code>python -m src.packaging.pak_locres</code> or <code>Localization\PakLocres.bat</code></p>
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <h2 id="data-formats">Data Formats</h2>
