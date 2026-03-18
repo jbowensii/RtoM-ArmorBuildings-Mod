@@ -62,7 +62,8 @@ class MainWindow(QMainWindow):
 
         self.tabs.addTab(
             ConstructionAdderTab(
-                tobis_json_dir, templates_dir, items, cat_tags, unlock_buildings,
+                tobis_json_dir, templates_dir, game_extract_dir, tobis_mod_dir,
+                items, cat_tags, unlock_buildings,
             ),
             "New Construction",
         )
@@ -74,7 +75,10 @@ class MainWindow(QMainWindow):
             "Buildings Maintainer",
         )
         self.tabs.addTab(
-            ArmorAdderTab(tobis_json_dir, templates_dir, items, unlock_armor),
+            ArmorAdderTab(
+                tobis_json_dir, templates_dir, game_extract_dir, tobis_mod_dir,
+                items, unlock_armor,
+            ),
             "New Armor",
         )
         self.tabs.addTab(
