@@ -7,8 +7,8 @@ PySide6 GUI combining:
   - Localization : PO / CSV translation management
   - Recipes      : automated recipe patching for colour variants
   - Packaging    : pak archive generation via UnrealPak
-  - Sync         : repo / install layout synchronisation
+  - Game extract : retoc + UAssetGUI vanilla data extraction
 """
 
-APP_VERSION = "2.0.0"
+APP_VERSION = "3.0.0"
 APP_NAME = "RtoM Mod Tools"
