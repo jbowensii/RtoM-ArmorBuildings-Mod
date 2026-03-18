@@ -16,5 +16,6 @@ __pycache__/
 *.pyc
 .pytest_cache/
 build/staging/
+build/pyinstaller/
 dist/
 release/

@@ -11,6 +11,9 @@ dev = [
     "pylint>=4.0",
     "pytest>=9.0",
 ]
+build = [
+    "pyinstaller>=6.0",
+]
 
 [tool.pylint.main]
 # Only lint the src package and tests — skip legacy wrappers and data dirs

@@ -6,3 +6,6 @@ Provides three pipelines for maintaining the Return to Moria mod:
   - recipes      : automated recipe patching for colour variants
   - packaging    : pak archive generation via UnrealPak
 """
+
+APP_VERSION = "1.1.0"
+APP_NAME = "RtoMModTools"
