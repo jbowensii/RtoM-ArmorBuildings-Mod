@@ -55,10 +55,17 @@ def run_cmd(cmd: list[str], description: str) -> None:
 
 
 def step_sync() -> None:
-    """Step 1: Export repo -> build/staging/."""
-    from src.sync import sync_export  # pylint: disable=import-outside-toplevel
+    """Step 1: Export localization files to build/staging/."""
+    import shutil  # pylint: disable=import-outside-toplevel
     staging = os.path.join(PROJECT_ROOT, "build", "staging")
-    sync_export(target_root=staging)
+    # Copy localization files to staging
+    loc_src = os.path.join(PROJECT_ROOT, "Localization")
+    loc_dst = os.path.join(staging, "localization")
+    if os.path.isdir(loc_src):
+        if os.path.isdir(loc_dst):
+            shutil.rmtree(loc_dst)
+        shutil.copytree(loc_src, loc_dst, dirs_exist_ok=True)
+    print(f"EXPORT: localization -> {loc_dst}")
 
 
 def step_pyinstaller() -> None:
