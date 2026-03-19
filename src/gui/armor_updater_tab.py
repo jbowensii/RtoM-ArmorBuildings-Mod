@@ -89,14 +89,14 @@ class ArmorUpdaterTab(QWidget):
             if any(c in raw for c in ("_White_", "_Black_", "_Gold_")):
                 base = self._clean_name(raw)
                 try:
-                    if item["Value"][12]["Value"][0]["Value"] == "EMorRecipeUnlockType::Manual":
-                        item["Value"][12]["Value"][0]["Value"] = "EMorRecipeUnlockType::DiscoverDependencies"
+                    if item["Value"][14]["Value"][0]["Value"] == "EMorRecipeUnlockType::Manual":
+                        item["Value"][14]["Value"][0]["Value"] = "EMorRecipeUnlockType::DiscoverDependencies"
                 except (IndexError, KeyError):
                     pass
                 try:
                     obj = copy.deepcopy(tpl)
                     obj["Value"][0]["Value"][0]["Value"] = base
-                    item["Value"][12]["Value"][3] = obj
+                    item["Value"][14]["Value"][3] = obj
                 except (IndexError, KeyError, TypeError):
                     pass
 
@@ -123,8 +123,8 @@ class ArmorUpdaterTab(QWidget):
                     if recipe["Value"][12]["Value"][0]["Value"] != "EMorRecipeUnlockType::DiscoverDependencies":
                         recipe["Value"][12]["Value"][0]["Value"] = "EMorRecipeUnlockType::DiscoverDependencies"
                         unlock_conditions(recipe, item["UnlockOption"], item["UnlockRequirement"], u_structs, dummy)
-                    if recipe["Value"][13]["Value"] != "ERowEnabledState::Live":
-                        recipe["Value"][13]["Value"] = "ERowEnabledState::Live"
+                    if recipe["Value"][15]["Value"] != "ERowEnabledState::Live":
+                        recipe["Value"][15]["Value"] = "ERowEnabledState::Live"
 
         save_json(self._recipes_path, dt)
         QMessageBox.information(self, "Success", "Sandbox items unlocked for campaign.")

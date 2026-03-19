@@ -54,8 +54,8 @@ def dt_item_recipes_handle(
     tpl["Name"] = armor_tag
     tpl["Value"][0]["Value"][0]["Value"] = f"Armor.{armor_tag}"
 
-    tpl["Value"][3]["Value"] = crafting_stations_array(crafting_stations, cs_tpl)
-    tpl["Value"][8]["Value"] = crafting_materials_array(materials, mat_tpl)
+    tpl["Value"][4]["Value"] = crafting_stations_array(crafting_stations, cs_tpl)
+    tpl["Value"][10]["Value"] = crafting_materials_array(materials, mat_tpl)
     unlock_conditions(tpl, unlock_option, unlock_requirement, unlock_structs, dummy)
 
     item_data = {
@@ -106,13 +106,13 @@ def unlock_conditions(
     if option == "UnlockRequiredItems":
         req = copy.deepcopy(unlock_structs["UnlockRequiredItems"])
         req["Value"][0]["Value"][0]["Value"] = requirement
-        recipe_tpl["Value"][12]["Value"][3] = req
-        recipe_tpl["Value"][12]["Value"][4] = dummy_structs["UnlockRequiredConstructions"]
+        recipe_tpl["Value"][14]["Value"][3] = req
+        recipe_tpl["Value"][14]["Value"][4] = dummy_structs["UnlockRequiredConstructions"]
     else:
         req = copy.deepcopy(unlock_structs["UnlockRequiredConstructions"])
         req["Value"][0]["Value"][0]["Value"] = requirement
-        recipe_tpl["Value"][12]["Value"][3] = dummy_structs["UnlockRequiredItems"]
-        recipe_tpl["Value"][12]["Value"][4] = req
+        recipe_tpl["Value"][14]["Value"][3] = dummy_structs["UnlockRequiredItems"]
+        recipe_tpl["Value"][14]["Value"][4] = req
 
 
 def sandbox_exclusive_items() -> list[dict]:
