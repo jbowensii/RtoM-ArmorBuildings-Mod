@@ -12,29 +12,119 @@ from PySide6.QtWidgets import (
     QMessageBox, QPushButton, QSpinBox, QVBoxLayout, QWidget,
 )
 
+from src.construction.mod_utils import advanced_bannister_post_stone_unlock
+from src.utils.json_handler import load_json, save_json
 from src.utils.json_split_combine import combine_all
 
 
 # ---------------------------------------------------------------------------
-# Build Combined Files
+# Build Combined Files (Combine + Restore + Update Mod)
 # ---------------------------------------------------------------------------
+
+# Constructions removed in game patch 1.2 that need unlock restoration
+_RESTORE_CONSTRUCTIONS = [
+    "Elder_Archway_A", "Advanced_Column_Wood_A", "Advanced_Column_Wood_D",
+    "Advanced_Fence_Wood_1m", "Advanced_Fence_Wood", "Crude_Column",
+    "Elder_Wall_E", "Scaffolding_Platform_Open", "Elder_Wall_A_Crown",
+    "Elder_Wall_Short_A", "Elder_Window_B", "Elder_Window_A",
+    "Elder_Wall_Thin_A_Crown", "Elder_Wall_Thin_B", "Elder_Archway_C",
+    "Elder_Wall_B_Crown", "Elder_Wall_D", "Advanced_Column_Wood_B",
+    "Elder_Wall_E_Crown", "Elder_Archway_Corner",
+    "Scaffolding_Platform_1x1x3", "Elder_Wall_Short_B", "Elder_Wall_B",
+    "Elder_Window_C", "Elder_Wall_A", "Elder_Wall_C", "Elder_Wall_Thin_A",
+    "Scaffolding_Platform_1x3x3", "Elder_Archway_Vertical",
+    "Elder_Archway_Horizontal_Large", "Elder_Wall_Corner_Crown",
+    "Advanced_Stairs_Railing_1m_V2", "Advanced_Bannister_Post_Stone",
+]
+
+
+def _restore_constructions(building_dir: str) -> int:
+    """Restore constructions removed in patch 1.2. Returns count restored."""
+    recipes_path = os.path.join(building_dir, "DT_ConstructionRecipes.json")
+    if not os.path.isfile(recipes_path):
+        return 0
+    data = load_json(recipes_path)
+    count = 0
+    for recipe in data["Exports"][0]["Table"]["Data"]:
+        name = recipe.get("Name")
+        if name in _RESTORE_CONSTRUCTIONS:
+            for prop in recipe["Value"]:
+                if prop.get("Name") == "DefaultUnlocks":
+                    try:
+                        prop["Value"][0]["Value"] = (
+                            "EMorRecipeUnlockType::DiscoverDependencies"
+                        )
+                        if name == "Advanced_Bannister_Post_Stone":
+                            prop["Value"][3] = advanced_bannister_post_stone_unlock()
+                        count += 1
+                    except (KeyError, IndexError, TypeError):
+                        continue
+    save_json(recipes_path, data)
+    return count
+
+
+def _update_mod_imports(building_dir: str, data_dir: str) -> None:
+    """Apply string table imports to DT_Constructions."""
+    constr_path = os.path.join(building_dir, "DT_Constructions.json")
+    if not os.path.isfile(constr_path):
+        return
+    constr = load_json(constr_path)
+
+    imports_path = os.path.join(data_dir, "Imports.json")
+    if not os.path.isfile(imports_path):
+        return
+    st_imports = load_json(imports_path)
+    arch_st = st_imports["Imports"][0:4]
+
+    moded_len = len(constr["Imports"])
+    serial_deps: list[int] = []
+    for i, imp in enumerate(arch_st):
+        if imp["OuterIndex"] < 0:
+            imp["OuterIndex"] = -(moded_len + i)
+            serial_deps.append(imp["OuterIndex"] - 1)
+
+    constr["Imports"].extend(arch_st)
+    if "SerializationBeforeCreateDependencies" in constr["Exports"][0]:
+        constr["Exports"][0]["SerializationBeforeCreateDependencies"].extend(
+            serial_deps
+        )
+    save_json(constr_path, constr)
+
 
 def build_combined(
     parent: QWidget,
     tobis_json_dir: str,
     game_extract_dir: str,
     tobis_mod_dir: str,
+    data_dir: str | None = None,
 ) -> None:
-    """Run combine_all and show a result dialog."""
+    """Combine all per-item files, restore 1.2 constructions, apply imports."""
     output = os.path.join(tobis_mod_dir, "json_data")
     try:
+        # Step 1: Combine per-item files with vanilla base
         results = combine_all(tobis_json_dir, game_extract_dir, output)
         total = sum(results.values())
         detail = ", ".join(f"{k}: {v}" for k, v in results.items())
-        QMessageBox.information(
-            parent, "Build Complete",
-            f"Combined {total} items into TobisMod/json_data/.\n\n{detail}",
+
+        # Step 2: Restore constructions removed in patch 1.2
+        building_dir = os.path.join(
+            output, "Moria", "Content", "Tech", "Data", "Building",
         )
+        restored = _restore_constructions(building_dir)
+
+        # Step 3: Apply string table imports to DT_Constructions
+        if data_dir is None:
+            data_dir = os.path.join(
+                os.path.dirname(tobis_json_dir.rstrip(os.sep)),
+            )
+        _update_mod_imports(building_dir, data_dir)
+
+        msg = (
+            f"Combined {total} items into TobisMod/json_data/.\n"
+            f"Restored {restored} patch-1.2 constructions.\n"
+            f"Applied string table imports.\n\n{detail}"
+        )
+        QMessageBox.information(parent, "Build Complete", msg)
     except Exception as exc:  # noqa: BLE001
         QMessageBox.critical(parent, "Build Failed", str(exc))
 

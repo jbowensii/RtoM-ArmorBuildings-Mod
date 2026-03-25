@@ -1,0 +1,562 @@
+{
+  "100BuildingsPack_GimlisMap_A": {
+    "name": "Gimli’s Map",
+    "description": "A map showing where the dwarves that answered Gimli’s call."
+  },
+  "100BuildingsPack_GraniteBarrier45_A": {
+    "name": "Granite barrier 45",
+    "description": "A granite barrier rotated 45°"
+  },
+  "100BuildingsPack_GraniteWall45_A": {
+    "name": "Granite wall 45",
+    "description": "A granite wall rotated 45°"
+  },
+  "100BuildingsPack_GuardStatue_A": {
+    "name": "Guard Statue",
+    "description": "A decorative statue"
+  },
+  "AradrenPack_ColumnBase_A": {
+    "name": "Column Base",
+    "description": "A Double Height Column Base"
+  },
+  "AradrenPack_ColumnCapital_A": {
+    "name": "Column Capital",
+    "description": "A Double Height Column Capital"
+  },
+  "AradrenPack_ColumnShaft_A": {
+    "name": "Column Shaft",
+    "description": "A Double Height Column Shaft"
+  },
+  "AradrenPack_DecorativeBarrier_A": {
+    "name": "Decorative Barrier",
+    "description": "A granite decorative barrier"
+  },
+  "AradrenPack_Ladder_A": {
+    "name": "Long Ladder",
+    "description": "A Long Vertical Wooden Ladder"
+  },
+  "AradrenPack_Ladder_B": {
+    "name": "Short Ladder",
+    "description": "A Short Vertical Wooden Ladder"
+  },
+  "AradrenPack_MediumGraniteColumnBase_A": {
+    "name": "Medium Granite Column Base",
+    "description": "A medium granite column base"
+  },
+  "AradrenPack_MediumGraniteColumnCapital_A": {
+    "name": "Medium Granite Column Capital",
+    "description": "A Medium Granite Column Capital"
+  },
+  "AradrenPack_MediumGraniteColumnShaft_A": {
+    "name": "Medium Granite Column Shaft",
+    "description": "A Medium Granite Column Shaft"
+  },
+  "AradrenPack_RopeBarrier_A": {
+    "name": "Rope Barrier",
+    "description": "A Single Segment Rope Barrier"
+  },
+  "AradrenPack_RopeBarrier_B": {
+    "name": "Rope Barrier",
+    "description": "A Two Segment Rope Barrier"
+  },
+  "AradrenPack_RopeBarrier_C": {
+    "name": "Rope Barrier",
+    "description": "A Rope Barrier Corner"
+  },
+  "CurvedPack_CurvedBarrier_A": {
+    "name": "Granite Curved Barrier",
+    "description": "A curved granite barrier"
+  },
+  "CurvedPack_CurvedBarrier_B": {
+    "name": "Wood Curved barrier",
+    "description": "A wooden curved wall"
+  },
+  "CurvedPack_CurvedBarrier_C": {
+    "name": "Thin Wood Curved Barrier",
+    "description": "A Thin Curved Barrier"
+  },
+  "CurvedPack_CurvedStairs_A": {
+    "name": "Narrow Spiral Stone Stairs",
+    "description": "Stairs"
+  },
+  "CurvedPack_CurvedStairs_B": {
+    "name": "Tall Spiral Stone Stairs",
+    "description": "Tall Spiral Stone Stairs"
+  },
+  "CurvedPack_CurvedWall_A": {
+    "name": "Granite Curved Wall",
+    "description": "A curved granite wall"
+  },
+  "CurvedPack_CurvedWall_B": {
+    "name": "Wood Curved wall",
+    "description": "A wooden curved wall"
+  },
+  "CurvedPack_CurvedWall_C": {
+    "name": "Thin Wood Curved Wall",
+    "description": "A Thin Curved Wall"
+  },
+  "GrumniPack_CeilingLamp_A": {
+    "name": "Jade Ceiling Lamp",
+    "description": "A ceiling lamp that produces a green light."
+  },
+  "GrumniPack_CeilingLamp_B": {
+    "name": "Citrine Ceiling Lamp",
+    "description": "A ceiling lamp that produces a yellow light."
+  },
+  "GrumniPack_CeilingLamp_C": {
+    "name": "Zelêb Ceiling Lamp",
+    "description": "A ceiling lamp that produces a blue light."
+  },
+  "GrumniPack_CeilingLamp_D": {
+    "name": "Quartz Ceiling Lamp",
+    "description": "A ceiling lamp that produces a white light."
+  },
+  "GrumniPack_CeilingLamp_E": {
+    "name": "Iolite Ceiling Lamp",
+    "description": "A ceiling lamp that produces a purple light."
+  },
+  "GrumniPack_CeilingLamp_F": {
+    "name": "Amber Ceiling Lamp",
+    "description": "A ceiling lamp that produces a orange light."
+  },
+  "GrunmniPack_ColumnTrimCapital_A": {
+    "name": "Column Trim Capital",
+    "description": "Column Trim Capital"
+  },
+  "GrunmniPack_ColumnTrimShaft_A": {
+    "name": "Short Column Trim Shaft",
+    "description": "Short Column Trim Shaft"
+  },
+  "GrunmniPack_ColumnTrimShaft_B": {
+    "name": "Column Trim Shaft",
+    "description": "Column Trim Shaft"
+  },
+  "GrunmniPack_ShortBrazier_A": {
+    "name": "Short brazier",
+    "description": "A brazier that produces fire light."
+  },
+  "GrunmniPack_ShortBrazier_B": {
+    "name": "Short brazier II",
+    "description": "A brazier with legs that produces fire light."
+  },
+  "MereakPack_Barrel_A": {
+    "name": "Barrel",
+    "description": "A decorative Barrel"
+  },
+  "MereakPack_ColumnTrimBase_A": {
+    "name": "Column Trim Base",
+    "description": "Column Trim Base"
+  },
+  "MereakPack_CornerTrim_A": {
+    "name": "Corner Trim",
+    "description": "A Left Corner Trim"
+  },
+  "MereakPack_CornerTrim_B": {
+    "name": "Corner Trim",
+    "description": "A Right Corner Trim"
+  },
+  "MereakPack_DetailedBaseboard_A": {
+    "name": "Detailed Baseboard",
+    "description": "Detailed Baseboard"
+  },
+  "MereakPack_FigureHead_A": {
+    "name": "Figure Head",
+    "description": "A two winged Figure Head"
+  },
+  "MereakPack_FigureHead_B": {
+    "name": "Figure Head",
+    "description": "Single Finial Figure Head"
+  },
+  "MereakPack_FigureHead_C": {
+    "name": "Figure Head",
+    "description": "A Figure Head"
+  },
+  "MereakPack_GraniteWallBaseboard_A": {
+    "name": "Granite Wall Baseboard",
+    "description": "Granite Wall Baseboard"
+  },
+  "MereakPack_LongShelves_A": {
+    "name": "Long Shelves",
+    "description": "A long set of shelves"
+  },
+  "MereakPack_MediumShelves_A": {
+    "name": "Medium Shelves",
+    "description": "A medium set of shelves"
+  },
+  "MereakPack_MessyWorkbench_A": {
+    "name": "Messy Workbench",
+    "description": "A Messy Workbench"
+  },
+  "MereakPack_NarrowArchwayPillar_A": {
+    "name": "Narrow Archway Pillar",
+    "description": "A Narrow Archway Pillar"
+  },
+  "MereakPack_NarrowGraniteWindow_A": {
+    "name": "Narrow Granite Window",
+    "description": "A narrow Window"
+  },
+  "MereakPack_NotchedArch_A": {
+    "name": "Notched Arch",
+    "description": "Notched Arch"
+  },
+  "MereakPack_NotchedArchway_A": {
+    "name": "Notched Archway",
+    "description": "A Notched Archway"
+  },
+  "MereakPack_OrnateCeiling_A": {
+    "name": "Ornate Ceiling",
+    "description": "A ironwood Ornate Ceiling"
+  },
+  "MereakPack_Pedestal_A": {
+    "name": "Pedestal",
+    "description": "A Pedestal for Statues"
+  },
+  "MereakPack_Sack_A": {
+    "name": "Sack",
+    "description": "A Sand Sack"
+  },
+  "MereakPack_ShortMemorialStatue_A": {
+    "name": "Short Memorial Statue",
+    "description": "A Memorial Statue to honor the fallen"
+  },
+  "MereakPack_SmallMessyWorkbench_A": {
+    "name": "Small Messy Workbench",
+    "description": "A small Messy Workbench"
+  },
+  "MereakPack_ThickDarkWoodFloor_A": {
+    "name": "Thick dark wood Ceiling",
+    "description": "A Thick dark wood Ceiling"
+  },
+  "MereakPack_ThinWoodCrown_A": {
+    "name": "Thin Wood Crown",
+    "description": "A Thin Wood Crown"
+  },
+  "MereakPack_ThinWoodDetail_A": {
+    "name": "Thin Wood Detail",
+    "description": "Thin Wood Detail"
+  },
+  "MereakPack_UnderStairsArch_A": {
+    "name": "Under Stairs Arch",
+    "description": "Under Stairs Arch"
+  },
+  "MereakPack_WoodCrown_A": {
+    "name": "Wood Crown",
+    "description": "Wood Crown"
+  },
+  "MithrilWallsPack_MithrilWall_A": {
+    "name": "Mithril Overlayed Wall",
+    "description": "A granite wall with mithril plating"
+  },
+  "MithrilWallsPack_MithrilWall_B": {
+    "name": "Mithril Overlayed Wall II",
+    "description": "A granite wall with mithril plating and decorative patterns."
+  },
+  "MithrilWallsPack_MithrilWall_C": {
+    "name": "Mithril Overlayed Relief",
+    "description": "Granite wall with a mithril relief of a Dwarf wearing a helmet."
+  },
+  "MithrilWallsPack_MithrilWall_D": {
+    "name": "Mithril Overlayed Relief II",
+    "description": "Granite wall with a silver relief of a Dwarf with braided hair."
+  },
+  "MithrilWallsPack_MithrilWall_E": {
+    "name": "Mithril Overlayed Relief III",
+    "description": "Granite wall with a silver relief of a Dwarf with braided hair flanked by two Dwarves wearing helmets"
+  },
+  "OlfahrPack_Barrel_A": {
+    "name": "Barrel",
+    "description": "An Open Barrel"
+  },
+  "OlfahrPack_Basin_A": {
+    "name": "Basin",
+    "description": "A Metal Basin"
+  },
+  "OlfahrPack_Bucket_A": {
+    "name": "Bucket",
+    "description": "An Small Wooden Bucket"
+  },
+  "OlfahrPack_LargeWinch_A": {
+    "name": "Large Winch",
+    "description": "A Large Winch used in the Mines"
+  },
+  "OlfahrPack_Lift_A": {
+    "name": "Tall Lift",
+    "description": "A Tall Lift used in the Mines"
+  },
+  "OlfahrPack_Lift_B": {
+    "name": "Lift",
+    "description": "A Lift used in the Mines"
+  },
+  "OlfahrPack_OpenWoodenCrate_A": {
+    "name": "Open Wooden Crate",
+    "description": "An Open Wooden Crate"
+  },
+  "OlfahrPack_OpenWoodenCrate_B": {
+    "name": "Open Long Wooden Crate",
+    "description": "An Open Long Wooden Crate"
+  },
+  "OlfahrPack_OrnateWoodenCrate_A": {
+    "name": "Ornate Wooden Crate",
+    "description": "An Ornate Wooden Crate"
+  },
+  "OlfahrPack_OrnateWoodenCrate_B": {
+    "name": "Long Ornate Wooden Crate",
+    "description": "A Long Ornate Wooden Crate"
+  },
+  "OlfahrPack_Wagon_A": {
+    "name": "Wagon",
+    "description": "Wagon used in the Mines"
+  },
+  "OlfahrPack_Windlass_A": {
+    "name": "Windlass",
+    "description": "A Windlass used in the Mines"
+  },
+  "OlfahrPack_WoodenCrate_A": {
+    "name": "Wooden Crate",
+    "description": "A Wooden Crate"
+  },
+  "OlfahrPack_WoodenCrate_B": {
+    "name": "Long Wooden Crate",
+    "description": "A Long Wooden Crate"
+  },
+  "SeraniPack_DwellingCabinet_A": {
+    "name": "Dwelling Cabinet",
+    "description": "An Small Dwelling Cabinet With Two Drawers"
+  },
+  "SeraniPack_DwellingCabinet_B": {
+    "name": "Dwelling Cabinet",
+    "description": "An Small Dwelling Cabinet With Four Drawers"
+  },
+  "SeraniPack_DwellingCabinet_C": {
+    "name": "Dwelling Cabinet",
+    "description": "An Medium Dwelling Cabinet"
+  },
+  "SeraniPack_DwellingCabinet_D": {
+    "name": "Dwelling Cabinet",
+    "description": "A Locked Dwelling Cabinet"
+  },
+  "SeraniPack_GlassCabinet_A": {
+    "name": "Glass Cabinet",
+    "description": "A Glass Cabinet used in Shops"
+  },
+  "SeraniPack_KegStand_A": {
+    "name": "Keg Stand",
+    "description": "Keg Stand"
+  },
+  "SeraniPack_PotsRack_A": {
+    "name": "Pots Rack",
+    "description": "Pots Rack"
+  },
+  "SeraniPack_WoodPile_A": {
+    "name": "Wood Pile",
+    "description": "A Pile of Wood"
+  },
+  "SilverWallsPack_SilverWall_A": {
+    "name": "Silver Overlayed Wall",
+    "description": "Granite Wall with silver plating."
+  },
+  "SilverWallsPack_SilverWall_B": {
+    "name": "Silver Overlayed Wall II",
+    "description": "A granite wall with silver plating and decorative patterns."
+  },
+  "SilverWallsPack_SilverWall_C": {
+    "name": "Silver Overlayed Relief",
+    "description": "Granite wall with a silver relief of a Dwarf wearing a helmet."
+  },
+  "SilverWallsPack_SilverWall_D": {
+    "name": "Silver Overlayed Relief II",
+    "description": "Granite wall with a silver relief of a Dwarf with braided hair."
+  },
+  "SilverWallsPack_SilverWall_E": {
+    "name": "Silver Overlayed Relief III",
+    "description": "Granite wall with a silver relief of a Dwarf with braided hair flanked by two Dwarves wearing helmets."
+  },
+  "StreetLampPack_StreetLamp_A": {
+    "name": "Jade Street Lamp",
+    "description": "An street lamp that produces a green light."
+  },
+  "StreetLampPack_StreetLamp_B": {
+    "name": "Citrine Street Lamp",
+    "description": "An street lamp that produces a yellow light."
+  },
+  "StreetLampPack_StreetLamp_C": {
+    "name": "Zelêb Street Lamp",
+    "description": "An street lamp that produces a blue light."
+  },
+  "StreetLampPack_StreetLamp_D": {
+    "name": "Quartz Street Lamp",
+    "description": "An street lamp that produces a white light."
+  },
+  "StreetLampPack_StreetLamp_E": {
+    "name": "Iolite Street Lamp",
+    "description": "An street lamp that produces a purple light."
+  },
+  "StreetLampPack_StreetLamp_F": {
+    "name": "Amber Street Lamp",
+    "description": "An street lamp that produces a orange light."
+  },
+  "TobiDurinPack_ColumnBase_A": {
+    "name": "Adamant Column Base",
+    "description": "An adamant column base with ithildin relief."
+  },
+  "TobiDurinPack_ColumnBase_Moss_A": {
+    "name": "Mossy Column Base",
+    "description": "A mossy column base with ithildin relief"
+  },
+  "TobiDurinPack_ColumnBase_Redrock_A": {
+    "name": "Crimson Column Base",
+    "description": "A red sanstone column base with ithildin relief"
+  },
+  "TobiDurinPack_ColumnBase_Whitemarble_A": {
+    "name": "Fair Column Base",
+    "description": "A white marble column base with ithildin relief."
+  },
+  "TobiDurinPack_ColumnCapital_A": {
+    "name": "Adamant Column Capital",
+    "description": "An adamant column capital with ithildin relief"
+  },
+  "TobiDurinPack_ColumnCapital_Moss_A": {
+    "name": "Mossy Column Capital",
+    "description": "A mossy column base with ithildin relief"
+  },
+  "TobiDurinPack_ColumnCapital_Redrock_A": {
+    "name": "Crimson Column Capital",
+    "description": "A red sanstone column capital with ithildin relief"
+  },
+  "TobiDurinPack_ColumnCapital_Whitemarble_A": {
+    "name": "Fair Column Capital",
+    "description": "A white marble column capital with ithildin relief."
+  },
+  "TobiDurinPack_ColumnShaft_A": {
+    "name": "Adamant Column Shaft",
+    "description": "An adamant column shaft with ithildin relief"
+  },
+  "TobiDurinPack_ColumnShaft_Moss_A": {
+    "name": "Mossy Column Shaft",
+    "description": "A mossy column base with ithildin relief"
+  },
+  "TobiDurinPack_ColumnShaft_Redrock_A": {
+    "name": "Crimson Column Shaft",
+    "description": "A red sanstone column shaft with ithildin relief"
+  },
+  "TobiDurinPack_ColumnShaft_Whitemarble_A": {
+    "name": "Fair Column Shaft",
+    "description": "A white marble column shaft with ithildin relief"
+  },
+  "TobiFloorPack_InlaidFloor_A": {
+    "name": "Inlaid Adamant Floor",
+    "description": "A decorated adamant floor"
+  },
+  "TobiFloorPack_PatternedFloor_A": {
+    "name": "Patterned Floor",
+    "description": "A decorated floor"
+  },
+  "TobiFloorPack_PatternedFloor_B": {
+    "name": "Patterned White Floor",
+    "description": "A decorated white floor"
+  },
+  "TobiFloorPack_TiledFloor_A": {
+    "name": "Tiled Mossy Floor",
+    "description": "A decorated mossy floor"
+  },
+  "TobiFloorPack_TiledFloor_B": {
+    "name": "Tiled Floor",
+    "description": "A decorated floor"
+  },
+  "TobiFloorPack_TiledFloor_C": {
+    "name": "Tiled Floor",
+    "description": "A decorated white floor"
+  },
+  "TobiPack_AleKeg": {
+    "name": "Ale Keg",
+    "description": "Tavern Keg full of Evening Ale"
+  },
+  "TobiPack_BirdNest_A": {
+    "name": "Bird Nest",
+    "description": "A Bird Nest that produces Eggs"
+  },
+  "TobiPack_BirdNest_B": {
+    "name": "Bird Nest",
+    "description": "A Bird Nest that produces Feathers"
+  },
+  "TobiPack_Ceiling_Center": {
+    "name": "Decorated Wooden Ceiling",
+    "description": "A Decorated Wooden Ceiling"
+  },
+  "TobiPack_Ceiling_Corner": {
+    "name": "Ornate Ceiling Corner",
+    "description": "Place on a wall to create a ceiling above."
+  },
+  "TobiPack_DecoratedArch_A": {
+    "name": "Decorated Arch",
+    "description": "A decorated arch with wood"
+  },
+  "TobiPack_DecoratedArch_B": {
+    "name": "Decorated Arch",
+    "description": "A decorated arch with wood"
+  },
+  "TobiPack_Floor_Wood_3x3_A": {
+    "name": "Decorated Wooden Floor",
+    "description": "A beautiful decorated Wooden Floor"
+  },
+  "TobiPack_LargeBrazier": {
+    "name": "Large Brazier",
+    "description": "A Big Brazier"
+  },
+  "UzbadPack_AngledWoodenFloor_A": {
+    "name": "Angled Wooden Floor",
+    "description": "Angled Wooden Floor"
+  },
+  "UzbadPack_ChoppingBlock_A": {
+    "name": "Chopping block",
+    "description": "Chopping block"
+  },
+  "UzbadPack_KitchenCauldron_A": {
+    "name": "Kitchen Cauldron",
+    "description": "Kitchen Cauldron"
+  },
+  "UzbadPack_ThinWoodFloorTile_A": {
+    "name": "Thin Wood Floor Tile",
+    "description": "Thin Wood Floor Tile"
+  },
+  "ZetaPack_WhiteGraniteBarrier_A": {
+    "name": "White Granite Barrier",
+    "description": "A short barrier made of granite blocks."
+  },
+  "ZetaPack_WhiteGraniteColumnBase_A": {
+    "name": "White Granite Column Base",
+    "description": "A White Granite Column Base"
+  },
+  "ZetaPack_WhiteGraniteColumnCapital_A": {
+    "name": "White Granite Column Capital",
+    "description": "A White Granite Column Capital"
+  },
+  "ZetaPack_WhiteGraniteColumnShaft_A": {
+    "name": "White Granite Column Shaft",
+    "description": "A White Granite Column Shaft"
+  },
+  "ZetaPack_WhiteGraniteDoor_A": {
+    "name": "White Granite Door",
+    "description": "A door set in a fine white granite wall"
+  },
+  "ZetaPack_WhiteGraniteFloor_A": {
+    "name": "White Granite Floor",
+    "description": "A nicely tiled granite floor."
+  },
+  "ZetaPack_WhiteGraniteStairs_A": {
+    "name": "White Granite Stairs",
+    "description": "White Granite Stairs"
+  },
+  "ZetaPack_WhiteGraniteTrimedBarrier_A": {
+    "name": "White Granite Trimed Barrier",
+    "description": "A short barrier made of granite blocks."
+  },
+  "ZetaPack_WhiteGraniteWall_A": {
+    "name": "White Granite Wall",
+    "description": "White Granite Wall"
+  },
+  "ZetaPack_WhiteGraniteWindow_A": {
+    "name": "White Granite Window",
+    "description": "White Granite Window"
+  }
+}

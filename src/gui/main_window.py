@@ -45,53 +45,60 @@ class MainWindow(QMainWindow):
         log.debug("GameExtractDir : %s", game_extract_dir)
 
         # Load shared reference data
-        items = load_json(os.path.join(templates_dir, "MoreBuildings", "Items.json"))
-        cat_tags = load_json(os.path.join(templates_dir, "MoreBuildings", "CategoryTags.json"))
+        items = load_json(os.path.join(
+            templates_dir, "MoreBuildings", "Items.json",
+        ))
+        cat_tags = load_json(os.path.join(
+            templates_dir, "MoreBuildings", "CategoryTags.json",
+        ))
         unlock_buildings = load_json(os.path.join(
-            templates_dir, "MoreBuildings", "UnlockRequirementsItemsConstructions.json"
+            templates_dir, "MoreBuildings",
+            "UnlockRequirementsItemsConstructions.json",
         ))
         unlock_armor = load_json(os.path.join(
-            templates_dir, "MoreArmor", "UnlockRequirementsItemsConstructions.json"
+            templates_dir, "MoreArmor",
+            "UnlockRequirementsItemsConstructions.json",
         ))
 
-        # --- Moding-Tool tabs ---
+        # Common kwargs for generic item tabs
+        common = dict(
+            tobis_json_dir=tobis_json_dir,
+            templates_dir=templates_dir,
+            game_extract_dir=game_extract_dir,
+            tobis_mod_dir=tobis_mod_dir,
+            data_dir=data_dir,
+            items_index=items,
+            unlock_requirements=unlock_armor,
+        )
+
+        # --- Construction tab (custom) ---
         from src.gui.construction_adder_tab import ConstructionAdderTab
-        from src.gui.construction_updater_tab import ConstructionUpdaterTab
-        from src.gui.armor_adder_tab import ArmorAdderTab
-        from src.gui.armor_updater_tab import ArmorUpdaterTab
 
         self.tabs.addTab(
             ConstructionAdderTab(
                 tobis_json_dir, templates_dir, game_extract_dir, tobis_mod_dir,
-                items, cat_tags, unlock_buildings,
+                items, cat_tags, unlock_buildings, data_dir,
             ),
             "New Construction",
         )
-        self.tabs.addTab(
-            ConstructionUpdaterTab(
-                tobis_mod_dir, templates_dir, data_dir,
-                tobis_json_dir, game_extract_dir,
-            ),
-            "Buildings Maintainer",
+
+        # --- Generic item tabs ---
+        from src.gui.item_adder_tab import ItemAdderTab
+        from src.gui.tab_configs import (
+            ARMOR_CONFIG, WEAPON_CONFIG, TOOL_CONFIG,
+            ITEM_CONFIG, LOOT_CONFIG, ORE_CONFIG,
         )
-        self.tabs.addTab(
-            ArmorAdderTab(
-                tobis_json_dir, templates_dir, game_extract_dir, tobis_mod_dir,
-                items, unlock_armor,
-            ),
-            "New Armor",
-        )
-        self.tabs.addTab(
-            ArmorUpdaterTab(
-                tobis_mod_dir, templates_dir, data_dir,
-                tobis_json_dir, game_extract_dir,
-            ),
-            "Armor Maintainer",
-        )
+
+        for config in (ARMOR_CONFIG, WEAPON_CONFIG, TOOL_CONFIG,
+                        ITEM_CONFIG, LOOT_CONFIG, ORE_CONFIG):
+            self.tabs.addTab(
+                ItemAdderTab(config, **common),
+                config.tab_label,
+            )
 
         # --- Pipeline tabs ---
         from src.gui.localization_tab import LocalizationTab
         from src.gui.recipes_tab import RecipesTab
 
         self.tabs.addTab(LocalizationTab(), "Localization")
-        self.tabs.addTab(RecipesTab(), "Recipes")
+        self.tabs.addTab(RecipesTab(), "Color Variants")

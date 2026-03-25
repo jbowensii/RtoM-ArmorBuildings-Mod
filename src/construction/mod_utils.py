@@ -132,6 +132,34 @@ def dt_constructions_handle(
     log.info("DT_Constructions: added %s", unique_tag)
 
 
+def _apply_recipe_overrides(recipe_tpl: dict, overrides: dict) -> None:
+    """Apply GUI field overrides to the recipe template by field Name."""
+    # Map of field name → enum prefix for re-qualifying short values
+    _enum_prefixes = {
+        "BuildProcess": "EBuildProcess",
+        "LocationRequirement": "EConstructionLocation",
+        "PlacementType": "EPlacementType",
+        "FoundationRule": "EFoundationRule",
+        "MonumentType": "EMonumentType",
+        "EnabledState": "ERowEnabledState",
+    }
+
+    for entry in recipe_tpl["Value"]:
+        name = entry.get("Name")
+        if name not in overrides:
+            continue
+        val = overrides[name]
+        if isinstance(val, bool):
+            entry["Value"] = val
+        elif name in _enum_prefixes:
+            prefix = _enum_prefixes[name]
+            if "::" not in str(val):
+                val = f"{prefix}::{val}"
+            entry["Value"] = val
+        else:
+            entry["Value"] = val
+
+
 def dt_construction_recipes_handle(
     unique_tag: str,
     tobis_json_dir: str,
@@ -140,6 +168,8 @@ def dt_construction_recipes_handle(
     required_items: list,
     unlock_option: str,
     unlock_requirement: str,
+    *,
+    recipe_overrides: dict | None = None,
 ) -> None:
     """Write a per-item DT_ConstructionRecipes file."""
     recipe_tpl = load_json(
@@ -175,13 +205,21 @@ def dt_construction_recipes_handle(
 
     recipe_tpl["Name"] = unique_tag
     recipe_tpl["Value"][0]["Value"][0]["Value"] = unique_tag
-    recipe_tpl["Value"][2]["Value"] = flags[0]
-    recipe_tpl["Value"][3]["Value"] = flags[1]
-    recipe_tpl["Value"][4]["Value"] = flags[2]
-    recipe_tpl["Value"][5]["Value"] = flags[3]
-    recipe_tpl["Value"][9]["Value"] = flags[4]
-    recipe_tpl["Value"][10]["Value"] = flags[5]
-    recipe_tpl["Value"][11]["Value"] = flags[6]
+
+    # Apply category flags as defaults
+    if flags:
+        recipe_tpl["Value"][2]["Value"] = flags[0]
+        recipe_tpl["Value"][3]["Value"] = flags[1]
+        recipe_tpl["Value"][4]["Value"] = flags[2]
+        recipe_tpl["Value"][5]["Value"] = flags[3]
+        recipe_tpl["Value"][9]["Value"] = flags[4]
+        recipe_tpl["Value"][10]["Value"] = flags[5]
+        recipe_tpl["Value"][11]["Value"] = flags[6]
+
+    # Apply individual field overrides from the GUI (takes priority over flags)
+    if recipe_overrides:
+        _apply_recipe_overrides(recipe_tpl, recipe_overrides)
+
     recipe_tpl["Value"][16]["Value"] = item_array
 
     if unlock_option == "UnlockRequiredItems":

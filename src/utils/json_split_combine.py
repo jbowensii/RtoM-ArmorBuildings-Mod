@@ -158,6 +158,7 @@ _COMBINE_MAP = [
     ("DT_Items", "Moria/Content/Tech/Data/Items/DT_Items", {}),
     ("DT_Tools", "Moria/Content/Tech/Data/Items/DT_Tools", {}),
     ("DT_Loot", "Moria/Content/Character/AI/DT_Loot", {}),
+    ("DT_Ores", "Moria/Content/Tech/Data/Items/DT_Ores", {}),
     ("DT_CategoryTags", "Moria/Content/Tech/Data/DT_CategoryTags", {}),
 ]
 
