@@ -9,22 +9,22 @@ log = logging.getLogger(__name__)
 
 
 def load_json(path: str) -> dict:
-    """Load and return a JSON file."""
+    """Load and return a JSON file.  Returns ``{}`` on any I/O or parse error."""
     try:
-        with open(path, "r", encoding="utf-8") as f:
-            data = json.load(f)
+        with open(path, "r", encoding="utf-8") as fh:
+            data = json.load(fh)
         log.debug("Loaded: %s", path)
         return data
-    except Exception as e:
-        log.error("Error loading %s: %s", path, e)
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        log.error("Error loading %s: %s", path, exc)
         return {}
 
 
 def save_json(path: str, data: dict) -> None:
-    """Write *data* to a JSON file."""
+    """Write *data* to a JSON file with pretty-print formatting."""
     try:
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=4, ensure_ascii=False)
+        with open(path, "w", encoding="utf-8") as fh:
+            json.dump(data, fh, indent=4, ensure_ascii=False)
         log.debug("Saved: %s", path)
-    except Exception as e:
-        log.error("Error saving %s: %s", path, e)
+    except (OSError, TypeError, ValueError) as exc:
+        log.error("Error saving %s: %s", path, exc)

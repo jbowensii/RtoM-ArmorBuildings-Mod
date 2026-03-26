@@ -22,9 +22,16 @@ source-roots = ["."]
 
 [tool.pylint."messages control"]
 disable = [
-    "C0114",  # missing-module-docstring  (we have them, but wrappers are thin)
+    "C0114",  # missing-module-docstring
     "C0115",  # missing-class-docstring
-    "R0801",  # duplicate-code (legacy wrappers intentionally repeat a pattern)
+    "R0801",  # duplicate-code
+    "E0611",  # no-name-in-module (PySide6 false positives)
+    "R0903",  # too-few-public-methods (QWidget subclasses)
+    "C0415",  # import-outside-toplevel (intentional lazy loading)
+    "R0902",  # too-many-instance-attributes (GUI classes need many widgets)
+    "R0913",  # too-many-arguments (template/config builders)
+    "R0917",  # too-many-positional-arguments
+    "R0914",  # too-many-local-variables (UI setup methods)
 ]
 
 [tool.pylint.format]

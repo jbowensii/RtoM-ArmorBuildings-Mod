@@ -1,15 +1,16 @@
-"""Shared GUI helpers used by multiple tabs.
+"""Shared GUI helpers — build pipeline, item list pane, and list management.
 
-Provides reusable widgets and methods for material pickers, item list
-panes, and the Build Combined Files action.
+The build pipeline combines per-item JSON files with vanilla game data,
+restores constructions removed in patch 1.2, and applies string table
+imports to DT_Constructions.
 """
 
 from __future__ import annotations
 
 import os
+
 from PySide6.QtWidgets import (
-    QComboBox, QCompleter, QHBoxLayout, QLabel, QListWidget,
-    QMessageBox, QPushButton, QSpinBox, QVBoxLayout, QWidget,
+    QLabel, QListWidget, QMessageBox, QPushButton, QVBoxLayout, QWidget,
 )
 
 from src.construction.mod_utils import advanced_bannister_post_stone_unlock
@@ -21,7 +22,8 @@ from src.utils.json_split_combine import combine_all
 # Build Combined Files (Combine + Restore + Update Mod)
 # ---------------------------------------------------------------------------
 
-# Constructions removed in game patch 1.2 that need unlock restoration
+# 32 constructions removed in game patch 1.2 that need their unlock type
+# changed from Manual back to DiscoverDependencies so players can craft them.
 _RESTORE_CONSTRUCTIONS = [
     "Elder_Archway_A", "Advanced_Column_Wood_A", "Advanced_Column_Wood_D",
     "Advanced_Fence_Wood_1m", "Advanced_Fence_Wood", "Crude_Column",
@@ -38,8 +40,20 @@ _RESTORE_CONSTRUCTIONS = [
 ]
 
 
+def _find_prop(values: list, name: str) -> dict | None:
+    """Return the first property dict in *values* whose Name matches."""
+    for prop in values:
+        if prop.get("Name") == name:
+            return prop
+    return None
+
+
 def _restore_constructions(building_dir: str) -> int:
-    """Restore constructions removed in patch 1.2. Returns count restored."""
+    """Restore constructions removed in patch 1.2.
+
+    Sets DefaultUnlocks.UnlockType to DiscoverDependencies for each
+    recipe matching _RESTORE_CONSTRUCTIONS.  Returns count restored.
+    """
     recipes_path = os.path.join(building_dir, "DT_ConstructionRecipes.json")
     if not os.path.isfile(recipes_path):
         return 0
@@ -47,24 +61,32 @@ def _restore_constructions(building_dir: str) -> int:
     count = 0
     for recipe in data["Exports"][0]["Table"]["Data"]:
         name = recipe.get("Name")
-        if name in _RESTORE_CONSTRUCTIONS:
-            for prop in recipe["Value"]:
-                if prop.get("Name") == "DefaultUnlocks":
-                    try:
-                        prop["Value"][0]["Value"] = (
-                            "EMorRecipeUnlockType::DiscoverDependencies"
-                        )
-                        if name == "Advanced_Bannister_Post_Stone":
-                            prop["Value"][3] = advanced_bannister_post_stone_unlock()
-                        count += 1
-                    except (KeyError, IndexError, TypeError):
-                        continue
+        if name not in _RESTORE_CONSTRUCTIONS:
+            continue
+        unlock = _find_prop(recipe["Value"], "DefaultUnlocks")
+        if unlock is None:
+            continue
+        try:
+            unlock["Value"][0]["Value"] = (
+                "EMorRecipeUnlockType::DiscoverDependencies"
+            )
+            if name == "Advanced_Bannister_Post_Stone":
+                unlock["Value"][3] = advanced_bannister_post_stone_unlock()
+            count += 1
+        except (KeyError, IndexError, TypeError):
+            continue
     save_json(recipes_path, data)
     return count
 
 
 def _update_mod_imports(building_dir: str, data_dir: str) -> None:
-    """Apply string table imports to DT_Constructions."""
+    """Append string table imports (ST_Mod_Architecture, ST_Mod_Interactables)
+    to DT_Constructions so the game can resolve mod display names.
+
+    Imports are read from data/Imports.json (first 4 entries). Each import's
+    OuterIndex is reindexed relative to the existing import count, and new
+    serialization dependencies are registered.
+    """
     constr_path = os.path.join(building_dir, "DT_Constructions.json")
     if not os.path.isfile(constr_path):
         return
@@ -76,6 +98,7 @@ def _update_mod_imports(building_dir: str, data_dir: str) -> None:
     st_imports = load_json(imports_path)
     arch_st = st_imports["Imports"][0:4]
 
+    # Reindex: OuterIndex values are negative 1-based refs into Imports[]
     moded_len = len(constr["Imports"])
     serial_deps: list[int] = []
     for i, imp in enumerate(arch_st):
@@ -85,38 +108,39 @@ def _update_mod_imports(building_dir: str, data_dir: str) -> None:
 
     constr["Imports"].extend(arch_st)
     if "SerializationBeforeCreateDependencies" in constr["Exports"][0]:
-        constr["Exports"][0]["SerializationBeforeCreateDependencies"].extend(
-            serial_deps
-        )
+        constr["Exports"][0][
+            "SerializationBeforeCreateDependencies"
+        ].extend(serial_deps)
     save_json(constr_path, constr)
 
 
-def build_combined(
+def build_combined(  # pylint: disable=broad-exception-caught
     parent: QWidget,
     tobis_json_dir: str,
     game_extract_dir: str,
     tobis_mod_dir: str,
     data_dir: str | None = None,
 ) -> None:
-    """Combine all per-item files, restore 1.2 constructions, apply imports."""
+    """Run the full build pipeline: combine → restore → import-fix.
+
+    Steps:
+      1. Combine per-item Tobis_json/ files with vanilla game extract.
+      2. Restore 32 constructions disabled in game patch 1.2.
+      3. Append string table imports to DT_Constructions.
+    """
     output = os.path.join(tobis_mod_dir, "json_data")
     try:
-        # Step 1: Combine per-item files with vanilla base
         results = combine_all(tobis_json_dir, game_extract_dir, output)
         total = sum(results.values())
         detail = ", ".join(f"{k}: {v}" for k, v in results.items())
 
-        # Step 2: Restore constructions removed in patch 1.2
         building_dir = os.path.join(
             output, "Moria", "Content", "Tech", "Data", "Building",
         )
         restored = _restore_constructions(building_dir)
 
-        # Step 3: Apply string table imports to DT_Constructions
         if data_dir is None:
-            data_dir = os.path.join(
-                os.path.dirname(tobis_json_dir.rstrip(os.sep)),
-            )
+            data_dir = os.path.dirname(tobis_json_dir.rstrip(os.sep))
         _update_mod_imports(building_dir, data_dir)
 
         msg = (
@@ -125,7 +149,7 @@ def build_combined(
             f"Applied string table imports.\n\n{detail}"
         )
         QMessageBox.information(parent, "Build Complete", msg)
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         QMessageBox.critical(parent, "Build Failed", str(exc))
 
 
@@ -136,10 +160,9 @@ def build_combined(
 def create_item_list_pane(
     label_text: str = "Saved Items:",
 ) -> tuple[QWidget, QPushButton, QListWidget, QPushButton]:
-    """Create a left-pane widget with Build button, item list, and Delete button.
+    """Create a left-pane widget with Build button, item list, and Delete.
 
-    Returns:
-        (container_widget, build_button, list_widget, delete_button)
+    Returns (container_widget, build_button, list_widget, delete_button).
     """
     layout = QVBoxLayout()
 
@@ -161,11 +184,9 @@ def create_item_list_pane(
 
 
 def refresh_item_list(
-    item_list: QListWidget,
-    tobis_json_dir: str,
-    table_name: str,
+    item_list: QListWidget, tobis_json_dir: str, table_name: str,
 ) -> None:
-    """Reload a QListWidget from per-item files in a Tobis_json subdirectory."""
+    """Reload a QListWidget from per-item JSON files in a subdirectory."""
     item_list.clear()
     dt_dir = os.path.join(tobis_json_dir, table_name)
     if os.path.isdir(dt_dir):
@@ -175,32 +196,22 @@ def refresh_item_list(
 
 
 def delete_per_item(
-    parent: QWidget,
-    item_list: QListWidget,
-    tobis_json_dir: str,
-    tables: list[str],
+    parent: QWidget, item_list: QListWidget,
+    tobis_json_dir: str, tables: list[str],
 ) -> str | None:
     """Delete the selected item's per-item file(s) with confirmation.
 
-    Args:
-        parent: Parent widget for dialogs.
-        item_list: The QListWidget to get selection from.
-        tobis_json_dir: Root of Tobis_json directory.
-        tables: List of table subdirectories to delete from
-                (e.g. ["DT_Constructions", "DT_ConstructionRecipes", "Architecture"]).
-
-    Returns:
-        The deleted tag name, or None if cancelled.
+    Removes matching JSON files from each table subdirectory.
+    Returns the deleted tag name, or None if cancelled.
     """
     current = item_list.currentItem()
     if not current:
-        QMessageBox.warning(parent, "No Selection", "Select an item to delete.")
+        QMessageBox.warning(parent, "No Selection", "Select an item.")
         return None
 
     tag = current.text()
     reply = QMessageBox.question(
-        parent, "Confirm Delete",
-        f"Delete '{tag}'?",
+        parent, "Confirm Delete", f"Delete '{tag}'?",
         QMessageBox.Yes | QMessageBox.No,
     )
     if reply != QMessageBox.Yes:
@@ -210,94 +221,4 @@ def delete_per_item(
         path = os.path.join(tobis_json_dir, table, f"{tag}.json")
         if os.path.isfile(path):
             os.remove(path)
-
     return tag
-
-
-# ---------------------------------------------------------------------------
-# Material Picker
-# ---------------------------------------------------------------------------
-
-def add_material_row(
-    mat_layout: QVBoxLayout,
-    materials_widgets: list,
-    items: dict,
-    max_materials: int = 6,
-    parent: QWidget | None = None,
-) -> bool:
-    """Add a material picker row (category + name + count).
-
-    Returns True if added, False if at max.
-    """
-    if len(materials_widgets) >= max_materials:
-        if parent:
-            QMessageBox.warning(parent, "Limit", f"Max {max_materials} materials.")
-        return False
-
-    row = QHBoxLayout()
-    cat_cb = QComboBox()
-    cat_cb.addItems(list(items.keys()))
-    name_cb = QComboBox()
-    name_cb.setEditable(True)
-    vmap: dict[str, str] = {}
-
-    def _update(category: str) -> None:
-        tags = items.get(category, {})
-        name_cb.clear()
-        vmap.clear()
-        names = []
-        for t, n in tags.items():
-            vmap[n] = t
-            names.append(n)
-        names.sort()
-        name_cb.addItems(names)
-        name_cb.setCompleter(QCompleter(names))
-
-    cat_cb.currentTextChanged.connect(_update)
-    _update(cat_cb.currentText())
-
-    count = QSpinBox()
-    count.setRange(1, 999)
-
-    row.addWidget(cat_cb)
-    row.addWidget(name_cb)
-    row.addWidget(QLabel("x"))
-    row.addWidget(count)
-    mat_layout.addLayout(row)
-    materials_widgets.append((name_cb, count, vmap))
-    return True
-
-
-def remove_material_row(
-    mat_layout: QVBoxLayout,
-    materials_widgets: list,
-    parent: QWidget | None = None,
-) -> bool:
-    """Remove the last material picker row.
-
-    Returns True if removed, False if at minimum.
-    """
-    if len(materials_widgets) <= 1:
-        if parent:
-            QMessageBox.warning(parent, "Minimum", "At least one material required.")
-        return False
-
-    idx = mat_layout.count() - 1
-    item = mat_layout.itemAt(idx)
-    if item and item.layout():
-        while item.layout().count():
-            w = item.layout().takeAt(0).widget()
-            if w:
-                w.setParent(None)
-        mat_layout.removeItem(item.layout())
-    materials_widgets.pop()
-    return True
-
-
-def collect_materials(materials_widgets: list) -> list[tuple[str, int]]:
-    """Extract (tag, count) pairs from the material widgets."""
-    materials = []
-    for name_w, count_w, vmap in materials_widgets:
-        vis = name_w.currentText().strip()
-        materials.append((vmap.get(vis, vis), count_w.value()))
-    return materials

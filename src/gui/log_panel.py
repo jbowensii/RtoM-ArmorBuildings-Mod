@@ -37,11 +37,12 @@ class StdoutCapture:
         self._old_stdout = sys.stdout
 
     def write(self, text: str) -> None:
+        """Forward non-blank text to the QTextEdit via the signal bridge."""
         if text.strip():
             self._bridge.append_text.emit(text.rstrip())
 
     def flush(self) -> None:
-        pass
+        """No-op flush (required by the file-like interface)."""
 
     def __enter__(self) -> StdoutCapture:
         self._old_stdout = sys.stdout

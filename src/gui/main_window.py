@@ -61,15 +61,15 @@ class MainWindow(QMainWindow):
         ))
 
         # Common kwargs for generic item tabs
-        common = dict(
-            tobis_json_dir=tobis_json_dir,
-            templates_dir=templates_dir,
-            game_extract_dir=game_extract_dir,
-            tobis_mod_dir=tobis_mod_dir,
-            data_dir=data_dir,
-            items_index=items,
-            unlock_requirements=unlock_armor,
-        )
+        common = {
+            "tobis_json_dir": tobis_json_dir,
+            "templates_dir": templates_dir,
+            "game_extract_dir": game_extract_dir,
+            "tobis_mod_dir": tobis_mod_dir,
+            "data_dir": data_dir,
+            "items_index": items,
+            "unlock_requirements": unlock_armor,
+        }
 
         # --- Construction tab (custom) ---
         from src.gui.construction_adder_tab import ConstructionAdderTab

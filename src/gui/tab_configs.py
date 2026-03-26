@@ -1,11 +1,42 @@
 """Tab configurations for all item types.
 
-Each config defines which fields to display and how.
+Defines the TabConfig dataclass and per-table configs that drive the
+generic ItemAdderTab.  Each config declares which fields to display,
+their widget types, and whether materials/unlocks are included.
+
 Field tuples: (field_name, widget_type)
   widget_type: "enum", "bool", "int", "float", "tags", "asset", "text"
 """
 
-from src.gui.item_adder_tab import TabConfig
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+
+
+# ── Configuration dataclass ──────────────────────────────────────
+
+@dataclass
+class TabConfig:
+    """Describes what an item tab should display and edit."""
+
+    tab_label: str                      # e.g. "New Weapon"
+    item_table: str                     # e.g. "DT_Weapons"
+    item_struct_label: str              # e.g. "DT_Weapons"
+    recipe_table: str | None = None     # e.g. "DT_ItemRecipes" or None
+    recipe_struct_label: str | None = None
+
+    # Fields to show as editable in the item section
+    # Each tuple: (field_name, widget_type)
+    # widget_type: "enum", "bool", "int", "float", "tags", "asset"
+    item_fields: list[tuple[str, str]] = field(default_factory=list)
+
+    # Fields to show as editable in the recipe section
+    recipe_fields: list[tuple[str, str]] = field(default_factory=list)
+
+    # Whether recipe has materials and unlock sections
+    recipe_has_materials: bool = False
+    recipe_has_unlocks: bool = False
+
 
 # ── Shared recipe fields (DT_ItemRecipes) ────────────────────────
 

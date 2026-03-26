@@ -26,7 +26,7 @@ class GamePathDialog(QDialog):
         self._detected = detect_game_paths()
         self._setup_ui()
 
-    def _setup_ui(self) -> None:
+    def _setup_ui(self) -> None:  # pylint: disable=too-many-statements
         layout = QVBoxLayout()
 
         title = QLabel("Select your Return to Moria installation:")

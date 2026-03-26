@@ -34,7 +34,8 @@ class _ExtractWorker(QThread):
         self.cfg = cfg
         self.manifest = manifest
 
-    def run(self) -> None:
+    def run(self) -> None:  # pylint: disable=broad-exception-caught
+        """Run the extraction pipeline in a background thread."""
         try:
             retoc = os.path.join(self.cfg.utilities_dir, "retoc.exe")
             uassetgui = os.path.join(self.cfg.utilities_dir, "UAssetGUI.exe")
@@ -48,7 +49,7 @@ class _ExtractWorker(QThread):
                 progress=self.progress.emit,
             )
             self.finished.emit(results)
-        except Exception as exc:
+        except Exception as exc:  # pylint: disable=broad-exception-caught
             log.exception("Extraction failed")
             self.error.emit(str(exc))
 

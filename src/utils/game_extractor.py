@@ -125,7 +125,7 @@ ProgressCallback = Callable[[str, int, int], None]
 """Signature: (status_message, current_item, total_items)"""
 
 
-def extract_all(
+def extract_all(  # pylint: disable=too-many-branches
     paks_dir: str,
     retoc_exe: str,
     uassetgui_exe: str,

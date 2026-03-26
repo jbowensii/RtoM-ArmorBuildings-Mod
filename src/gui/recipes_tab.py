@@ -41,6 +41,6 @@ class RecipesTab(QWidget):
             self.output.append("--- Done ---")
         except SystemExit:
             self.output.append("--- Operation exited ---")
-        except Exception:
+        except Exception:  # pylint: disable=broad-exception-caught
             self.output.append(traceback.format_exc())
             QMessageBox.critical(self, "Error", "Patch failed. See output.")

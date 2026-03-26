@@ -150,7 +150,9 @@ def combine_architecture_file(
 # Mapping: table_name → (game_path for vanilla base, combine options)
 _COMBINE_MAP = [
     ("Architecture", None, {"is_arch": True}),
-    ("DT_Constructions", "Moria/Content/Tech/Data/Building/DT_Constructions", {"has_imports": True}),
+    ("DT_Constructions",
+     "Moria/Content/Tech/Data/Building/DT_Constructions",
+     {"has_imports": True}),
     ("DT_ConstructionRecipes", "Moria/Content/Tech/Data/Building/DT_ConstructionRecipes", {}),
     ("DT_ItemRecipes", "Moria/Content/Tech/Data/Items/DT_ItemRecipes", {}),
     ("DT_Armor", "Moria/Content/Tech/Data/Items/DT_Armor", {}),
