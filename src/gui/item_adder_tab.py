@@ -223,10 +223,15 @@ class ItemAdderTab(QWidget):
             self._load_recipe(tag)
 
     def _load_recipe(self, tag: str) -> None:
-        """Load recipe JSON and populate recipe widgets / materials / unlocks."""
+        """Load recipe JSON and populate recipe widgets / materials / unlocks.
+
+        If no recipe file exists for this item, clears the recipe section
+        so stale data from the previous selection doesn't persist.
+        """
         path = os.path.join(
             self.tobis_json_dir, self.cfg.recipe_table, f"{tag}.json")
         if not os.path.isfile(path):
+            self._clear_recipe_fields()
             return
         with open(path, "r", encoding="utf-8") as fh:
             vals = json.load(fh).get("Row", {}).get("Value", [])
@@ -235,6 +240,21 @@ class ItemAdderTab(QWidget):
             self._material_picker.load_from_values(vals)
         if self.cfg.recipe_has_unlocks and self._unlock_picker:
             self._unlock_picker.load_from_values(vals)
+
+    def _clear_recipe_fields(self) -> None:
+        """Reset all recipe widgets to defaults (no recipe for this item)."""
+        for widget in self._recipe_widgets.values():
+            if isinstance(widget, QCheckBox):
+                widget.setChecked(False)
+            elif isinstance(widget, QSpinBox):
+                widget.setValue(0)
+            elif isinstance(widget, QComboBox):
+                widget.setCurrentIndex(0)
+            elif isinstance(widget, QLineEdit):
+                widget.clear()
+        if self.cfg.recipe_has_materials and self._material_picker:
+            self._material_picker.clear_all()
+            self._material_picker.add_row()
 
     def _load_fields_into_widgets(self, values: list,
                                   widgets: dict[str, QWidget]) -> None:

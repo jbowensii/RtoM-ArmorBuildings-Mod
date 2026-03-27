@@ -11,6 +11,8 @@ from PySide6.QtWidgets import (
     QMessageBox, QPushButton, QSpinBox, QStyle, QVBoxLayout, QWidget,
 )
 
+from src.gui.field_helpers import load_item_display_names
+
 
 class MaterialPicker:
     """Dynamic list of material-picker rows (max 6).
@@ -28,7 +30,12 @@ class MaterialPicker:
         self._parent = parent
         self._layout = layout
         self._items_index = items_index
-        self._ac_values = autocomplete_values or []
+        # Convert raw tag autocomplete values to display names where possible
+        self._display_names = load_item_display_names()
+        raw_ac = autocomplete_values or []
+        self._ac_values = sorted({
+            self._display_names.get(v, v) for v in raw_ac
+        })
         self._rows: list[tuple[QComboBox, QSpinBox, dict, QHBoxLayout]] = []
 
     # -- Public API --------------------------------------------------------
@@ -126,7 +133,9 @@ class MaterialPicker:
                             found = True
                             break
                     if not found:
-                        name_cb.setCurrentText(mat_name)
+                        # Fall back to global display name, then raw tag
+                        friendly = self._display_names.get(mat_name, mat_name)
+                        name_cb.setCurrentText(friendly)
                     count_sb.setValue(count)
             if not mats:
                 self.add_row()

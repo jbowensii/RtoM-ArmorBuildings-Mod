@@ -858,7 +858,11 @@
     "values": [
       "Item.Scrap",
       "Item.Wood"
-    ]
+    ],
+    "display_names": {
+      "Item.Scrap": "Metal Scraps",
+      "Item.Wood": "Wood Scraps"
+    }
   },
   "InitialRepairCost.WildcardHandle.RowName": {
     "type": "name",

@@ -53,6 +53,18 @@ def enum_short_values(field_data: dict) -> list[str]:
     })
 
 
+def load_item_display_names() -> dict[str, str]:
+    """Load the tag→display_name mapping (e.g. "Item.Leather" → "Leather").
+
+    Built from Tobi's Items.json (Consumable, Item, Ore categories).
+    """
+    path = os.path.join(_FIELD_VALUES_DIR, "item_display_names.json")
+    if os.path.isfile(path):
+        with open(path, "r", encoding="utf-8") as fh:
+            return json.load(fh)
+    return {}
+
+
 def make_combo(
     values: list[str], editable: bool = True,
 ) -> QComboBox:

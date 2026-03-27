@@ -287,11 +287,14 @@ class ConstructionAdderTab(QWidget):
         self._load_asset(const_vals)
         self._load_const_tags(const_vals)
         self._load_enum_combo(const_vals, "EnabledState", self.const_enabled)
-        # Recipe file
+        # Recipe file — clear if missing so stale data doesn't persist
         rp = os.path.join(self.tobis_json_dir, "DT_ConstructionRecipes", f"{tag}.json")
         if os.path.isfile(rp):
             with open(rp, "r", encoding="utf-8") as fh:
                 self._load_recipe_fields(json.load(fh).get("Row", {}).get("Value", []))
+        else:
+            self._material_picker.clear_all()
+            self._material_picker.add_row()
 
     def _load_name_desc(self, tag: str) -> None:
         """Set name/description from string table or Architecture file."""
