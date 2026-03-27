@@ -227,7 +227,16 @@
       "UnlockInChapter3",
       "UnlockInChapter4",
       "Wonderful_Set_HelmetArmor"
-    ]
+    ],
+    "display_names": {
+      "Amazing_Set_HelmetArmor": "Gatherer’s Hat",
+      "Awesome_Set_HelmetArmor": "Dimrill Helmet",
+      "Classic_Set_HelmetArmor": "Last Alliance Helmet",
+      "Grand_Set_HelmetArmor": "Longbottom Hat",
+      "RedMountains_MinerSet_HelmetArmor": "Miner’s Helmet",
+      "Stunning_Set_HelmetArmor": "Trapper Hat",
+      "Wonderful_Set_HelmetArmor": "Wolf Skin Hat"
+    }
   },
   "CosmeticOwner.RowName": {
     "type": "name",
@@ -251,7 +260,27 @@
       "Nogrod_Set_GlovesArmor",
       "Nogrod_Set_TorsoArmor",
       "None"
-    ]
+    ],
+    "display_names": {
+      "Belegost_Set_BootsArmor": "Belegost Boots",
+      "Belegost_Set_GlovesArmor": "Belegost Gauntlets",
+      "Belegost_Set_HelmetArmor": "Belegost Helmet",
+      "Belegost_Set_TorsoArmor": "Belegost Ringmail",
+      "Durin_Set_BootsArmor": "Durin’s Guard Boots",
+      "Durin_Set_GlovesArmor": "Durin’s Gloves",
+      "Durin_Set_HelmetArmor": "Durin’s Guard Helmet",
+      "Durin_Set_TorsoArmor": "Durin’s Guard Armor",
+      "EreborSteel_APSet_BootsArmor": "Erebor Boots",
+      "EreborSteel_APSet_GlovesArmor": "Erebor Planked Gauntlets",
+      "EreborSteel_APSet_HelmetArmor": "Erebor City Watch Helmet",
+      "EreborSteel_APSet_TorsoArmor": "Erebor Ringmail",
+      "Khazad_Set_BootsArmor": "Khazâd Army Boots ",
+      "Khazad_Set_GlovesArmor": "Khazâd Army Gauntlets",
+      "Khazad_Set_HelmetArmor": "Khazâd Army Helmet",
+      "Khazad_Set_TorsoArmor": "Khazâd Army Armor",
+      "Nogrod_Set_GlovesArmor": "Nogrod Gauntlets",
+      "Nogrod_Set_TorsoArmor": "Nogrod Armor"
+    }
   },
   "DamageModifiers.RowName": {
     "type": "name",

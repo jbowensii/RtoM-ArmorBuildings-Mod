@@ -63,7 +63,24 @@
       "CraftingStation_PurificationStation",
       "CraftingStation_TintingStation",
       "CraftingStation_Workbench"
-    ]
+    ],
+    "display_names": {
+      "100BuildingsPack_TelcharForge_A": "Telchar Forge",
+      "Brewery_Base": "Brew Tank",
+      "Brewery_Massive": "King’s Brew Tank",
+      "Brewery_Small": "Brew Kettle",
+      "CraftingStation_FabricStation": "Loom",
+      "CraftingStation_Hearth_LargeHearth": "Grand Hearth",
+      "CraftingStation_Hearth_MediumHearth": "Tiled Hearth",
+      "CraftingStation_Hearth_MiniHearth": "Small Hearth",
+      "CraftingStation_Kitchen_Oven": "Oven",
+      "CraftingStation_Kitchen_PitBBQ": "Roasting Pit",
+      "CraftingStation_Kitchen_Stove": "Stove",
+      "CraftingStation_LegendaryFloodedFurnace": "Great Belegost Furnace",
+      "CraftingStation_Mill": "Gristmill",
+      "CraftingStation_PurificationStation": "Salt Bath",
+      "CraftingStation_TintingStation": "Ink Grinder"
+    }
   },
   "DefaultRequiredConstructions.RowName": {
     "type": "name",
@@ -73,7 +90,12 @@
       "CraftingStation_ForgeUpgrade_GemCutter",
       "CraftingStation_FurnaceUpgrade",
       "MealTable"
-    ]
+    ],
+    "display_names": {
+      "Brewery_Upgrade": "Alchemical Still",
+      "CraftingStation_FabricStation_Upgrade": "Spinning Wheel",
+      "CraftingStation_FurnaceUpgrade": "Bellows"
+    }
   },
   "DefaultRequiredMaterials.Count": {
     "type": "int",
@@ -391,7 +413,25 @@
       "OrcHunter_OrcTrophy_A",
       "RohanPack_Deco_Banner_A",
       "Settlement_Stone_Small"
-    ]
+    ],
+    "display_names": {
+      "Beorn_Wall_4x3_A": "Timber Wall",
+      "Brewery_Base": "Brew Tank",
+      "Brewery_Massive": "King’s Brew Tank",
+      "Brewery_Small": "Brew Kettle",
+      "CraftingStation_FabricStation": "Loom",
+      "CraftingStation_FabricStation_Upgrade": "Spinning Wheel",
+      "CraftingStation_Kitchen_Oven": "Oven",
+      "CraftingStation_Kitchen_PitBBQ": "Roasting Pit",
+      "CraftingStation_Kitchen_Stove": "Stove",
+      "CraftingStation_LegendaryFloodedFurnace": "Great Belegost Furnace",
+      "CraftingStation_Mill": "Gristmill",
+      "EntPack_Everspring": "Wellingspring",
+      "HollyDecoration_A": "Holly Wreath",
+      "OrcHunter_OrcTrophy_A": "Rukhus Spike",
+      "RohanPack_Deco_Banner_A": "Rohirrim Banner",
+      "Settlement_Stone_Small": "Rallystone"
+    }
   },
   "DefaultUnlocks.UnlockRequiredFragments.RowName": {
     "type": "name",
@@ -446,7 +486,29 @@
       "WarAxe_1h_t4",
       "WonderfulShield",
       "arrows_elven"
-    ]
+    ],
+    "display_names": {
+      "Battleaxe_2h_t1": "Steel Battleaxe",
+      "Crossbow": "First Age Crossbow",
+      "Durin_Set_HelmetArmor": "Durin’s Guard Helmet",
+      "Durins_Axe": "Durin’s Axe",
+      "EreborSteel_APSet_BootsArmor": "Erebor Boots",
+      "EreborSteel_APSet_GlovesArmor": "Erebor Planked Gauntlets",
+      "EreborSteel_APSet_HelmetArmor": "Erebor City Watch Helmet",
+      "EreborSteel_APSet_TorsoArmor": "Erebor Ringmail",
+      "EregionElf_Set_Shield": "Eregion Shield",
+      "Hammer_2h_t1": "Khazâd War Mattock",
+      "IronHills_APSet_GlovesArmor": "Iron Hills Gloves",
+      "IronHills_APSet_Shield": "Iron Hills Shield",
+      "IronHills_APSet_TorsoArmor": "Iron Hills Armor",
+      "Mattock_1h_t1": "Last Alliance Maul",
+      "Mattock_1h_t2": "Khazâd Maul",
+      "PolishedSilver": "Mirrored Silver",
+      "Sword_1h_t2": "Steel Sword",
+      "Sword_2h_t1": "First Age Greatsword",
+      "WarAxe_1h_t1": "Iron War Axe",
+      "WarAxe_1h_t4": "Khazâd War Axe"
+    }
   },
   "DefaultUnlocks.UnlockRequiredItems.RowName": {
     "type": "name",
@@ -1070,7 +1132,10 @@
     "type": "name",
     "values": [
       "CraftingStation_FurnaceUpgrade"
-    ]
+    ],
+    "display_names": {
+      "CraftingStation_FurnaceUpgrade": "Bellows"
+    }
   },
   "SandboxRequiredMaterials.Count": {
     "type": "int",
@@ -1119,7 +1184,10 @@
       "CraftingStation_LegendayElvishFurnace",
       "CraftingStation_MithrilForge",
       "CraftingStation_NogrodForge"
-    ]
+    ],
+    "display_names": {
+      "CraftingStation_FurnaceUpgrade": "Bellows"
+    }
   },
   "SandboxUnlocks.UnlockRequiredFragments.RowName": {
     "type": "name",
@@ -1161,7 +1229,20 @@
       "SouthernmostHelm",
       "StunningShield",
       "WonderfulHelm"
-    ]
+    ],
+    "display_names": {
+      "Durin_Set_HelmetArmor": "Durin’s Guard Helmet",
+      "Durins_Axe": "Durin’s Axe",
+      "EreborSteel_APSet_BootsArmor": "Erebor Boots",
+      "EreborSteel_APSet_GlovesArmor": "Erebor Planked Gauntlets",
+      "EreborSteel_APSet_HelmetArmor": "Erebor City Watch Helmet",
+      "EreborSteel_APSet_TorsoArmor": "Erebor Ringmail",
+      "EregionElf_Set_Shield": "Eregion Shield",
+      "IronHills_APSet_GlovesArmor": "Iron Hills Gloves",
+      "IronHills_APSet_Shield": "Iron Hills Shield",
+      "IronHills_APSet_TorsoArmor": "Iron Hills Armor",
+      "OakenShield_TBDSet_Shield": "Oakenshield"
+    }
   },
   "SandboxUnlocks.UnlockRequiredItems.RowName": {
     "type": "name",

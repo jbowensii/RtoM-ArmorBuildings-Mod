@@ -30,11 +30,12 @@ class MaterialPicker:
         self._parent = parent
         self._layout = layout
         self._items_index = items_index
-        # Convert raw tag autocomplete values to display names where possible
+        # Convert raw tag autocomplete values to "Display Name (tag)" format
         self._display_names = load_item_display_names()
         raw_ac = autocomplete_values or []
         self._ac_values = sorted({
-            self._display_names.get(v, v) for v in raw_ac
+            f"{self._display_names[v]} ({v})" if v in self._display_names else v
+            for v in raw_ac
         })
         self._rows: list[tuple[QComboBox, QSpinBox, dict, QHBoxLayout]] = []
 
@@ -64,13 +65,15 @@ class MaterialPicker:
             tags = self._items_index.get(category, {})
             name_cb.clear()
             vmap.clear()
-            names = []
+            labels = []
             for tag, display in tags.items():
-                vmap[display] = tag
-                names.append(display)
-            names.sort()
-            name_cb.addItems(names)
-            all_vals = sorted(set(names + self._ac_values))
+                # Show as "Display Name (tag)" for clarity
+                label = f"{display} ({tag})"
+                vmap[label] = tag
+                labels.append(label)
+            labels.sort()
+            name_cb.addItems(labels)
+            all_vals = sorted(set(labels + self._ac_values))
             name_cb.setCompleter(QCompleter(all_vals))
 
         cat_cb.currentTextChanged.connect(_on_category)
@@ -106,11 +109,18 @@ class MaterialPicker:
             self._remove_force(self._rows[-1])
 
     def collect(self) -> list[tuple[str, int]]:
-        """Return [(material_tag, count), ...] from current rows."""
+        """Return [(material_tag, count), ...] from current rows.
+
+        Resolves "Display Name (tag)" back to just the tag.
+        """
         materials = []
         for name_cb, count_sb, vmap, _ in self._rows:
             display = name_cb.currentText().strip()
-            materials.append((vmap.get(display, display), count_sb.value()))
+            tag = vmap.get(display, display)
+            # Handle "Display Name (tag)" format — extract tag from parens
+            if tag == display and "(" in display and display.endswith(")"):
+                tag = display.rsplit("(", maxsplit=1)[-1].rstrip(")")
+            materials.append((tag, count_sb.value()))
         return materials
 
     def load_from_values(self, values: list) -> None:
@@ -133,9 +143,12 @@ class MaterialPicker:
                             found = True
                             break
                     if not found:
-                        # Fall back to global display name, then raw tag
-                        friendly = self._display_names.get(mat_name, mat_name)
-                        name_cb.setCurrentText(friendly)
+                        # Fall back to "Display Name (tag)" format
+                        if mat_name in self._display_names:
+                            label = f"{self._display_names[mat_name]} ({mat_name})"
+                        else:
+                            label = mat_name
+                        name_cb.setCurrentText(label)
                     count_sb.setValue(count)
             if not mats:
                 self.add_row()
