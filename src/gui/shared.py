@@ -2,7 +2,8 @@
 
 The build pipeline combines per-item JSON files with vanilla game data,
 restores constructions removed in patch 1.2, and applies string table
-imports to DT_Constructions.
+imports to all DataTables (DT_Constructions, DT_Armor, DT_Weapons,
+DT_Tools, DT_Items).
 """
 
 from __future__ import annotations
@@ -79,39 +80,81 @@ def _restore_constructions(building_dir: str) -> int:
     return count
 
 
-def _update_mod_imports(building_dir: str, data_dir: str) -> None:
-    """Append string table imports (ST_Mod_Architecture, ST_Mod_Interactables)
-    to DT_Constructions so the game can resolve mod display names.
+def _append_string_table_imports(
+    json_path: str, st_entries: list[dict],
+) -> None:
+    """Append string table Package+StringTable import pairs to a DataTable JSON.
 
-    Imports are read from data/Imports.json (first 4 entries). Each import's
-    OuterIndex is reindexed relative to the existing import count, and new
-    serialization dependencies are registered.
+    For each pair, the Package entry has OuterIndex=0 (no parent). The
+    StringTable entry's OuterIndex is reindexed to point to its Package
+    entry using negative 1-based indexing into the Imports array.
+    The StringTable's position is then added to
+    Exports[0].SerializationBeforeCreateDependencies.
+
+    Args:
+        json_path: Path to the combined DataTable JSON.
+        st_entries: List of import dicts (Package + StringTable pairs)
+                    with placeholder OuterIndex values.
     """
-    constr_path = os.path.join(building_dir, "DT_Constructions.json")
-    if not os.path.isfile(constr_path):
+    import copy
+    if not os.path.isfile(json_path):
         return
-    constr = load_json(constr_path)
+    data = load_json(json_path)
 
+    # Deep-copy so we don't mutate the source for the next call
+    entries = copy.deepcopy(st_entries)
+
+    moded_len = len(data["Imports"])
+    serial_deps: list[int] = []
+    for i, imp in enumerate(entries):
+        if imp["ClassName"] != "Package" and imp["OuterIndex"] < 0:
+            # Point to the Package entry we're about to append
+            imp["OuterIndex"] = -(moded_len + i)
+            # StringTable position (1-based negative) goes into serial deps
+            serial_deps.append(-(moded_len + i + 1))
+
+    data["Imports"].extend(entries)
+    if "SerializationBeforeCreateDependencies" in data["Exports"][0]:
+        data["Exports"][0][
+            "SerializationBeforeCreateDependencies"
+        ].extend(serial_deps)
+    save_json(json_path, data)
+
+
+def _update_all_mod_imports(output_dir: str, data_dir: str) -> None:
+    """Apply string table imports to all DataTables that reference mod strings.
+
+    - DT_Constructions: ST_Mod_Architecture + ST_Mod_Interactables (entries 0-3)
+    - DT_Armor, DT_Weapons, DT_Tools, DT_Items: ST_Mod_Items (entries 6-7)
+
+    Import entries are read from data/Imports.json.
+    """
     imports_path = os.path.join(data_dir, "Imports.json")
     if not os.path.isfile(imports_path):
         return
     st_imports = load_json(imports_path)
-    arch_st = st_imports["Imports"][0:4]
+    all_imports = st_imports.get("Imports", [])
 
-    # Reindex: OuterIndex values are negative 1-based refs into Imports[]
-    moded_len = len(constr["Imports"])
-    serial_deps: list[int] = []
-    for i, imp in enumerate(arch_st):
-        if imp["OuterIndex"] < 0:
-            imp["OuterIndex"] = -(moded_len + i)
-            serial_deps.append(imp["OuterIndex"] - 1)
+    # Constructions need Architecture + Interactables string tables
+    arch_interactables = all_imports[0:4]
+    building_dir = os.path.join(
+        output_dir, "Moria", "Content", "Tech", "Data", "Building",
+    )
+    _append_string_table_imports(
+        os.path.join(building_dir, "DT_Constructions.json"),
+        arch_interactables,
+    )
 
-    constr["Imports"].extend(arch_st)
-    if "SerializationBeforeCreateDependencies" in constr["Exports"][0]:
-        constr["Exports"][0][
-            "SerializationBeforeCreateDependencies"
-        ].extend(serial_deps)
-    save_json(constr_path, constr)
+    # Armor, Weapons, Tools, Items need ST_Mod_Items
+    items_st = all_imports[6:8]
+    items_dir = os.path.join(
+        output_dir, "Moria", "Content", "Tech", "Data", "Items",
+    )
+    for table in ("DT_Armor", "DT_Weapons", "DT_Tools", "DT_Items"):
+        _append_string_table_imports(
+            os.path.join(items_dir, f"{table}.json"),
+            items_st,
+        )
 
 
 def build_combined(  # pylint: disable=broad-exception-caught
@@ -126,7 +169,9 @@ def build_combined(  # pylint: disable=broad-exception-caught
     Steps:
       1. Combine per-item Tobis_json/ files with vanilla game extract.
       2. Restore 32 constructions disabled in game patch 1.2.
-      3. Append string table imports to DT_Constructions.
+      3. Append string table imports to all DataTables:
+         - DT_Constructions: ST_Mod_Architecture + ST_Mod_Interactables
+         - DT_Armor/Weapons/Tools/Items: ST_Mod_Items
     """
     output = os.path.join(tobis_mod_dir, "json_data")
     try:
@@ -141,7 +186,7 @@ def build_combined(  # pylint: disable=broad-exception-caught
 
         if data_dir is None:
             data_dir = os.path.dirname(tobis_json_dir.rstrip(os.sep))
-        _update_mod_imports(building_dir, data_dir)
+        _update_all_mod_imports(output, data_dir)
 
         msg = (
             f"Combined {total} items into TobisMod/json_data/.\n"
