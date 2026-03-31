@@ -67,6 +67,10 @@ class ItemAdderTab(QWidget):
         self.mat_layout: QVBoxLayout | None = None
         self._material_picker: MaterialPicker | None = None
         self._unlock_picker: UnlockPicker | None = None
+        self._master_combo: QComboBox | None = None
+        self._master_rules: dict | None = None
+        self._master_driven_fields: set[str] = set()
+        self._weapon_type_tag: str = ""
         # Field-value indexes for autocomplete
         self._item_fv = load_field_values(cfg.item_table)
         self._recipe_fv = (
@@ -165,17 +169,90 @@ class ItemAdderTab(QWidget):
         parent.addWidget(group)
 
     def _build_item_fields(self, parent: QVBoxLayout) -> None:
-        """Editable widgets for each configured item field."""
+        """Editable widgets for each configured item field.
+
+        If the config has a master_selector, a combo is placed at the top
+        that auto-fills the linked fields and makes them read-only.
+        """
         if not self.cfg.item_fields:
             return
         group = QGroupBox(self.cfg.item_struct_label)
+        layout = QVBoxLayout()
+
+        # Master selector (e.g. Weapon Type → auto-fills DamageType, Tags)
+        if self.cfg.master_selector:
+            self._build_master_selector(layout)
+
         form = QFormLayout()
         for name, wtype in self.cfg.item_fields:
             w = self._create_field_widget(name, wtype, self._item_fv)
+            # Disable fields driven by the master selector
+            if name in self._master_driven_fields:
+                w.setEnabled(False)
             self._item_widgets[name] = w
             form.addRow(name, w)
-        group.setLayout(form)
+        layout.addLayout(form)
+        group.setLayout(layout)
         parent.addWidget(group)
+
+    def _build_master_selector(self, layout: QVBoxLayout) -> None:
+        """Build a master combo that auto-fills multiple linked fields."""
+        for label, choices in self.cfg.master_selector.items():
+            # Collect which fields this selector drives
+            for fields in choices.values():
+                self._master_driven_fields.update(fields.keys())
+            self._master_rules = choices
+
+            form = QFormLayout()
+            self._master_combo = QComboBox()
+            self._master_combo.addItems(["(select)"] + list(choices.keys()))
+            self._master_combo.currentTextChanged.connect(
+                self._on_master_changed)
+            form.addRow(label, self._master_combo)
+            layout.addLayout(form)
+
+    def _on_master_changed(self, selection: str) -> None:
+        """Auto-fill linked fields when the master selector changes."""
+        if not self._master_rules or selection == "(select)":
+            return
+        fields = self._master_rules.get(selection, {})
+        for field_name, value in fields.items():
+            # WeaponTypeTag is stored but not a visible widget
+            if field_name == "WeaponTypeTag":
+                self._weapon_type_tag = value
+                continue
+            widget = self._item_widgets.get(field_name)
+            if widget is None:
+                continue
+            if isinstance(widget, QComboBox):
+                idx = widget.findText(value)
+                if idx >= 0:
+                    widget.setCurrentIndex(idx)
+                else:
+                    widget.setCurrentText(value)
+            elif isinstance(widget, QLineEdit):
+                widget.setText(value)
+
+    def _reverse_lookup_master(self, values: list) -> None:
+        """Set the master combo by matching existing item data to rules."""
+        if not self._master_rules or not self._master_combo:
+            return
+        # Try to match DamageType.TagName to a weapon type
+        damage_type = ""
+        for entry in values:
+            if entry.get("Name") == "DamageType":
+                try:
+                    damage_type = entry["Value"][0]["Value"]
+                except (KeyError, IndexError, TypeError):
+                    pass
+                break
+        if not damage_type:
+            return
+        for weapon_type, fields in self._master_rules.items():
+            if fields.get("DamageType.TagName") == damage_type:
+                self._master_combo.setCurrentText(weapon_type)
+                self._weapon_type_tag = fields.get("WeaponTypeTag", "")
+                return
 
     def _build_recipe_fields(self, parent: QVBoxLayout) -> None:
         """Recipe fields, materials (MaterialPicker), unlocks (UnlockPicker)."""
@@ -259,6 +336,10 @@ class ItemAdderTab(QWidget):
         self.name_input.clear()
         self.tag_display.clear()
         self.desc_input.clear()
+        # Reset master selector (e.g. Weapon Type)
+        if self._master_combo:
+            self._master_combo.setCurrentIndex(0)
+        self._weapon_type_tag = ""
         # Reset item field widgets to defaults
         for widget in self._item_widgets.values():
             if isinstance(widget, QCheckBox):
@@ -309,6 +390,10 @@ class ItemAdderTab(QWidget):
 
         # Apply widget values to the template row
         self._apply_widgets_to_row(row, self._item_widgets)
+
+        # Inject weapon type tag into the Tags array (alongside UI tag)
+        if self._weapon_type_tag:
+            self._inject_extra_tag(row, "Tags", self._weapon_type_tag)
 
         item_data = {
             "NameMap": [tag],
@@ -410,6 +495,23 @@ class ItemAdderTab(QWidget):
                 entry["Value"] = text
 
     @staticmethod
+    def _inject_extra_tag(row: dict, field_name: str, tag: str) -> None:
+        """Append an extra gameplay tag to a Tags-type field's value array.
+
+        Used to inject WeaponTypeTag alongside the UI tag set by the combo.
+        """
+        for entry in row.get("Value", []):
+            if entry.get("Name") != field_name:
+                continue
+            try:
+                tag_list = entry["Value"][0]["Value"]
+                if isinstance(tag_list, list) and tag not in tag_list:
+                    tag_list.append(tag)
+            except (KeyError, IndexError, TypeError):
+                pass
+            return
+
+    @staticmethod
     def _apply_materials_to_row(row: dict,
                                 materials: list[tuple[str, int]]) -> None:
         """Write material list into the DefaultRequiredMaterials field."""
@@ -481,7 +583,11 @@ class ItemAdderTab(QWidget):
                     self.name_input.setText(v)
                 elif n == "Description" and isinstance(v, str):
                     self.desc_input.setText(v)
-        self._load_fields_into_widgets(row.get("Value", []), self._item_widgets)
+        item_values = row.get("Value", [])
+        self._load_fields_into_widgets(item_values, self._item_widgets)
+        # Reverse-lookup master selector (e.g. Weapon Type from DamageType)
+        if self.cfg.master_selector:
+            self._reverse_lookup_master(item_values)
         if self.cfg.recipe_table:
             self._load_recipe(tag)
 

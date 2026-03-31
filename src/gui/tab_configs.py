@@ -38,6 +38,11 @@ class TabConfig:
     recipe_has_materials: bool = False
     recipe_has_unlocks: bool = False
 
+    # Optional master-selector that auto-fills multiple fields.
+    # Dict of { "SelectorLabel": { "Choice": { "field": "value", ...}, ...} }
+    # Fields listed here become read-only, driven by the selector.
+    master_selector: dict | None = None
+
 
 # ── Shared recipe fields (DT_ItemRecipes) ────────────────────────
 
@@ -92,18 +97,67 @@ ARMOR_CONFIG = TabConfig(
 
 # ── Weapons ──────────────────────────────────────────────────────
 
+# Weapon Type master-selector: auto-fills DamageType, UI Tag, and Weapon Type Tag.
+# NOTE: Mattock/Maul tags are intentionally inverted — this is a known game bug
+# that we must replicate for compatibility.
+_WEAPON_TYPE_RULES = {
+    "Weapon Type": {
+        "Axe": {
+            "DamageType.TagName": "Damage.Slashing.Axe.1h",
+            "Tags.Tags": "UI.Weapon.1h",
+            "WeaponTypeTag": "Item.Weapon.WarAxe",
+        },
+        "Sword": {
+            "DamageType.TagName": "Damage.Slashing.Sword.1h",
+            "Tags.Tags": "UI.Weapon.1h",
+            "WeaponTypeTag": "Item.Weapon.Sword.1h",
+        },
+        "Maul": {
+            "DamageType.TagName": "Damage.Bludgeon.Hammer.1h",
+            "Tags.Tags": "UI.Weapon.1h",
+            "WeaponTypeTag": "Item.Weapon.Mattock",  # Inverted on purpose!
+        },
+        "Spear": {
+            "DamageType.TagName": "Damage.Piercing.Spear",
+            "Tags.Tags": "UI.Weapon.1h",
+            "WeaponTypeTag": "Item.Weapon.Spear",
+        },
+        "Battleaxe": {
+            "DamageType.TagName": "Damage.Slashing.Axe.2h",
+            "Tags.Tags": "UI.Weapon.2h",
+            "WeaponTypeTag": "Item.Weapon.Battleaxe",
+        },
+        "Greatsword": {
+            "DamageType.TagName": "Damage.Slashing.Sword.2h",
+            "Tags.Tags": "UI.Weapon.2h",
+            "WeaponTypeTag": "Item.Weapon.Sword.2h",
+        },
+        "Halberd": {
+            "DamageType.TagName": "Damage.Slashing.Halberd",
+            "Tags.Tags": "UI.Weapon.2h",
+            "WeaponTypeTag": "Item.Weapon.Halberd",
+        },
+        "Mattock": {
+            "DamageType.TagName": "Damage.Bludgeon.Hammer.2h",
+            "Tags.Tags": "UI.Weapon.2h",
+            "WeaponTypeTag": "Item.Weapon.Hammer",  # Inverted on purpose!
+        },
+    },
+}
+
 WEAPON_CONFIG = TabConfig(
     tab_label="New Weapon",
     item_table="DT_Weapons",
     item_struct_label="DT_Weapons",
     recipe_table="DT_ItemRecipes",
     recipe_struct_label="DT_ItemRecipes (Weapon Recipe)",
+    master_selector=_WEAPON_TYPE_RULES,
     item_fields=[
         # Identity
         ("Actor", "asset"),             # Blueprint path to 3D model
         ("Icon", "asset"),              # UI icon texture path
-        ("DamageType.TagName", "tags"),  # Damage.Slashing.Sword.1h, etc.
-        ("Tags.Tags", "tags"),           # UI.Weapon.1h, Item.Weapon.Sword, etc.
+        ("DamageType.TagName", "tags"),  # Auto-filled by Weapon Type
+        ("Tags.Tags", "tags"),           # Auto-filled by Weapon Type
         # Combat stats
         ("Damage", "int"),
         ("Speed", "float"),
