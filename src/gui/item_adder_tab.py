@@ -443,13 +443,17 @@ class ItemAdderTab(QWidget):
         # Reset recipe widgets
         self._clear_recipe_fields()
 
+    # Tables that require a Broken_ duplicate when saving
+    _BROKEN_VARIANT_TABLES = frozenset({"DT_Weapons", "DT_Tools"})
+
     # ── Save item ────────────────────────────────────────────────
 
     def _save(self) -> None:
         """Save the current form as a per-item JSON file.
 
         Uses the Name Tag as the filename. Creates both the item file
-        and (if applicable) the recipe file.
+        and (if applicable) the recipe file. For DT_Weapons and DT_Tools,
+        also creates a Broken_ variant with the same fields.
         """
         tag = self.tag_display.text().strip()
         if not tag:
@@ -459,6 +463,12 @@ class ItemAdderTab(QWidget):
 
         # Save item per-item file
         self._save_item_file(tag)
+
+        # Auto-create Broken_ variant for weapons and tools
+        if self.cfg.item_table in self._BROKEN_VARIANT_TABLES:
+            broken_tag = f"Broken_{tag}" if not tag.startswith("Broken_") else tag
+            if broken_tag != tag:
+                self._save_item_file(broken_tag)
 
         # Save recipe per-item file (if this tab has recipes)
         if self.cfg.recipe_table and self._recipe_template:
