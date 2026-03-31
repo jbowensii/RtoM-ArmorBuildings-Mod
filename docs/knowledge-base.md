@@ -364,13 +364,20 @@ Architecture. Each per-item Architecture file has this simple structure:
 
 ### Tag Naming Convention
 
-Item tags follow the pattern: `{PackName}_{ItemName}_{Letter}`
+Item tags must contain **no spaces** — use underscores. The GUI auto-replaces spaces
+with underscores as you type.
 
-- **PackName** — The contributor's pack name (e.g., TobiPack, AradrenPack, 100BuildingsPack)
+For constructions, tags follow the pattern: `{PackName}_{ItemName}_{Letter}`
+- **PackName** — The contributor's pack name (e.g., TobiPack, AradrenPack)
 - **ItemName** — A human-readable item name in TitleCase (e.g., GraniteWall, AleKeg)
 - **Letter** — An auto-assigned suffix (A-Z) to ensure uniqueness
 
-Examples: `TobiPack_AleKeg_A`, `100BuildingsPack_GimlisMap_A`, `AradrenPack_ColumnBase_A`
+For weapons, tools, and other items, tags follow: `{Name}_{Type}`
+- Example: `Mereak_Battleaxe`, `Restoration_Hammer_Tobi`, `CeibaCutting`
+
+Examples: `TobiPack_AleKeg_A`, `100BuildingsPack_GimlisMap_A`, `Mereak_Battleaxe`
+
+The Pack Name field has autocomplete from 33 known packs (unified across all tabs).
 
 ---
 
@@ -664,11 +671,95 @@ the category is selected.
 
 ## Armor, Weapon, Tool, and Item Workflow
 
-These four types all follow the same pattern:
+### Common Workflow (all four types)
 
-1. Select an item from the left-side list
-2. View its properties (read-only Basic Info, editable item fields)
-3. View/edit its recipe from DT_ItemRecipes (materials, unlock conditions)
+Each tab has the same left/right pane layout:
+
+**Left pane:**
+- **Build Combined Files** button — runs the full pipeline
+- Scrollable item list showing all per-item files
+- **New** button — clears the form for a new entry
+- **Delete** button — removes the selected item and its associated files
+
+**Right pane (scrollable):**
+- **Basic Info** — Pack Name (editable with autocomplete from 33 known packs),
+  Name, Name Tag (no spaces — auto-replaces with underscores), Description
+- **Item fields** — All editable properties for the DataTable (see per-tab details below)
+- **Recipe fields** — DT_ItemRecipes properties (if this item type has recipes)
+- **Save** button — writes per-item JSON using the Name Tag as the filename
+
+### Creating a New Item
+
+1. Click **New** on the left pane to clear the form
+2. Enter the **Pack Name** (e.g., "Tobi")
+3. Enter the **Name Tag** — no spaces allowed, use underscores (e.g., `Mereak_Battleaxe`)
+4. Fill in the item-specific fields
+5. Fill in the recipe fields (materials, unlock conditions)
+6. Click **Save** — creates the per-item JSON files in `Tobis_json/`
+
+### NameMap Generation
+
+When saving, the tool automatically builds a complete NameMap for each per-item file
+by walking the JSON structure and collecting all referenced strings (field names, enum
+values, struct types, property type names, asset paths, gameplay tags). This matches
+the format expected by UAssetAPI and the game engine. String table references
+(ST_Mod_Items) are added later during the Build Combined step.
+
+### Weapon-Specific: Weapon Type Selector
+
+The New Weapon tab has a **Weapon Type** master-selector dropdown that auto-fills
+three fields when you select a weapon type:
+
+| Weapon Type | DamageType | UI Tag | Weapon Type Tag |
+|-------------|-----------|--------|-----------------|
+| Axe | Damage.Slashing.Axe.1h | UI.Weapon.1h | Item.Weapon.WarAxe |
+| Sword | Damage.Slashing.Sword.1h | UI.Weapon.1h | Item.Weapon.Sword.1h |
+| Maul | Damage.Bludgeon.Hammer.1h | UI.Weapon.1h | Item.Weapon.Mattock* |
+| Spear | Damage.Piercing.Spear | UI.Weapon.1h | Item.Weapon.Spear |
+| Battleaxe | Damage.Slashing.Axe.2h | UI.Weapon.2h | Item.Weapon.Battleaxe |
+| Greatsword | Damage.Slashing.Sword.2h | UI.Weapon.2h | Item.Weapon.Sword.2h |
+| Halberd | Damage.Slashing.Halberd | UI.Weapon.2h | Item.Weapon.Halberd |
+| Mattock | Damage.Bludgeon.Hammer.2h | UI.Weapon.2h | Item.Weapon.Hammer* |
+
+*Mattock and Maul weapon type tags are intentionally inverted. This is a known game
+bug that we must replicate for compatibility.
+
+The DamageType and Tags fields become read-only when driven by the Weapon Type selector.
+Both the UI tag and the Weapon Type tag are injected into the Tags gameplay tag container.
+When loading an existing weapon, the selector auto-detects the weapon type from DamageType.
+
+### Weapon and Tool: Broken Variants
+
+When saving a **weapon** (DT_Weapons) or **tool** (DT_Tools), the tool automatically
+creates a **Broken_ variant** with identical fields. For example, saving `Mereak_Battleaxe`
+also creates `Broken_Mereak_Battleaxe`. This is required because the game uses broken
+variants as the degraded state of weapons and tools.
+
+- The broken variant has the same tag with `Broken_` prepended
+- No recipe is created for the broken variant (broken items are not craftable)
+- If you're saving an item that already starts with `Broken_`, no duplicate is created
+- Both files appear in the left pane after save
+
+### Per-Tab Field Details
+
+**DT_Armor (20 fields):** Actor, Icon, Tags, Durability, DamageReduction,
+DamageProtection, DamageModifiers, InitialRepairCost (material + count),
+SkillsGranted, SkillsRequired, CosmeticOwner, CosmeticConvertCost,
+CosmeticAchievement, ItemSetRowHandle, Portability, MaxStackSize, SlotSize,
+BaseTradeValue, EnabledState
+
+**DT_Weapons (22 fields):** Weapon Type selector + Actor, Icon, DamageType, Tags,
+Damage, Speed, Tier, ArmorPenetration, BlockDamageReduction, StaminaCost,
+EnergyCost, Durability, InitialRepairCost, SkillsRequired, CosmeticConvertCost,
+ItemSetRowHandle, Portability, MaxStackSize, SlotSize, BaseTradeValue, EnabledState
+
+**DT_Tools (20 fields):** Actor, Icon, Tags, CompatibleToolTags, Durability,
+DurabilityDecayWhileEquipped, CarveHits, NpcMiningRate, StaminaCost, EnergyCost,
+InitialRepairCost, SkillsRequired, CosmeticConvertCost, ItemSetRowHandle,
+Portability, MaxStackSize, SlotSize, BaseTradeValue, EnabledState
+
+**DT_Items (11 fields):** Actor, Icon, Tags, SkillsRequired, CosmeticConvertCost,
+ItemSetRowHandle, Portability, MaxStackSize, SlotSize, BaseTradeValue, EnabledState
 
 ### Recipe Fields (DT_ItemRecipes)
 
@@ -680,14 +771,16 @@ All four types share the same recipe table. The recipe fields shown are:
 - **bNpcOnlyRecipe** — Whether only NPCs can use this recipe
 - **EnabledState** — Live, Disabled, or DevelopmentOnly
 
-Plus the materials section (up to 6 materials with category, name, and count)
-and the unlock conditions (Discover Item or Discover Construction).
+Plus the materials section (up to 6 materials with per-row trash icons, category
+and name autocomplete showing "Display Name (tag)" format, and count spinner)
+and the unlock conditions (Discover Item or Discover Construction radio toggle
+with searchable combo).
 
 ### Items Without Recipes
 
 Some items (like CeibaWood or CeibaCutting) exist in DT_Items but have no matching
-recipe in DT_ItemRecipes. When you select such an item, the recipe section is not
-displayed — it only shows the item's own properties.
+recipe in DT_ItemRecipes. When you select such an item, the recipe section clears
+to defaults so stale data from the previous selection doesn't persist.
 
 ---
 

@@ -49,7 +49,9 @@ def _collect_namemap_strings(obj, names: dict) -> None:
                 _collect_namemap_strings(item, names)
 
 
-def _collect_from_dict(obj: dict, names: dict) -> None:
+def _collect_from_dict(  # pylint: disable=too-many-branches
+    obj: dict, names: dict,
+) -> None:
     """Collect NameMap-relevant strings from a single JSON dict."""
     # Extract property type short name from $type
     dtype = obj.get("$type", "")
