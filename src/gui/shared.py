@@ -11,7 +11,8 @@ from __future__ import annotations
 import os
 
 from PySide6.QtWidgets import (
-    QLabel, QListWidget, QMessageBox, QPushButton, QVBoxLayout, QWidget,
+    QHBoxLayout, QLabel, QListWidget, QMessageBox, QPushButton,
+    QVBoxLayout, QWidget,
 )
 
 from src.construction.mod_utils import advanced_bannister_post_stone_unlock
@@ -204,10 +205,10 @@ def build_combined(  # pylint: disable=broad-exception-caught
 
 def create_item_list_pane(
     label_text: str = "Saved Items:",
-) -> tuple[QWidget, QPushButton, QListWidget, QPushButton]:
-    """Create a left-pane widget with Build button, item list, and Delete.
+) -> tuple[QWidget, QPushButton, QListWidget, QPushButton, QPushButton]:
+    """Create a left-pane widget with Build button, item list, New, and Delete.
 
-    Returns (container_widget, build_button, list_widget, delete_button).
+    Returns (container_widget, build_button, list_widget, new_button, delete_button).
     """
     layout = QVBoxLayout()
 
@@ -219,13 +220,17 @@ def create_item_list_pane(
     item_list = QListWidget()
     layout.addWidget(item_list)
 
-    delete_btn = QPushButton("Delete Selected")
-    layout.addWidget(delete_btn)
+    btn_row = QHBoxLayout()
+    new_btn = QPushButton("New")
+    delete_btn = QPushButton("Delete")
+    btn_row.addWidget(new_btn)
+    btn_row.addWidget(delete_btn)
+    layout.addLayout(btn_row)
 
     widget = QWidget()
     widget.setLayout(layout)
     widget.setMaximumWidth(280)
-    return widget, build_btn, item_list, delete_btn
+    return widget, build_btn, item_list, new_btn, delete_btn
 
 
 def refresh_item_list(

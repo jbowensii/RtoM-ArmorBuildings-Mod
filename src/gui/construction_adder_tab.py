@@ -71,7 +71,7 @@ class ConstructionAdderTab(QWidget):
         self._string_table = load_string_table()
 
         # Pre-declare all widget attrs set by _setup_ui (avoids W0201)
-        self.build_btn = self.item_list = self.delete_btn = None
+        self.build_btn = self.item_list = self.new_btn = self.delete_btn = None
         self.pack_name = self.name_input = self.tag_display = None
         self.desc_input = self.asset_input = None
         self.cat_main = self.cat_sub = self.tags_combo = None
@@ -92,12 +92,14 @@ class ConstructionAdderTab(QWidget):
         outer = QHBoxLayout()
 
         # Left pane -- saved construction list
-        left_widget, self.build_btn, self.item_list, self.delete_btn = (
-            create_item_list_pane("Saved Constructions:"))
+        left_widget, self.build_btn, self.item_list, self.new_btn, \
+            self.delete_btn = (
+                create_item_list_pane("Saved Constructions:"))
         self.build_btn.clicked.connect(lambda: build_combined(
             self, self.tobis_json_dir,
             self.game_extract_dir, self.tobis_mod_dir, self.data_dir))
         self.item_list.currentItemChanged.connect(self._on_item_selected)
+        self.new_btn.clicked.connect(self._new_item)
         self.delete_btn.clicked.connect(self._delete_selected)
 
         # Right pane -- scrollable form
@@ -140,7 +142,8 @@ class ConstructionAdderTab(QWidget):
         self.name_input = QLineEdit()
         self.name_input.setReadOnly(True)
         self.tag_display = QLineEdit()
-        self.tag_display.setReadOnly(True)
+        self.tag_display.setPlaceholderText("No spaces, e.g. TobiPack_AleKeg_A")
+        self.tag_display.textChanged.connect(self._sanitize_tag)
         self.desc_input = QLineEdit()
         self.desc_input.setReadOnly(True)
         for label, widget in [("Pack Name", self.pack_name),
@@ -377,7 +380,47 @@ class ConstructionAdderTab(QWidget):
         self._material_picker.load_from_values(values)
         self._unlock_picker.load_from_values(values)
 
+    # ── Tag validation ──────────────────────────────────────────
+
+    def _sanitize_tag(self, text: str) -> None:
+        """Auto-replace spaces with underscores in the Name Tag field."""
+        if " " in text:
+            pos = self.tag_display.cursorPosition()
+            self.tag_display.setText(text.replace(" ", "_"))
+            self.tag_display.setCursorPosition(pos)
+
     # ── Actions ──────────────────────────────────────────────────
+
+    def _new_item(self) -> None:
+        """Clear the form for a new construction entry."""
+        self.item_list.clearSelection()
+        self.item_list.setCurrentItem(None)
+        self.pack_name.clear()
+        self.name_input.clear()
+        self.tag_display.clear()
+        self.desc_input.clear()
+        self.asset_input.clear()
+        self.cat_main.setCurrentIndex(0)
+        self.const_enabled.setCurrentIndex(0)
+        # Reset recipe enums to defaults
+        for combo in (self.build_process, self.location_req,
+                      self.placement_type, self.foundation_rule,
+                      self.monument_type, self.recipe_enabled):
+            if combo:
+                combo.setCurrentIndex(0)
+        # Reset checkboxes
+        for cb in (self.cb_on_wall, self.cb_place_water, self.cb_override_rot,
+                   self.cb_auto_foundation, self.cb_inherit_stability):
+            if cb:
+                cb.setChecked(False)
+        if self.cb_on_floor:
+            self.cb_on_floor.setChecked(True)
+        if self.cb_allow_refunds:
+            self.cb_allow_refunds.setChecked(True)
+        # Reset materials and unlocks
+        if self._material_picker:
+            self._material_picker.clear_all()
+            self._material_picker.add_row()
 
     def _delete_selected(self) -> None:
         """Delete the currently selected construction and its related files."""

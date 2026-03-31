@@ -6,6 +6,7 @@ their widget types, and whether materials/unlocks are included.
 
 Field tuples: (field_name, widget_type)
   widget_type: "enum", "bool", "int", "float", "tags", "asset", "text"
+  Dotted names (e.g. "DamageType.TagName") reach into nested structs.
 """
 
 from __future__ import annotations
@@ -57,6 +58,7 @@ ARMOR_CONFIG = TabConfig(
     recipe_table="DT_ItemRecipes",
     recipe_struct_label="DT_ItemRecipes (Armor Recipe)",
     item_fields=[
+        ("Tags.Tags", "tags"),          # UI.Armor.Helmet.Tier3, etc.
         ("Durability", "int"),
         ("DamageReduction", "float"),
         ("DamageProtection", "float"),
@@ -79,6 +81,8 @@ WEAPON_CONFIG = TabConfig(
     recipe_table="DT_ItemRecipes",
     recipe_struct_label="DT_ItemRecipes (Weapon Recipe)",
     item_fields=[
+        ("DamageType.TagName", "tags"),  # Damage.Slashing.Sword.1h, etc.
+        ("Tags.Tags", "tags"),           # UI.Weapon.1h, Item.Weapon.Sword, etc.
         ("Damage", "int"),
         ("Speed", "float"),
         ("Tier", "int"),
@@ -106,6 +110,8 @@ TOOL_CONFIG = TabConfig(
     recipe_table="DT_ItemRecipes",
     recipe_struct_label="DT_ItemRecipes (Tool Recipe)",
     item_fields=[
+        ("Tags.Tags", "tags"),           # Item.Tool.Pickaxe, UI.Tool, etc.
+        ("CompatibleToolTags.CompatibleToolTags", "tags"),  # tool compatibility
         ("Durability", "int"),
         ("DurabilityDecayWhileEquipped", "float"),
         ("CarveHits", "int"),
@@ -129,6 +135,7 @@ ITEM_CONFIG = TabConfig(
     recipe_table="DT_ItemRecipes",
     recipe_struct_label="DT_ItemRecipes (Item Recipe)",
     item_fields=[
+        ("Tags.Tags", "tags"),           # UI.Materials, Item.BasicGather, etc.
         ("Portability", "enum"),
         ("MaxStackSize", "int"),
         ("BaseTradeValue", "float"),
@@ -147,6 +154,7 @@ LOOT_CONFIG = TabConfig(
     item_struct_label="DT_Loot",
     recipe_table=None,
     item_fields=[
+        ("RequiredTags.RequiredTags", "tags"),  # Flora.GrowthStage, etc.
         ("DropChance", "float"),
         ("MinQuantity", "int"),
         ("MaxQuantity", "int"),
@@ -162,6 +170,7 @@ ORE_CONFIG = TabConfig(
     item_struct_label="DT_Ores",
     recipe_table=None,
     item_fields=[
+        ("Tags.Tags", "tags"),           # Item.Mineral.Stone, UI.Materials, etc.
         ("Portability", "enum"),
         ("MaxStackSize", "int"),
         ("BaseTradeValue", "float"),

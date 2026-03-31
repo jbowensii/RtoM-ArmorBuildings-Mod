@@ -1,6 +1,11 @@
-"""Generic item-adder tab for any item table with optional recipe editing."""
+"""Generic item-adder tab for any item table with optional recipe editing.
+
+Provides New/Save/Delete workflow: New creates an empty template on the
+right pane, Save writes the per-item JSON using the Name Tag as filename.
+"""
 from __future__ import annotations
 
+import copy
 import json
 import os
 
@@ -12,7 +17,8 @@ from PySide6.QtWidgets import (
 )
 
 from src.gui.field_helpers import (
-    enum_short_values, load_field_values, load_string_table, make_combo,
+    enum_short_values, load_field_values, load_item_display_names,
+    load_string_table, make_combo,
 )
 from src.gui.material_picker import MaterialPicker
 from src.gui.shared import (
@@ -21,8 +27,13 @@ from src.gui.shared import (
 from src.gui.tab_configs import TabConfig
 from src.gui.unlock_picker import UnlockPicker
 
+
 class ItemAdderTab(QWidget):
-    """Generic tab for viewing/editing any item table plus optional recipe."""
+    """Generic tab for viewing/editing any item table plus optional recipe.
+
+    Driven by a TabConfig that specifies which fields to display, which
+    recipe table to pair with, and whether materials/unlocks are shown.
+    """
 
     def __init__(
         self, cfg: TabConfig,
@@ -47,6 +58,7 @@ class ItemAdderTab(QWidget):
         # Pre-init all widget attrs to None (fixes W0201)
         self.build_btn: QPushButton | None = None
         self.item_list = None
+        self.new_btn: QPushButton | None = None
         self.delete_btn: QPushButton | None = None
         self.pack_name: QLineEdit | None = None
         self.name_input: QLineEdit | None = None
@@ -61,23 +73,56 @@ class ItemAdderTab(QWidget):
             load_field_values(cfg.recipe_table) if cfg.recipe_table else {}
         )
         self._string_table = load_string_table()
+        self._display_names = load_item_display_names()
+        # Load templates for saving new items
+        self._item_template = self._load_template(cfg.item_table)
+        self._recipe_template = (
+            self._load_template("DT_ItemRecipes")
+            if cfg.recipe_table else None
+        )
         self._setup_ui()
+
+    # ── Template loading ─────────────────────────────────────────
+
+    def _load_template(self, table: str) -> dict:
+        """Load a row template for creating new per-item files."""
+        # Try generated templates first, then MoreArmor
+        for subdir in ("generated", "MoreArmor"):
+            path = os.path.join(
+                self.templates_dir, subdir, f"{table}_template.json",
+            )
+            if os.path.isfile(path):
+                with open(path, "r", encoding="utf-8") as fh:
+                    return json.load(fh)
+        return {}
+
+    # ── UI Setup ─────────────────────────────────────────────────
 
     def _setup_ui(self) -> None:
         outer = QVBoxLayout()
-        left_widget, self.build_btn, self.item_list, self.delete_btn = \
+        left_widget, self.build_btn, self.item_list, self.new_btn, \
+            self.delete_btn = \
             create_item_list_pane(f"Saved {self.cfg.item_table} items:")
         self.build_btn.clicked.connect(
             lambda: build_combined(
                 self, self.tobis_json_dir, self.game_extract_dir,
                 self.tobis_mod_dir, self.data_dir))
         self.item_list.currentItemChanged.connect(self._on_item_selected)
+        self.new_btn.clicked.connect(self._new_item)
         self.delete_btn.clicked.connect(self._delete_selected)
+
         right = QVBoxLayout()
         self._build_basic_info(right)
         self._build_item_fields(right)
         if self.cfg.recipe_table:
             self._build_recipe_fields(right)
+
+        # Save button at the bottom of the right pane
+        save_btn = QPushButton("Save")
+        save_btn.setStyleSheet("font-weight: bold; padding: 8px;")
+        save_btn.clicked.connect(self._save)
+        right.addWidget(save_btn)
+
         right.addStretch()
         right_w = QWidget()
         right_w.setLayout(right)
@@ -95,20 +140,22 @@ class ItemAdderTab(QWidget):
             self.item_list, self.tobis_json_dir, self.cfg.item_table)
 
     def _build_basic_info(self, parent: QVBoxLayout) -> None:
-        """Pack name (editable) + read-only name / tag / description."""
+        """Pack name (editable) + editable name / tag / description."""
         group = QGroupBox("Basic Info")
         form = QFormLayout()
+        # Pack name with unified autocomplete
         pack_vals = self._item_fv.get("PackNames", {}).get("values", [])
         self.pack_name = QLineEdit()
         self.pack_name.setPlaceholderText("Pack name (e.g., Tobi)")
         if pack_vals:
             self.pack_name.setCompleter(QCompleter(sorted(pack_vals)))
         self.name_input = QLineEdit()
-        self.name_input.setReadOnly(True)
+        self.name_input.setPlaceholderText("Display name")
         self.tag_display = QLineEdit()
-        self.tag_display.setReadOnly(True)
+        self.tag_display.setPlaceholderText("No spaces, e.g. Mereak_Battleaxe")
+        self.tag_display.textChanged.connect(self._sanitize_tag)
         self.desc_input = QLineEdit()
-        self.desc_input.setReadOnly(True)
+        self.desc_input.setPlaceholderText("Description")
         for label, widget in [("Pack Name", self.pack_name),
                               ("Name", self.name_input),
                               ("Name Tag", self.tag_display),
@@ -190,6 +237,217 @@ class ItemAdderTab(QWidget):
             le.setCompleter(QCompleter(sorted(vals)))
         return le
 
+    # ── Tag validation ─────────────────────────────────────────
+
+    def _sanitize_tag(self, text: str) -> None:
+        """Auto-replace spaces with underscores in the Name Tag field."""
+        if " " in text:
+            cursor_pos = self.tag_display.cursorPosition()
+            cleaned = text.replace(" ", "_")
+            self.tag_display.setText(cleaned)
+            self.tag_display.setCursorPosition(cursor_pos)
+
+    # ── New item ─────────────────────────────────────────────────
+
+    def _new_item(self) -> None:
+        """Clear the form for a new item entry."""
+        # Deselect list so we're in "new" mode
+        self.item_list.clearSelection()
+        self.item_list.setCurrentItem(None)
+        # Clear basic info
+        self.pack_name.clear()
+        self.name_input.clear()
+        self.tag_display.clear()
+        self.desc_input.clear()
+        # Reset item field widgets to defaults
+        for widget in self._item_widgets.values():
+            if isinstance(widget, QCheckBox):
+                widget.setChecked(False)
+            elif isinstance(widget, QSpinBox):
+                widget.setValue(0)
+            elif isinstance(widget, QComboBox):
+                widget.setCurrentIndex(0)
+            elif isinstance(widget, QLineEdit):
+                widget.clear()
+        # Reset recipe widgets
+        self._clear_recipe_fields()
+
+    # ── Save item ────────────────────────────────────────────────
+
+    def _save(self) -> None:
+        """Save the current form as a per-item JSON file.
+
+        Uses the Name Tag as the filename. Creates both the item file
+        and (if applicable) the recipe file.
+        """
+        tag = self.tag_display.text().strip()
+        if not tag:
+            QMessageBox.warning(self, "Missing Tag",
+                                "Enter a Name Tag before saving.")
+            return
+
+        # Save item per-item file
+        self._save_item_file(tag)
+
+        # Save recipe per-item file (if this tab has recipes)
+        if self.cfg.recipe_table and self._recipe_template:
+            self._save_recipe_file(tag)
+
+        refresh_item_list(
+            self.item_list, self.tobis_json_dir, self.cfg.item_table)
+        QMessageBox.information(self, "Saved", f"'{tag}' saved.")
+
+    def _save_item_file(self, tag: str) -> None:
+        """Write the item per-item JSON from template + form values."""
+        if not self._item_template:
+            QMessageBox.warning(self, "No Template",
+                                f"No template found for {self.cfg.item_table}.")
+            return
+
+        row = copy.deepcopy(self._item_template)
+        row["Name"] = tag
+
+        # Apply widget values to the template row
+        self._apply_widgets_to_row(row, self._item_widgets)
+
+        item_data = {
+            "NameMap": [tag],
+            "Imports": [],
+            "Row": row,
+        }
+
+        out_dir = os.path.join(self.tobis_json_dir, self.cfg.item_table)
+        os.makedirs(out_dir, exist_ok=True)
+        path = os.path.join(out_dir, f"{tag}.json")
+        with open(path, "w", encoding="utf-8") as fh:
+            json.dump(item_data, fh, indent=4, ensure_ascii=False)
+
+    def _save_recipe_file(self, tag: str) -> None:
+        """Write the recipe per-item JSON from template + form values."""
+        row = copy.deepcopy(self._recipe_template)
+        row["Name"] = tag
+
+        # Apply recipe widget values
+        self._apply_widgets_to_row(row, self._recipe_widgets)
+
+        # Apply materials from picker
+        if self.cfg.recipe_has_materials and self._material_picker:
+            materials = self._material_picker.collect()
+            self._apply_materials_to_row(row, materials)
+
+        item_data = {
+            "NameMap": [tag],
+            "Imports": [],
+            "Row": row,
+        }
+
+        # Add material tags to NameMap
+        if self.cfg.recipe_has_materials and self._material_picker:
+            for mat_tag, _ in self._material_picker.collect():
+                if mat_tag and mat_tag not in item_data["NameMap"]:
+                    item_data["NameMap"].append(mat_tag)
+
+        out_dir = os.path.join(self.tobis_json_dir, self.cfg.recipe_table)
+        os.makedirs(out_dir, exist_ok=True)
+        path = os.path.join(out_dir, f"{tag}.json")
+        with open(path, "w", encoding="utf-8") as fh:
+            json.dump(item_data, fh, indent=4, ensure_ascii=False)
+
+    def _apply_widgets_to_row(self, row: dict,
+                              widgets: dict[str, QWidget]) -> None:
+        """Write widget values back into a template row's Value array.
+
+        Supports dotted field names (e.g. "DamageType.TagName") by walking
+        into nested struct Value arrays.
+        """
+        for entry in row.get("Value", []):
+            name = entry.get("Name")
+            # Direct match
+            if name in widgets:
+                self._apply_widget_to_entry(entry, widgets[name])
+                continue
+            # Dotted match — find child entry inside struct
+            for wname, widget in widgets.items():
+                if not wname.startswith(f"{name}."):
+                    continue
+                child_name = wname.split(".", maxsplit=1)[1]
+                for sub in entry.get("Value", []):
+                    if isinstance(sub, dict) and sub.get("Name") == child_name:
+                        self._apply_widget_to_entry(sub, widget)
+                        break
+
+    def _apply_widget_to_entry(  # pylint: disable=too-many-branches
+        self, entry: dict, widget: QWidget,
+    ) -> None:
+        """Write a single widget's value into a JSON property entry."""
+        dtype = entry.get("$type", "")
+        if isinstance(widget, QCheckBox):
+            entry["Value"] = widget.isChecked()
+        elif isinstance(widget, QSpinBox):
+            entry["Value"] = widget.value()
+        elif isinstance(widget, QComboBox):
+            text = widget.currentText()
+            if "EnumProperty" in dtype:
+                enum_type = entry.get("EnumType", "")
+                if enum_type and "::" not in text:
+                    text = f"{enum_type}::{text}"
+                entry["Value"] = text
+            else:
+                entry["Value"] = text
+        elif isinstance(widget, QLineEdit):
+            text = widget.text().strip()
+            if isinstance(entry.get("Value"), dict):
+                try:
+                    entry["Value"]["AssetPath"]["AssetName"] = text
+                except (KeyError, TypeError):
+                    entry["Value"] = text
+            elif "FloatProperty" in dtype:
+                try:
+                    entry["Value"] = float(text) if text else 0.0
+                except ValueError:
+                    entry["Value"] = text
+            else:
+                entry["Value"] = text
+
+    @staticmethod
+    def _apply_materials_to_row(row: dict,
+                                materials: list[tuple[str, int]]) -> None:
+        """Write material list into the DefaultRequiredMaterials field."""
+        for entry in row.get("Value", []):
+            if entry.get("Name") != "DefaultRequiredMaterials":
+                continue
+            # Build material array from the template's DummyStruct
+            dummy = entry.get("DummyStruct")
+            mat_array = []
+            for mat_tag, count in materials:
+                if not mat_tag:
+                    continue
+                mat_entry = copy.deepcopy(dummy) if dummy else {
+                    "Value": [
+                        {"Name": "MaterialHandle", "Value": [
+                            {"Name": "RowName", "Value": ""}
+                        ]},
+                        {"Name": "WildcardHandle", "Value": [
+                            {"Name": "RowName", "Value": "None"}
+                        ]},
+                        {"Name": "Count", "Value": 0},
+                    ]
+                }
+                # Set material tag and count
+                for field in mat_entry.get("Value", []):
+                    if field.get("Name") == "MaterialHandle":
+                        try:
+                            field["Value"][0]["Value"] = mat_tag
+                        except (KeyError, IndexError, TypeError):
+                            pass
+                    elif field.get("Name") == "Count":
+                        field["Value"] = count
+                mat_array.append(mat_entry)
+            entry["Value"] = mat_array
+            return
+
+    # ── Item selection ───────────────────────────────────────────
+
     def _on_item_selected(self, current, _previous) -> None:
         """Load item (and recipe) when the user clicks a list entry."""
         if not current:
@@ -202,15 +460,20 @@ class ItemAdderTab(QWidget):
         with open(dt_path, "r", encoding="utf-8") as fh:
             row = json.load(fh).get("Row", {})
         self.tag_display.setText(row.get("Name", tag))
+        # Extract pack name from tag
         parts = tag.split("_")
         for i, part in enumerate(parts):
             if "Pack" in part:
                 self.pack_name.setText("_".join(parts[:i + 1]))
                 break
+        # Name & description from string table or display names
         st = self._string_table.get(tag)
         if st:
             self.name_input.setText(st.get("name", ""))
             self.desc_input.setText(st.get("description", ""))
+        elif tag in self._display_names:
+            self.name_input.setText(self._display_names[tag])
+            self.desc_input.clear()
         else:
             for entry in row.get("Value", []):
                 n, v = entry.get("Name", ""), entry.get("Value", "")
@@ -223,11 +486,7 @@ class ItemAdderTab(QWidget):
             self._load_recipe(tag)
 
     def _load_recipe(self, tag: str) -> None:
-        """Load recipe JSON and populate recipe widgets / materials / unlocks.
-
-        If no recipe file exists for this item, clears the recipe section
-        so stale data from the previous selection doesn't persist.
-        """
+        """Load recipe JSON and populate recipe widgets / materials / unlocks."""
         path = os.path.join(
             self.tobis_json_dir, self.cfg.recipe_table, f"{tag}.json")
         if not os.path.isfile(path):
@@ -242,7 +501,7 @@ class ItemAdderTab(QWidget):
             self._unlock_picker.load_from_values(vals)
 
     def _clear_recipe_fields(self) -> None:
-        """Reset all recipe widgets to defaults (no recipe for this item)."""
+        """Reset all recipe widgets to defaults."""
         for widget in self._recipe_widgets.values():
             if isinstance(widget, QCheckBox):
                 widget.setChecked(False)
@@ -258,23 +517,41 @@ class ItemAdderTab(QWidget):
 
     def _load_fields_into_widgets(self, values: list,
                                   widgets: dict[str, QWidget]) -> None:
-        """Set each widget's value from its corresponding JSON entry."""
+        """Set each widget's value from its corresponding JSON entry.
+
+        Supports dotted field names (e.g. "DamageType.TagName") for nested
+        struct fields — walks into the struct's Value array to find the child.
+        """
         for entry in values:
             fname = entry.get("Name")
-            if fname not in widgets:
+            # Direct match
+            if fname in widgets:
+                self._set_widget(widgets[fname], entry)
                 continue
-            w, val = widgets[fname], entry.get("Value")
-            if isinstance(w, QCheckBox):
-                w.setChecked(bool(val))
-            elif isinstance(w, QSpinBox):
-                try:
-                    w.setValue(int(val))
-                except (ValueError, TypeError):
-                    pass
-            elif isinstance(w, QComboBox):
-                self._set_combo(w, val, entry.get("$type", ""))
-            elif isinstance(w, QLineEdit):
-                self._set_lineedit(w, val)
+            # Dotted match — e.g. "DamageType" entry with widget "DamageType.TagName"
+            for wname, widget in widgets.items():
+                if not wname.startswith(f"{fname}."):
+                    continue
+                child_name = wname.split(".", maxsplit=1)[1]
+                for sub in entry.get("Value", []):
+                    if isinstance(sub, dict) and sub.get("Name") == child_name:
+                        self._set_widget(widget, sub)
+                        break
+
+    def _set_widget(self, widget: QWidget, entry: dict) -> None:
+        """Set a single widget's value from a JSON property entry."""
+        val = entry.get("Value")
+        if isinstance(widget, QCheckBox):
+            widget.setChecked(bool(val))
+        elif isinstance(widget, QSpinBox):
+            try:
+                widget.setValue(int(val))
+            except (ValueError, TypeError):
+                pass
+        elif isinstance(widget, QComboBox):
+            self._set_combo(widget, val, entry.get("$type", ""))
+        elif isinstance(widget, QLineEdit):
+            self._set_lineedit(widget, val)
 
     @staticmethod
     def _set_combo(widget: QComboBox, val, dtype: str) -> None:
