@@ -1,8 +1,6 @@
 """Tests for src.gui.shared — build pipeline helpers."""
 
 import json
-import os
-import pytest
 
 from src.gui.shared import (
     _find_prop, _restore_constructions,
@@ -170,19 +168,76 @@ class TestAppendStringTableImports:
         # DT_B: 10 existing, ST OuterIndex = -(10+1) = -11
         assert r2["Imports"][-1]["OuterIndex"] == -11
 
+    def test_multiple_pairs_appended(self, tmp_path):
+        """Appending two Package+StringTable pairs should reindex both correctly."""
+        path = self._make_dt(tmp_path, "DT_Multi", num_existing=2)
+        entries = [
+            {"ObjectName": "PKG_Arch", "OuterIndex": 0, "ClassName": "Package"},
+            {"ObjectName": "ST_Arch", "OuterIndex": -1, "ClassName": "StringTable"},
+            {"ObjectName": "PKG_Inter", "OuterIndex": 0, "ClassName": "Package"},
+            {"ObjectName": "ST_Inter", "OuterIndex": -1, "ClassName": "StringTable"},
+        ]
+        _append_string_table_imports(path, entries)
+
+        with open(path, "r", encoding="utf-8") as f:
+            result = json.load(f)
+
+        # 2 existing + 4 new = 6
+        assert len(result["Imports"]) == 6
+
+        # First StringTable (index 3, 0-based) → Package at index 2
+        # OuterIndex = -(2 + 1) = -3
+        assert result["Imports"][3]["OuterIndex"] == -3
+
+        # Second StringTable (index 5, 0-based) → Package at index 4
+        # OuterIndex = -(4 + 1) = -5
+        assert result["Imports"][5]["OuterIndex"] == -5
+
+    def test_serial_deps_for_multiple_pairs(self, tmp_path):
+        """Multiple StringTable entries should each add a serial dep."""
+        path = self._make_dt(tmp_path, "DT_Multi", num_existing=2)
+        entries = [
+            {"ObjectName": "PKG_A", "OuterIndex": 0, "ClassName": "Package"},
+            {"ObjectName": "ST_A", "OuterIndex": -1, "ClassName": "StringTable"},
+            {"ObjectName": "PKG_B", "OuterIndex": 0, "ClassName": "Package"},
+            {"ObjectName": "ST_B", "OuterIndex": -1, "ClassName": "StringTable"},
+        ]
+        _append_string_table_imports(path, entries)
+
+        with open(path, "r", encoding="utf-8") as f:
+            result = json.load(f)
+        deps = result["Exports"][0]["SerializationBeforeCreateDependencies"]
+        # ST_A at position 4 (0-based index 3) → -(3+1) = -4
+        # ST_B at position 6 (0-based index 5) → -(5+1) = -6
+        assert -4 in deps
+        assert -6 in deps
+
+    def test_package_outer_index_stays_zero(self, tmp_path):
+        """Package entries should keep OuterIndex=0."""
+        path = self._make_dt(tmp_path, "DT_Pkg", num_existing=3)
+        entries = [
+            {"ObjectName": "PKG", "OuterIndex": 0, "ClassName": "Package"},
+            {"ObjectName": "ST", "OuterIndex": -1, "ClassName": "StringTable"},
+        ]
+        _append_string_table_imports(path, entries)
+
+        with open(path, "r", encoding="utf-8") as f:
+            result = json.load(f)
+        pkg = result["Imports"][3]
+        assert pkg["ClassName"] == "Package"
+        assert pkg["OuterIndex"] == 0
+
 
 class TestUpdateAllModImports:
     """Tests for _update_all_mod_imports()."""
 
-    def test_applies_to_constructions_and_items(self, tmp_path):
-        """All 5 DataTables should get their string table imports."""
-        # Create directory structure
+    def _setup_dt_files(self, tmp_path):
+        """Create all 5 DataTable files and Imports.json, return data_dir."""
         building = tmp_path / "Moria" / "Content" / "Tech" / "Data" / "Building"
         building.mkdir(parents=True)
         items = tmp_path / "Moria" / "Content" / "Tech" / "Data" / "Items"
         items.mkdir(parents=True)
 
-        # Create minimal DataTable JSONs
         for name, parent in [
             ("DT_Constructions", building),
             ("DT_Armor", items),
@@ -198,7 +253,6 @@ class TestUpdateAllModImports:
             (parent / f"{name}.json").write_text(
                 json.dumps(dt), encoding="utf-8")
 
-        # Create Imports.json with all 8 entries
         imports = {"Imports": [
             {"ObjectName": "Arch_PKG", "OuterIndex": 0, "ClassName": "Package"},
             {"ObjectName": "Arch_ST", "OuterIndex": -1, "ClassName": "StringTable"},
@@ -214,7 +268,13 @@ class TestUpdateAllModImports:
         (data_dir / "Imports.json").write_text(
             json.dumps(imports), encoding="utf-8")
 
-        _update_all_mod_imports(str(tmp_path), str(data_dir))
+        return str(data_dir), building, items
+
+    def test_applies_to_constructions_and_items(self, tmp_path):
+        """All 5 DataTables should get their string table imports."""
+        data_dir, building, items = self._setup_dt_files(tmp_path)
+
+        _update_all_mod_imports(str(tmp_path), data_dir)
 
         # DT_Constructions: 1 base + 4 (Arch + Inter) = 5
         with open(building / "DT_Constructions.json", "r", encoding="utf-8") as f:
@@ -230,3 +290,79 @@ class TestUpdateAllModImports:
         with open(items / "DT_Weapons.json", "r", encoding="utf-8") as f:
             weapons = json.load(f)
         assert len(weapons["Imports"]) == 3
+
+    def test_tools_and_items_get_imports(self, tmp_path):
+        """DT_Tools and DT_Items should also get ST_Mod_Items imports."""
+        data_dir, _building, items = self._setup_dt_files(tmp_path)
+
+        _update_all_mod_imports(str(tmp_path), data_dir)
+
+        with open(items / "DT_Tools.json", "r", encoding="utf-8") as f:
+            tools = json.load(f)
+        assert len(tools["Imports"]) == 3
+
+        with open(items / "DT_Items.json", "r", encoding="utf-8") as f:
+            dt_items = json.load(f)
+        assert len(dt_items["Imports"]) == 3
+
+    def test_constructions_gets_arch_and_interactables(self, tmp_path):
+        """DT_Constructions should get Architecture + Interactables (4 entries)."""
+        data_dir, building, _items = self._setup_dt_files(tmp_path)
+
+        _update_all_mod_imports(str(tmp_path), data_dir)
+
+        with open(building / "DT_Constructions.json", "r", encoding="utf-8") as f:
+            constr = json.load(f)
+        # Check that the appended names match the first 4 import entries
+        appended_names = [imp["ObjectName"] for imp in constr["Imports"][1:]]
+        assert "Arch_PKG" in appended_names
+        assert "Arch_ST" in appended_names
+        assert "Inter_PKG" in appended_names
+        assert "Inter_ST" in appended_names
+
+    def test_items_tables_get_items_st(self, tmp_path):
+        """Armor/Weapons/Tools/Items should get Items_PKG + Items_ST."""
+        data_dir, _building, items = self._setup_dt_files(tmp_path)
+
+        _update_all_mod_imports(str(tmp_path), data_dir)
+
+        for table in ("DT_Armor", "DT_Weapons", "DT_Tools", "DT_Items"):
+            with open(items / f"{table}.json", "r", encoding="utf-8") as f:
+                dt = json.load(f)
+            appended_names = [imp["ObjectName"] for imp in dt["Imports"][1:]]
+            assert "Items_PKG" in appended_names, f"{table} missing Items_PKG"
+            assert "Items_ST" in appended_names, f"{table} missing Items_ST"
+
+    def test_deep_copy_safety_across_tables(self, tmp_path):
+        """Each item table should get its own reindexed OuterIndex values,
+        not shared references from the same entries list."""
+        data_dir, _building, items = self._setup_dt_files(tmp_path)
+
+        _update_all_mod_imports(str(tmp_path), data_dir)
+
+        # All item tables have 1 existing import, so each should get
+        # the same reindexing (OuterIndex = -(1+1) = -2 for the ST entry)
+        for table in ("DT_Armor", "DT_Weapons", "DT_Tools", "DT_Items"):
+            with open(items / f"{table}.json", "r", encoding="utf-8") as f:
+                dt = json.load(f)
+            st = dt["Imports"][-1]
+            assert st["ClassName"] == "StringTable"
+            assert st["OuterIndex"] == -2
+
+    def test_missing_imports_json_no_error(self, tmp_path):
+        """If Imports.json is missing, _update_all_mod_imports should return safely."""
+        data_dir = str(tmp_path / "nonexistent_data")
+        # Should not raise
+        _update_all_mod_imports(str(tmp_path), data_dir)
+
+    def test_serial_deps_added_for_constructions(self, tmp_path):
+        """Constructions should have serial deps for both StringTable entries."""
+        data_dir, building, _items = self._setup_dt_files(tmp_path)
+
+        _update_all_mod_imports(str(tmp_path), data_dir)
+
+        with open(building / "DT_Constructions.json", "r", encoding="utf-8") as f:
+            constr = json.load(f)
+        deps = constr["Exports"][0]["SerializationBeforeCreateDependencies"]
+        # Two StringTable entries → 2 serial deps
+        assert len(deps) == 2
