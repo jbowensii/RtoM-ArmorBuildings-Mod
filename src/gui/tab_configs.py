@@ -58,12 +58,30 @@ ARMOR_CONFIG = TabConfig(
     recipe_table="DT_ItemRecipes",
     recipe_struct_label="DT_ItemRecipes (Armor Recipe)",
     item_fields=[
+        # Identity
+        ("Actor", "asset"),             # Blueprint path to 3D model
+        ("Icon", "asset"),              # UI icon texture path
         ("Tags.Tags", "tags"),          # UI.Armor.Helmet.Tier3, etc.
+        # Combat stats
         ("Durability", "int"),
         ("DamageReduction", "float"),
         ("DamageProtection", "float"),
+        ("DamageModifiers.RowName", "tags"),  # CorrosiveDamage, etc.
+        # Repair
+        ("InitialRepairCost.MaterialHandle.RowName", "tags"),
+        ("InitialRepairCost.Count", "int"),
+        # Skills
+        ("SkillsGranted.SkillsGranted", "tags"),
+        ("SkillsRequired.SkillsRequired", "tags"),
+        # Cosmetic
+        ("CosmeticOwner.RowName", "tags"),
+        ("CosmeticConvertCost.RowName", "tags"),
+        ("CosmeticAchievement.RowName", "tags"),
+        ("ItemSetRowHandle.RowName", "tags"),
+        # General
         ("Portability", "enum"),
         ("MaxStackSize", "int"),
+        ("SlotSize", "int"),
         ("BaseTradeValue", "float"),
         ("EnabledState", "enum"),
     ],
@@ -81,8 +99,12 @@ WEAPON_CONFIG = TabConfig(
     recipe_table="DT_ItemRecipes",
     recipe_struct_label="DT_ItemRecipes (Weapon Recipe)",
     item_fields=[
+        # Identity
+        ("Actor", "asset"),             # Blueprint path to 3D model
+        ("Icon", "asset"),              # UI icon texture path
         ("DamageType.TagName", "tags"),  # Damage.Slashing.Sword.1h, etc.
         ("Tags.Tags", "tags"),           # UI.Weapon.1h, Item.Weapon.Sword, etc.
+        # Combat stats
         ("Damage", "int"),
         ("Speed", "float"),
         ("Tier", "int"),
@@ -91,8 +113,18 @@ WEAPON_CONFIG = TabConfig(
         ("StaminaCost", "float"),
         ("EnergyCost", "float"),
         ("Durability", "int"),
+        # Repair
+        ("InitialRepairCost.MaterialHandle.RowName", "tags"),
+        ("InitialRepairCost.Count", "int"),
+        # Skills
+        ("SkillsRequired.SkillsRequired", "tags"),
+        # Cosmetic
+        ("CosmeticConvertCost.RowName", "tags"),
+        ("ItemSetRowHandle.RowName", "tags"),
+        # General
         ("Portability", "enum"),
         ("MaxStackSize", "int"),
+        ("SlotSize", "int"),
         ("BaseTradeValue", "float"),
         ("EnabledState", "enum"),
     ],
@@ -110,15 +142,31 @@ TOOL_CONFIG = TabConfig(
     recipe_table="DT_ItemRecipes",
     recipe_struct_label="DT_ItemRecipes (Tool Recipe)",
     item_fields=[
+        # Identity
+        ("Actor", "asset"),             # Blueprint path to 3D model
+        ("Icon", "asset"),              # UI icon texture path
         ("Tags.Tags", "tags"),           # Item.Tool.Pickaxe, UI.Tool, etc.
-        ("CompatibleToolTags.CompatibleToolTags", "tags"),  # tool compatibility
+        ("CompatibleToolTags.CompatibleToolTags", "tags"),
+        # Stats
         ("Durability", "int"),
         ("DurabilityDecayWhileEquipped", "float"),
         ("CarveHits", "int"),
+        ("NpcMiningRate", "float"),
         ("StaminaCost", "float"),
         ("EnergyCost", "float"),
+        # Repair
+        ("InitialRepairCost.MaterialHandle.RowName", "tags"),
+        ("InitialRepairCost.Count", "int"),
+        # Skills
+        ("SkillsRequired.SkillsRequired", "tags"),
+        # Cosmetic
+        ("CosmeticConvertCost.RowName", "tags"),
+        ("ItemSetRowHandle.RowName", "tags"),
+        # General
         ("Portability", "enum"),
         ("MaxStackSize", "int"),
+        ("SlotSize", "int"),
+        ("BaseTradeValue", "float"),
         ("EnabledState", "enum"),
     ],
     recipe_fields=_ITEM_RECIPE_FIELDS,
@@ -135,9 +183,19 @@ ITEM_CONFIG = TabConfig(
     recipe_table="DT_ItemRecipes",
     recipe_struct_label="DT_ItemRecipes (Item Recipe)",
     item_fields=[
+        # Identity
+        ("Actor", "asset"),             # Blueprint path
+        ("Icon", "asset"),              # UI icon texture
         ("Tags.Tags", "tags"),           # UI.Materials, Item.BasicGather, etc.
+        # Skills
+        ("SkillsRequired.SkillsRequired", "tags"),
+        # Cosmetic
+        ("CosmeticConvertCost.RowName", "tags"),
+        ("ItemSetRowHandle.RowName", "tags"),
+        # General
         ("Portability", "enum"),
         ("MaxStackSize", "int"),
+        ("SlotSize", "int"),
         ("BaseTradeValue", "float"),
         ("EnabledState", "enum"),
     ],

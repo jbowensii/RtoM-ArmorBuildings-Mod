@@ -1,50 +1,50 @@
 {
   "Actor": {
-    "type": "object",
+    "type": "asset",
     "values": [
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/BP_CrystalTorch.BP_CrystalTorch_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/BP_Torch.BP_Torch_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/DEV_InfinityTorch.DEV_InfinityTorch_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/DEV_Pick_GodPick.DEV_Pick_GodPick_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/EQ_Basket.EQ_Basket_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/EQ_BlacksmithHammer.EQ_BlacksmithHammer_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/EQ_BlacksmithHammer_WandererRingForge.EQ_BlacksmithHammer_WandererRingForge_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/EQ_Chisel.EQ_Chisel_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/EQ_Epic_DurinsAxe.EQ_Epic_DurinsAxe_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/EQ_Epic_DurinsAxe_Broken.EQ_Epic_DurinsAxe_Broken_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/EQ_FryingPan.EQ_FryingPan_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/EQ_GrocerStaff.EQ_GrocerStaff_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/EQ_Loupe.EQ_Loupe_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/EQ_MashPaddle.EQ_MashPaddle_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/EQ_Pick_2H.EQ_Pick_2H_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/EQ_Pick_2HEpic_Broken.EQ_Pick_2HEpic_Broken_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/EQ_Pick_FirstAge.EQ_Pick_FirstAge_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/EQ_Pick_FirstAge_Broken.EQ_Pick_FirstAge_Broken_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/EQ_Pick_Iron.EQ_Pick_Iron_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/EQ_Pick_Iron_Broken.EQ_Pick_Iron_Broken_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/EQ_Pick_Ironwood.EQ_Pick_Ironwood_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/EQ_Pick_Ironwood_Broken.EQ_Pick_Ironwood_Broken_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/EQ_Pick_Magic.EQ_Pick_Magic_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/EQ_Pick_Steel.EQ_Pick_Steel_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/EQ_Pick_Steel_Broken.EQ_Pick_Steel_Broken_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/EQ_Rope.EQ_Rope_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/EQ_Scissors.EQ_Scissors_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/EQ_Spanner.EQ_Spanner_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/EQ_Tong.EQ_Tong_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/EQ_WarHorn.EQ_WarHorn_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/RestorationHammers/EQ_Restoration_Hammer_Adamant.EQ_Restoration_Hammer_Adamant_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/RestorationHammers/EQ_Restoration_Hammer_Adamant_Broken.EQ_Restoration_Hammer_Adamant_Broken_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/RestorationHammers/EQ_Restoration_Hammer_Basic_Broken.EQ_Restoration_Hammer_Basic_Broken_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/RestorationHammers/EQ_Restoration_Hammer_Gunmetal.EQ_Restoration_Hammer_Gunmetal_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/RestorationHammers/EQ_Restoration_Hammer_Gunmetal_Broken.EQ_Restoration_Hammer_Gunmetal_Broken_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/RestorationHammers/EQ_Restoration_Hammer_Iron.EQ_Restoration_Hammer_Iron_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/RestorationHammers/EQ_Restoration_Hammer_Iron_Broken.EQ_Restoration_Hammer_Iron_Broken_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/RestorationHammers/EQ_Restoration_Hammer_Starmetal.EQ_Restoration_Hammer_Starmetal_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/RestorationHammers/EQ_Restoration_Hammer_Starmetal_Broken.EQ_Restoration_Hammer_Starmetal_Broken_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/RestorationHammers/EQ_Restoration_Hammer_Steel.EQ_Restoration_Hammer_Steel_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Items/Holdables/RestorationHammers/EQ_Restoration_Hammer_Steel_Broken.EQ_Restoration_Hammer_Steel_Broken_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Mods/CurvedPack/Hammer/EQ_Restoration_Hammer_Adamant.EQ_Restoration_Hammer_Adamant_C'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Mods/CurvedPack/Hammer/EQ_Restoration_Hammer_Adamant_Broken.EQ_Restoration_Hammer_Adamant_Broken_C'}, 'SubPathString': None}"
+      "/Game/Items/Holdables/BP_CrystalTorch.BP_CrystalTorch_C",
+      "/Game/Items/Holdables/BP_Torch.BP_Torch_C",
+      "/Game/Items/Holdables/DEV_InfinityTorch.DEV_InfinityTorch_C",
+      "/Game/Items/Holdables/DEV_Pick_GodPick.DEV_Pick_GodPick_C",
+      "/Game/Items/Holdables/EQ_Basket.EQ_Basket_C",
+      "/Game/Items/Holdables/EQ_BlacksmithHammer.EQ_BlacksmithHammer_C",
+      "/Game/Items/Holdables/EQ_BlacksmithHammer_WandererRingForge.EQ_BlacksmithHammer_WandererRingForge_C",
+      "/Game/Items/Holdables/EQ_Chisel.EQ_Chisel_C",
+      "/Game/Items/Holdables/EQ_Epic_DurinsAxe.EQ_Epic_DurinsAxe_C",
+      "/Game/Items/Holdables/EQ_Epic_DurinsAxe_Broken.EQ_Epic_DurinsAxe_Broken_C",
+      "/Game/Items/Holdables/EQ_FryingPan.EQ_FryingPan_C",
+      "/Game/Items/Holdables/EQ_GrocerStaff.EQ_GrocerStaff_C",
+      "/Game/Items/Holdables/EQ_Loupe.EQ_Loupe_C",
+      "/Game/Items/Holdables/EQ_MashPaddle.EQ_MashPaddle_C",
+      "/Game/Items/Holdables/EQ_Pick_2H.EQ_Pick_2H_C",
+      "/Game/Items/Holdables/EQ_Pick_2HEpic_Broken.EQ_Pick_2HEpic_Broken_C",
+      "/Game/Items/Holdables/EQ_Pick_FirstAge.EQ_Pick_FirstAge_C",
+      "/Game/Items/Holdables/EQ_Pick_FirstAge_Broken.EQ_Pick_FirstAge_Broken_C",
+      "/Game/Items/Holdables/EQ_Pick_Iron.EQ_Pick_Iron_C",
+      "/Game/Items/Holdables/EQ_Pick_Iron_Broken.EQ_Pick_Iron_Broken_C",
+      "/Game/Items/Holdables/EQ_Pick_Ironwood.EQ_Pick_Ironwood_C",
+      "/Game/Items/Holdables/EQ_Pick_Ironwood_Broken.EQ_Pick_Ironwood_Broken_C",
+      "/Game/Items/Holdables/EQ_Pick_Magic.EQ_Pick_Magic_C",
+      "/Game/Items/Holdables/EQ_Pick_Steel.EQ_Pick_Steel_C",
+      "/Game/Items/Holdables/EQ_Pick_Steel_Broken.EQ_Pick_Steel_Broken_C",
+      "/Game/Items/Holdables/EQ_Rope.EQ_Rope_C",
+      "/Game/Items/Holdables/EQ_Scissors.EQ_Scissors_C",
+      "/Game/Items/Holdables/EQ_Spanner.EQ_Spanner_C",
+      "/Game/Items/Holdables/EQ_Tong.EQ_Tong_C",
+      "/Game/Items/Holdables/EQ_WarHorn.EQ_WarHorn_C",
+      "/Game/Items/Holdables/RestorationHammers/EQ_Restoration_Hammer_Adamant.EQ_Restoration_Hammer_Adamant_C",
+      "/Game/Items/Holdables/RestorationHammers/EQ_Restoration_Hammer_Adamant_Broken.EQ_Restoration_Hammer_Adamant_Broken_C",
+      "/Game/Items/Holdables/RestorationHammers/EQ_Restoration_Hammer_Basic_Broken.EQ_Restoration_Hammer_Basic_Broken_C",
+      "/Game/Items/Holdables/RestorationHammers/EQ_Restoration_Hammer_Gunmetal.EQ_Restoration_Hammer_Gunmetal_C",
+      "/Game/Items/Holdables/RestorationHammers/EQ_Restoration_Hammer_Gunmetal_Broken.EQ_Restoration_Hammer_Gunmetal_Broken_C",
+      "/Game/Items/Holdables/RestorationHammers/EQ_Restoration_Hammer_Iron.EQ_Restoration_Hammer_Iron_C",
+      "/Game/Items/Holdables/RestorationHammers/EQ_Restoration_Hammer_Iron_Broken.EQ_Restoration_Hammer_Iron_Broken_C",
+      "/Game/Items/Holdables/RestorationHammers/EQ_Restoration_Hammer_Starmetal.EQ_Restoration_Hammer_Starmetal_C",
+      "/Game/Items/Holdables/RestorationHammers/EQ_Restoration_Hammer_Starmetal_Broken.EQ_Restoration_Hammer_Starmetal_Broken_C",
+      "/Game/Items/Holdables/RestorationHammers/EQ_Restoration_Hammer_Steel.EQ_Restoration_Hammer_Steel_C",
+      "/Game/Items/Holdables/RestorationHammers/EQ_Restoration_Hammer_Steel_Broken.EQ_Restoration_Hammer_Steel_Broken_C",
+      "/Game/Mods/CurvedPack/Hammer/EQ_Restoration_Hammer_Adamant.EQ_Restoration_Hammer_Adamant_C",
+      "/Game/Mods/CurvedPack/Hammer/EQ_Restoration_Hammer_Adamant_Broken.EQ_Restoration_Hammer_Adamant_Broken_C"
     ]
   },
   "BaseTradeValue": {
@@ -79,9 +79,7 @@
   },
   "CosmeticConvertCost.RowName": {
     "type": "name",
-    "values": [
-      "None"
-    ]
+    "values": []
   },
   "Description": {
     "type": "text",
@@ -224,46 +222,46 @@
     ]
   },
   "Icon": {
-    "type": "object",
+    "type": "asset",
     "values": [
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Mods/CurvedPack/Hammer/Icon/T_UI_Icon_TobiHammer.T_UI_Icon_TobiHammer'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/UI/Textures/Cant_Craft.Cant_Craft'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/UI/Textures/Tools/Horn_Icon.Horn_Icon'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/UI/Textures/_Icons/Dev/T_UI_Icon_Dev_InfiniteTorch.T_UI_Icon_Dev_InfiniteTorch'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/UI/Textures/_Icons/Dev/T_UI_Icon_Dev_Pick.T_UI_Icon_Dev_Pick'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/UI/Textures/_Icons/ItemRenders/Items/T_UI_Icon_FryingPan_A.T_UI_Icon_FryingPan_A'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/UI/Textures/_Icons/ItemRenders/T_UI_Icon_Equip_Pickaxe_Stone.T_UI_Icon_Equip_Pickaxe_Stone'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/UI/Textures/_Icons/ItemRenders/T_UI_Icon_Equip_Torch.T_UI_Icon_Equip_Torch'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/UI/Textures/_Icons/ItemRenders/T_UI_Icon_GatheringBasket_A.T_UI_Icon_GatheringBasket_A'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/UI/Textures/_Icons/ItemRenders/T_UI_Icon_Weapon_Durin_Axe.T_UI_Icon_Weapon_Durin_Axe'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tool_Adze.T_UI_Icon_Tool_Adze'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tool_BlacksmithHammer.T_UI_Icon_Tool_BlacksmithHammer'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tool_BrewersPaddle.T_UI_Icon_Tool_BrewersPaddle'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tool_BuildersMallet.T_UI_Icon_Tool_BuildersMallet'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tool_Poker.T_UI_Icon_Tool_Poker'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tools_Adamant_RestorationHammer.T_UI_Icon_Tools_Adamant_RestorationHammer'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tools_Basic_RestorationHammer.T_UI_Icon_Tools_Basic_RestorationHammer'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tools_CrystalTorch.T_UI_Icon_Tools_CrystalTorch'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tools_Epic_Pickaxe_2h.T_UI_Icon_Tools_Epic_Pickaxe_2h'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tools_FirstAge_Pickaxe_1h.T_UI_Icon_Tools_FirstAge_Pickaxe_1h'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tools_Gunmetal_RestorationHammer.T_UI_Icon_Tools_Gunmetal_RestorationHammer'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tools_Iron_RestorationHammer.T_UI_Icon_Tools_Iron_RestorationHammer'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tools_Ironwood_Pickaxe_1h.T_UI_Icon_Tools_Ironwood_Pickaxe_1h'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tools_Magic_Pickaxe_1h.T_UI_Icon_Tools_Magic_Pickaxe_1h'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tools_Starmetal_RestorationHamer.T_UI_Icon_Tools_Starmetal_RestorationHamer'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tools_Steel_Pickaxe_1h.T_UI_Icon_Tools_Steel_Pickaxe_1h'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tools_Steel_RestorationHammer.T_UI_Icon_Tools_Steel_RestorationHammer'}, 'SubPathString': None}",
-      "{'$type': 'UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI', 'AssetPath': {'$type': 'UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI', 'PackageName': None, 'AssetName': '/Game/Unshippable/UI/Textures/MissingTexture.MissingTexture'}, 'SubPathString': None}"
+      "/Game/Mods/CurvedPack/Hammer/Icon/T_UI_Icon_TobiHammer.T_UI_Icon_TobiHammer",
+      "/Game/UI/Textures/Cant_Craft.Cant_Craft",
+      "/Game/UI/Textures/Tools/Horn_Icon.Horn_Icon",
+      "/Game/UI/Textures/_Icons/Dev/T_UI_Icon_Dev_InfiniteTorch.T_UI_Icon_Dev_InfiniteTorch",
+      "/Game/UI/Textures/_Icons/Dev/T_UI_Icon_Dev_Pick.T_UI_Icon_Dev_Pick",
+      "/Game/UI/Textures/_Icons/ItemRenders/Items/T_UI_Icon_FryingPan_A.T_UI_Icon_FryingPan_A",
+      "/Game/UI/Textures/_Icons/ItemRenders/T_UI_Icon_Equip_Pickaxe_Stone.T_UI_Icon_Equip_Pickaxe_Stone",
+      "/Game/UI/Textures/_Icons/ItemRenders/T_UI_Icon_Equip_Torch.T_UI_Icon_Equip_Torch",
+      "/Game/UI/Textures/_Icons/ItemRenders/T_UI_Icon_GatheringBasket_A.T_UI_Icon_GatheringBasket_A",
+      "/Game/UI/Textures/_Icons/ItemRenders/T_UI_Icon_Weapon_Durin_Axe.T_UI_Icon_Weapon_Durin_Axe",
+      "/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tool_Adze.T_UI_Icon_Tool_Adze",
+      "/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tool_BlacksmithHammer.T_UI_Icon_Tool_BlacksmithHammer",
+      "/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tool_BrewersPaddle.T_UI_Icon_Tool_BrewersPaddle",
+      "/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tool_BuildersMallet.T_UI_Icon_Tool_BuildersMallet",
+      "/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tool_Poker.T_UI_Icon_Tool_Poker",
+      "/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tools_Adamant_RestorationHammer.T_UI_Icon_Tools_Adamant_RestorationHammer",
+      "/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tools_Basic_RestorationHammer.T_UI_Icon_Tools_Basic_RestorationHammer",
+      "/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tools_CrystalTorch.T_UI_Icon_Tools_CrystalTorch",
+      "/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tools_Epic_Pickaxe_2h.T_UI_Icon_Tools_Epic_Pickaxe_2h",
+      "/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tools_FirstAge_Pickaxe_1h.T_UI_Icon_Tools_FirstAge_Pickaxe_1h",
+      "/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tools_Gunmetal_RestorationHammer.T_UI_Icon_Tools_Gunmetal_RestorationHammer",
+      "/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tools_Iron_RestorationHammer.T_UI_Icon_Tools_Iron_RestorationHammer",
+      "/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tools_Ironwood_Pickaxe_1h.T_UI_Icon_Tools_Ironwood_Pickaxe_1h",
+      "/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tools_Magic_Pickaxe_1h.T_UI_Icon_Tools_Magic_Pickaxe_1h",
+      "/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tools_Starmetal_RestorationHamer.T_UI_Icon_Tools_Starmetal_RestorationHamer",
+      "/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tools_Steel_Pickaxe_1h.T_UI_Icon_Tools_Steel_Pickaxe_1h",
+      "/Game/UI/Textures/_Icons/ItemRenders/Tools/T_UI_Icon_Tools_Steel_RestorationHammer.T_UI_Icon_Tools_Steel_RestorationHammer",
+      "/Game/Unshippable/UI/Textures/MissingTexture.MissingTexture"
     ]
   },
   "InitialRepairCost.Count": {
     "type": "int",
     "values": [
       "1",
+      "5",
       "10",
       "15",
-      "30",
-      "5"
+      "30"
     ]
   },
   "InitialRepairCost.MaterialHandle.RowName": {
@@ -271,11 +269,7 @@
     "values": [
       "Item.Scrap",
       "Item.Wood"
-    ],
-    "display_names": {
-      "Item.Scrap": "Metal Scraps",
-      "Item.Wood": "Wood Scraps"
-    }
+    ]
   },
   "InitialRepairCost.WildcardHandle.RowName": {
     "type": "name",
@@ -285,9 +279,7 @@
   },
   "ItemSetRowHandle.RowName": {
     "type": "name",
-    "values": [
-      "None"
-    ]
+    "values": []
   },
   "MaxStackSize": {
     "type": "int",
@@ -325,32 +317,18 @@
   "SkillsRequired.SkillsRequired": {
     "type": "tags",
     "values": [
-      ".",
-      "A",
-      "B",
-      "C",
-      "G",
-      "I",
-      "M",
-      "S",
-      "T",
-      "a",
-      "c",
-      "d",
-      "e",
-      "h",
-      "i",
-      "k",
-      "l",
-      "m",
-      "n",
-      "o",
-      "r",
-      "s",
-      "t",
-      "u",
-      "v",
-      "w"
+      "AI.Behavior.Skill.Artisan",
+      "AI.Behavior.Skill.Blacksmith",
+      "AI.Behavior.Skill.Brewer",
+      "AI.Behavior.Skill.Builder",
+      "AI.Behavior.Skill.Cook",
+      "AI.Behavior.Skill.Gatherer",
+      "AI.Behavior.Skill.Grocer",
+      "AI.Behavior.Skill.Mason",
+      "AI.Behavior.Skill.Metalworker",
+      "AI.Behavior.Skill.Miner",
+      "AI.Behavior.Skill.Tailor",
+      "AI.Behavior.Skill.Tinker"
     ]
   },
   "SlotSize": {
