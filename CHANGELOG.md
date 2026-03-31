@@ -1,5 +1,31 @@
 # Changelog
 
+## v3.3.0 (2026-03-31)
+
+### Bug Fixes
+
+- **Tags.Tags now saves as a list** — Was incorrectly saving as a plain string
+  (e.g. `"UI.Weapon.2h"`), now correctly saves as a list of tag strings
+  (e.g. `["UI.Weapon.2h", "Item.Weapon.Battleaxe"]`). Affects all item tabs.
+
+### Broken Weapon/Tool Improvements
+
+- **Actor path auto-transforms** — Broken variants automatically get `_Broken`
+  inserted into the actor path (e.g. `EQ_Sword.EQ_Sword_C` becomes
+  `EQ_Sword_Broken.EQ_Sword_Broken_C`).
+- **Standard broken stats** — All broken weapons/tools get: Damage=5, Speed=1.0,
+  Durability=-1 (matches vanilla game pattern).
+- **Broken Tags.Tags** — Broken variants only keep the UI tag (e.g. `["UI.Weapon.2h"]`),
+  weapon type tag is excluded (matches vanilla broken weapon data).
+
+### Testing
+
+- **174 automated tests**, 30% overall coverage
+- Non-GUI modules: config 99%, mod_utils 98%, json_split_combine 96%
+- Pylint 10.00/10
+
+---
+
 ## v3.2.0 (2026-03-31)
 
 ### New Features

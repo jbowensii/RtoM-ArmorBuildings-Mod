@@ -10,5 +10,5 @@ PySide6 GUI combining:
   - Game extract : retoc + UAssetGUI vanilla data extraction
 """
 
-APP_VERSION = "3.2.0"
+APP_VERSION = "3.3.0"
 APP_NAME = "RtoM Mod Tools"
