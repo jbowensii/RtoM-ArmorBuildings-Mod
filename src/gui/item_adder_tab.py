@@ -28,6 +28,72 @@ from src.gui.tab_configs import TabConfig
 from src.gui.unlock_picker import UnlockPicker
 
 
+# Property type short names that UAssetAPI requires in the NameMap
+_PROP_TYPE_NAMES = frozenset({
+    "ArrayProperty", "BoolProperty", "ByteProperty", "EnumProperty",
+    "FloatProperty", "IntProperty", "MapProperty", "NameProperty",
+    "ObjectProperty", "SoftObjectProperty", "StructProperty",
+    "TextProperty",
+})
+
+
+def _collect_namemap_strings(obj, names: dict) -> None:
+    """Recursively walk a JSON structure and collect NameMap strings."""
+    if isinstance(obj, dict):
+        _collect_from_dict(obj, names)
+    elif isinstance(obj, list):
+        for item in obj:
+            if isinstance(item, str) and item:
+                names[item] = None
+            else:
+                _collect_namemap_strings(item, names)
+
+
+def _collect_from_dict(obj: dict, names: dict) -> None:
+    """Collect NameMap-relevant strings from a single JSON dict."""
+    # Extract property type short name from $type
+    dtype = obj.get("$type", "")
+    if dtype:
+        short = dtype.split(".")[-1].split(",")[0]
+        if short.endswith("Data"):
+            short = short[:-4]
+        if short in _PROP_TYPE_NAMES:
+            names[short] = None
+
+    # Collect string-valued metadata fields
+    for key in ("Name", "StructType", "EnumType", "InnerType",
+                "ArrayType", "ClassName", "ClassPackage", "TableId"):
+        val = obj.get(key)
+        if isinstance(val, str) and val:
+            names[val] = None
+
+    # Collect Value (string, list, or dict)
+    val = obj.get("Value")
+    if isinstance(val, str) and val:
+        names[val] = None
+    elif isinstance(val, (list, dict)):
+        _collect_namemap_strings(val, names)
+
+    # Collect asset paths
+    asset_path = obj.get("AssetPath", {})
+    if isinstance(asset_path, dict):
+        asset = asset_path.get("AssetName", "")
+        if asset:
+            names[asset] = None
+
+    # Collect ObjectName
+    obj_name = obj.get("ObjectName")
+    if isinstance(obj_name, str) and obj_name:
+        names[obj_name] = None
+
+    # Recurse into remaining sub-structures
+    for key, child in obj.items():
+        if key in ("Value", "AssetPath", "ObjectName", "$type"):
+            continue
+        if isinstance(child, (list, dict)):
+            _collect_namemap_strings(child, names)
+
+
 class ItemAdderTab(QWidget):
     """Generic tab for viewing/editing any item table plus optional recipe.
 
@@ -314,6 +380,30 @@ class ItemAdderTab(QWidget):
             le.setCompleter(QCompleter(sorted(vals)))
         return le
 
+    # ── NameMap builder ───────────────────────────────────────
+
+    @staticmethod
+    def _build_namemap(row: dict) -> list[str]:
+        """Walk a row and collect every string that should be in NameMap.
+
+        UAssetAPI requires all referenced strings (field names, enum values,
+        struct types, tag strings, asset paths, property type names, etc.)
+        to be present in the NameMap for the asset to be valid.
+        """
+        names: dict[str, None] = {}  # ordered set (preserves insertion order)
+        _collect_namemap_strings(row, names)
+
+        # Always include standard UAsset entries
+        for std in ("None", "Object", "Package", "StringTable",
+                    "GameplayTag", "GameplayTagContainer"):
+            names[std] = None
+
+        # Filter out UAssetAPI internal strings and GUIDs
+        return [n for n in names
+                if not n.startswith("UAssetAPI.")
+                and not n.startswith("{00000000")
+                and n != "NoExtension"]
+
     # ── Tag validation ─────────────────────────────────────────
 
     def _sanitize_tag(self, text: str) -> None:
@@ -395,8 +485,13 @@ class ItemAdderTab(QWidget):
         if self._weapon_type_tag:
             self._inject_extra_tag(row, "Tags", self._weapon_type_tag)
 
+        namemap = self._build_namemap(row)
+        # Ensure tag is in the NameMap
+        if tag not in namemap:
+            namemap.append(tag)
+
         item_data = {
-            "NameMap": [tag],
+            "NameMap": namemap,
             "Imports": [],
             "Row": row,
         }
@@ -420,17 +515,15 @@ class ItemAdderTab(QWidget):
             materials = self._material_picker.collect()
             self._apply_materials_to_row(row, materials)
 
+        namemap = self._build_namemap(row)
+        if tag not in namemap:
+            namemap.append(tag)
+
         item_data = {
-            "NameMap": [tag],
+            "NameMap": namemap,
             "Imports": [],
             "Row": row,
         }
-
-        # Add material tags to NameMap
-        if self.cfg.recipe_has_materials and self._material_picker:
-            for mat_tag, _ in self._material_picker.collect():
-                if mat_tag and mat_tag not in item_data["NameMap"]:
-                    item_data["NameMap"].append(mat_tag)
 
         out_dir = os.path.join(self.tobis_json_dir, self.cfg.recipe_table)
         os.makedirs(out_dir, exist_ok=True)
