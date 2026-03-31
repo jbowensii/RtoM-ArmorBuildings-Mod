@@ -470,7 +470,7 @@ class ItemAdderTab(QWidget):
         if self.cfg.item_table in self._BROKEN_VARIANT_TABLES:
             broken_tag = f"Broken_{tag}" if not tag.startswith("Broken_") else tag
             if broken_tag != tag:
-                self._save_item_file(broken_tag)
+                self._save_broken_variant(tag, broken_tag)
 
         # Save recipe per-item file (if this tab has recipes)
         if self.cfg.recipe_table and self._recipe_template:
@@ -511,6 +511,85 @@ class ItemAdderTab(QWidget):
         out_dir = os.path.join(self.tobis_json_dir, self.cfg.item_table)
         os.makedirs(out_dir, exist_ok=True)
         path = os.path.join(out_dir, f"{tag}.json")
+        with open(path, "w", encoding="utf-8") as fh:
+            json.dump(item_data, fh, indent=4, ensure_ascii=False)
+
+    def _save_broken_variant(  # pylint: disable=too-many-branches
+        self, _original_tag: str, broken_tag: str,
+    ) -> None:
+        """Create a Broken_ variant of a weapon or tool.
+
+        The broken variant duplicates the original but with:
+        - Name/tag: Broken_{original}
+        - Actor path: insert _Broken before the .ClassName suffix
+        - Damage: 5, Speed: 1.0, Durability: -1 (standard broken stats)
+        - Tags.Tags: only the UI tag (no weapon type tag)
+        """
+        if not self._item_template:
+            return
+
+        row = copy.deepcopy(self._item_template)
+        row["Name"] = broken_tag
+
+        # Apply the same widget values as the original
+        self._apply_widgets_to_row(row, self._item_widgets)
+
+        # Override Actor path: insert _Broken before the _C suffix
+        # e.g. /Game/.../EQ_Sword.EQ_Sword_C → /Game/.../EQ_Sword_Broken.EQ_Sword_Broken_C
+        for entry in row.get("Value", []):
+            if entry.get("Name") == "Actor":
+                try:
+                    asset = entry["Value"]["AssetPath"]["AssetName"]
+                    if asset and "." in asset:
+                        # Split "PackagePath.ClassName_C"
+                        pkg, cls = asset.rsplit(".", maxsplit=1)
+                        if cls.endswith("_C"):
+                            base = cls[:-2]  # strip _C
+                            broken_asset = f"{pkg}_Broken.{base}_Broken_C"
+                        else:
+                            broken_asset = f"{pkg}_Broken.{cls}"
+                        entry["Value"]["AssetPath"]["AssetName"] = broken_asset
+                except (KeyError, TypeError):
+                    pass
+
+            # Override standard broken stats
+            elif entry.get("Name") == "Damage":
+                entry["Value"] = 5
+            elif entry.get("Name") == "Speed":
+                entry["Value"] = 1.0
+            elif entry.get("Name") == "Durability":
+                entry["Value"] = -1
+
+        # Tags: only the UI tag (no weapon type tag)
+        # The master selector sets Tags.Tags to [UI_tag] then _inject_extra_tag
+        # adds the weapon type tag. For broken, we just want [UI_tag].
+        for entry in row.get("Value", []):
+            if entry.get("Name") == "Tags":
+                try:
+                    inner = entry["Value"][0]
+                    tag_list = inner.get("Value", [])
+                    if isinstance(tag_list, list):
+                        # Keep only UI tags (UI.Weapon.*), remove weapon type tags
+                        ui_tags = [t for t in tag_list
+                                   if t.startswith("UI.")]
+                        inner["Value"] = ui_tags if ui_tags else tag_list[:1]
+                except (KeyError, IndexError, TypeError):
+                    pass
+                break
+
+        namemap = self._build_namemap(row)
+        if broken_tag not in namemap:
+            namemap.append(broken_tag)
+
+        item_data = {
+            "NameMap": namemap,
+            "Imports": [],
+            "Row": row,
+        }
+
+        out_dir = os.path.join(self.tobis_json_dir, self.cfg.item_table)
+        os.makedirs(out_dir, exist_ok=True)
+        path = os.path.join(out_dir, f"{broken_tag}.json")
         with open(path, "w", encoding="utf-8") as fh:
             json.dump(item_data, fh, indent=4, ensure_ascii=False)
 
@@ -582,6 +661,10 @@ class ItemAdderTab(QWidget):
                 if enum_type and "::" not in text:
                     text = f"{enum_type}::{text}"
                 entry["Value"] = text
+            elif "GameplayTagContainer" in dtype:
+                # Tags are stored as a list of strings — set as single-element list
+                # Additional tags (e.g. WeaponTypeTag) are injected separately
+                entry["Value"] = [text] if text else []
             else:
                 entry["Value"] = text
         elif isinstance(widget, QLineEdit):
