@@ -1,5 +1,37 @@
 # Changelog
 
+## v3.4.0 (2026-04-01)
+
+### UI Improvements
+
+- **Name field** — Now shows "display name (game name)" format when the string
+  table has an entry (e.g. "Gimli's Map (100BuildingsPack_GimlisMap_A)"). Falls
+  back to just the game name when no display name is found. Read-only on all tabs.
+- **Description field** — Now shows the string table path (e.g.
+  `Weapons.Battleaxe.Mereak.Description`) and is **editable** so users can set
+  custom paths. Defaults to `{tag}.Description` on save if left empty.
+- **Description String field** (new) — Read-only field showing the resolved
+  description text from the string table. Shows **STRING NOT FOUND IN STRING TABLE**
+  in bold red when no match exists. Present on all tabs.
+
+### Bug Fixes
+
+- **Fixed broken weapon Actor path** — The Actor field in generated templates is an
+  integer placeholder (0), not a dict. The broken variant override was only handling
+  the dict format, silently failing for template-based saves. Now correctly handles
+  both string and dict Actor values.
+- **Description preserved on save** — User-edited Description path is now saved
+  instead of being overwritten with the default `{tag}.Description`.
+- **DisplayName/Description set on save** — These string table keys were being left
+  empty because they're not in the item widget map. Now explicitly set to
+  `{tag}.Name` and `{tag}.Description` (or user-edited path) before saving.
+
+### Testing
+
+- 174 automated tests, pylint 10.00/10
+
+---
+
 ## v3.3.0 (2026-03-31)
 
 ### Bug Fixes
