@@ -490,6 +490,14 @@ class ItemAdderTab(QWidget):
         row = copy.deepcopy(self._item_template)
         row["Name"] = tag
 
+        # Set DisplayName and Description string table keys
+        # These reference ST_Mod_Items entries like "{tag}.Name" / "{tag}.Description"
+        for entry in row.get("Value", []):
+            if entry.get("Name") == "DisplayName":
+                entry["Value"] = f"{tag}.Name"
+            elif entry.get("Name") == "Description":
+                entry["Value"] = f"{tag}.Description"
+
         # Apply widget values to the template row
         self._apply_widgets_to_row(row, self._item_widgets)
 
@@ -530,6 +538,13 @@ class ItemAdderTab(QWidget):
 
         row = copy.deepcopy(self._item_template)
         row["Name"] = broken_tag
+
+        # Set DisplayName and Description string table keys for the broken variant
+        for entry in row.get("Value", []):
+            if entry.get("Name") == "DisplayName":
+                entry["Value"] = f"{broken_tag}.Name"
+            elif entry.get("Name") == "Description":
+                entry["Value"] = f"{broken_tag}.Description"
 
         # Apply the same widget values as the original
         self._apply_widgets_to_row(row, self._item_widgets)
