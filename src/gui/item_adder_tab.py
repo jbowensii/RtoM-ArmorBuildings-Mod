@@ -233,10 +233,9 @@ class ItemAdderTab(QWidget):
         self.tag_display.setPlaceholderText("No spaces, e.g. Mereak_Battleaxe")
         self.tag_display.textChanged.connect(self._sanitize_tag)
 
-        # Description — read-only, shows the string table path
+        # Description — editable, string table path (e.g. Weapons.Battleaxe.Mereak.Description)
         self.desc_input = QLineEdit()
-        self.desc_input.setReadOnly(True)
-        self.desc_input.setPlaceholderText("String table path (auto-set on save)")
+        self.desc_input.setPlaceholderText("String table path, e.g. Weapons.Battleaxe.Mereak.Description")
 
         # Description String — read-only, shows resolved text or "NOT FOUND"
         self.desc_string = QLineEdit()

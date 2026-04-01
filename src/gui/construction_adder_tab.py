@@ -146,9 +146,9 @@ class ConstructionAdderTab(QWidget):
         self.tag_display = QLineEdit()
         self.tag_display.setPlaceholderText("No spaces, e.g. TobiPack_AleKeg_A")
         self.tag_display.textChanged.connect(self._sanitize_tag)
-        # Description — read-only, shows string table path
+        # Description — editable, string table path
         self.desc_input = QLineEdit()
-        self.desc_input.setReadOnly(True)
+        self.desc_input.setPlaceholderText("String table path, e.g. TobiPack_AleKeg_A.Description")
         # Description String — resolved text or "NOT FOUND"
         self.desc_string = QLineEdit()
         self.desc_string.setReadOnly(True)
