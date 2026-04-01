@@ -235,7 +235,7 @@ class ItemAdderTab(QWidget):
 
         # Description — editable, string table path (e.g. Weapons.Battleaxe.Mereak.Description)
         self.desc_input = QLineEdit()
-        self.desc_input.setPlaceholderText("String table path, e.g. Weapons.Battleaxe.Mereak.Description")
+        self.desc_input.setPlaceholderText("String table path, e.g. Tag.Description")
 
         # Description String — read-only, shows resolved text or "NOT FOUND"
         self.desc_string = QLineEdit()
@@ -509,12 +509,16 @@ class ItemAdderTab(QWidget):
         row["Name"] = tag
 
         # Set DisplayName and Description string table keys
-        # These reference ST_Mod_Items entries like "{tag}.Name" / "{tag}.Description"
+        # DisplayName always uses "{tag}.Name"
+        # Description uses the user-edited path, or defaults to "{tag}.Description"
+        desc_path = self.desc_input.text().strip() if self.desc_input else ""
+        if not desc_path:
+            desc_path = f"{tag}.Description"
         for entry in row.get("Value", []):
             if entry.get("Name") == "DisplayName":
                 entry["Value"] = f"{tag}.Name"
             elif entry.get("Name") == "Description":
-                entry["Value"] = f"{tag}.Description"
+                entry["Value"] = desc_path
 
         # Apply widget values to the template row
         self._apply_widgets_to_row(row, self._item_widgets)
@@ -540,7 +544,7 @@ class ItemAdderTab(QWidget):
         with open(path, "w", encoding="utf-8") as fh:
             json.dump(item_data, fh, indent=4, ensure_ascii=False)
 
-    def _save_broken_variant(  # pylint: disable=too-many-branches
+    def _save_broken_variant(  # pylint: disable=too-many-branches,too-many-statements
         self, _original_tag: str, broken_tag: str,
     ) -> None:
         """Create a Broken_ variant of a weapon or tool.
@@ -571,19 +575,26 @@ class ItemAdderTab(QWidget):
         # e.g. /Game/.../EQ_Sword.EQ_Sword_C → /Game/.../EQ_Sword_Broken.EQ_Sword_Broken_C
         for entry in row.get("Value", []):
             if entry.get("Name") == "Actor":
-                try:
-                    asset = entry["Value"]["AssetPath"]["AssetName"]
-                    if asset and "." in asset:
-                        # Split "PackagePath.ClassName_C"
-                        pkg, cls = asset.rsplit(".", maxsplit=1)
-                        if cls.endswith("_C"):
-                            base = cls[:-2]  # strip _C
-                            broken_asset = f"{pkg}_Broken.{base}_Broken_C"
-                        else:
-                            broken_asset = f"{pkg}_Broken.{cls}"
-                        entry["Value"]["AssetPath"]["AssetName"] = broken_asset
-                except (KeyError, TypeError):
-                    pass
+                # Actor might be a dict (AssetPath) or a plain string (from template)
+                val = entry.get("Value")
+                if isinstance(val, dict):
+                    asset = val.get("AssetPath", {}).get("AssetName", "")
+                elif isinstance(val, str):
+                    asset = val
+                else:
+                    asset = ""
+                if asset and "." in asset:
+                    pkg, cls = asset.rsplit(".", maxsplit=1)
+                    if cls.endswith("_C"):
+                        base = cls[:-2]
+                        broken_asset = f"{pkg}_Broken.{base}_Broken_C"
+                    else:
+                        broken_asset = f"{pkg}_Broken.{cls}"
+                    # Write back in the same format
+                    if isinstance(val, dict):
+                        val["AssetPath"]["AssetName"] = broken_asset
+                    else:
+                        entry["Value"] = broken_asset
 
             # Override standard broken stats
             elif entry.get("Name") == "Damage":
