@@ -132,6 +132,7 @@ class ItemAdderTab(QWidget):
         self.name_input: QLineEdit | None = None
         self.tag_display: QLineEdit | None = None
         self.desc_input: QLineEdit | None = None
+        self.desc_string: QLineEdit | None = None
         self.mat_layout: QVBoxLayout | None = None
         self._material_picker: MaterialPicker | None = None
         self._unlock_picker: UnlockPicker | None = None
@@ -212,26 +213,42 @@ class ItemAdderTab(QWidget):
             self.item_list, self.tobis_json_dir, self.cfg.item_table)
 
     def _build_basic_info(self, parent: QVBoxLayout) -> None:
-        """Pack name (editable) + editable name / tag / description."""
+        """Build the Basic Info group: Pack Name, Name, Name Tag, Description."""
         group = QGroupBox("Basic Info")
         form = QFormLayout()
-        # Pack name with unified autocomplete
+
+        # Pack name — editable with autocomplete
         pack_vals = self._item_fv.get("PackNames", {}).get("values", [])
         self.pack_name = QLineEdit()
         self.pack_name.setPlaceholderText("Pack name (e.g., Tobi)")
         if pack_vals:
             self.pack_name.setCompleter(QCompleter(sorted(pack_vals)))
+
+        # Name — read-only, shows "display name (game name)" or just game name
         self.name_input = QLineEdit()
-        self.name_input.setPlaceholderText("Display name")
+        self.name_input.setReadOnly(True)
+
+        # Name Tag — the game row name, used as the JSON filename
         self.tag_display = QLineEdit()
         self.tag_display.setPlaceholderText("No spaces, e.g. Mereak_Battleaxe")
         self.tag_display.textChanged.connect(self._sanitize_tag)
+
+        # Description — read-only, shows the string table path
         self.desc_input = QLineEdit()
-        self.desc_input.setPlaceholderText("Description")
-        for label, widget in [("Pack Name", self.pack_name),
-                              ("Name", self.name_input),
-                              ("Name Tag", self.tag_display),
-                              ("Description", self.desc_input)]:
+        self.desc_input.setReadOnly(True)
+        self.desc_input.setPlaceholderText("String table path (auto-set on save)")
+
+        # Description String — read-only, shows resolved text or "NOT FOUND"
+        self.desc_string = QLineEdit()
+        self.desc_string.setReadOnly(True)
+
+        for label, widget in [
+            ("Pack Name", self.pack_name),
+            ("Name", self.name_input),
+            ("Name Tag", self.tag_display),
+            ("Description", self.desc_input),
+            ("Description String", self.desc_string),
+        ]:
             form.addRow(label, widget)
         group.setLayout(form)
         parent.addWidget(group)
@@ -428,6 +445,8 @@ class ItemAdderTab(QWidget):
         self.name_input.clear()
         self.tag_display.clear()
         self.desc_input.clear()
+        self.desc_string.clear()
+        self.desc_string.setStyleSheet("")
         # Reset master selector (e.g. Weapon Type)
         if self._master_combo:
             self._master_combo.setCurrentIndex(0)
@@ -753,7 +772,9 @@ class ItemAdderTab(QWidget):
 
     # ── Item selection ───────────────────────────────────────────
 
-    def _on_item_selected(self, current, _previous) -> None:
+    def _on_item_selected(  # pylint: disable=too-many-branches
+        self, current, _previous,
+    ) -> None:
         """Load item (and recipe) when the user clicks a list entry."""
         if not current:
             return
@@ -771,21 +792,37 @@ class ItemAdderTab(QWidget):
             if "Pack" in part:
                 self.pack_name.setText("_".join(parts[:i + 1]))
                 break
-        # Name & description from string table or display names
-        st = self._string_table.get(tag)
-        if st:
-            self.name_input.setText(st.get("name", ""))
-            self.desc_input.setText(st.get("description", ""))
-        elif tag in self._display_names:
-            self.name_input.setText(self._display_names[tag])
-            self.desc_input.clear()
+
+        # Name — show "display name (game name)" if found, else just game name
+        display = self._display_names.get(tag, "")
+        if not display:
+            st = self._string_table.get(tag)
+            if st:
+                display = st.get("name", "")
+        if display:
+            self.name_input.setText(f"{display} ({tag})")
         else:
-            for entry in row.get("Value", []):
-                n, v = entry.get("Name", ""), entry.get("Value", "")
-                if n == "DisplayName" and isinstance(v, str):
-                    self.name_input.setText(v)
-                elif n == "Description" and isinstance(v, str):
-                    self.desc_input.setText(v)
+            self.name_input.setText(tag)
+
+        # Description — show the string table path from the JSON
+        desc_path = ""
+        for entry in row.get("Value", []):
+            if entry.get("Name") == "Description" and isinstance(
+                entry.get("Value"), str
+            ):
+                desc_path = entry["Value"]
+                break
+        self.desc_input.setText(desc_path)
+
+        # Description String — resolve from string table or show NOT FOUND
+        st = self._string_table.get(tag)
+        desc_text = st.get("description", "") if st else ""
+        if desc_text:
+            self.desc_string.setText(desc_text)
+            self.desc_string.setStyleSheet("")
+        else:
+            self.desc_string.setText("STRING NOT FOUND IN STRING TABLE")
+            self.desc_string.setStyleSheet("font-weight: bold; color: red;")
         item_values = row.get("Value", [])
         self._load_fields_into_widgets(item_values, self._item_widgets)
         # Reverse-lookup master selector (e.g. Weapon Type from DamageType)

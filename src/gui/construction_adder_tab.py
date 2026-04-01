@@ -73,7 +73,7 @@ class ConstructionAdderTab(QWidget):
         # Pre-declare all widget attrs set by _setup_ui (avoids W0201)
         self.build_btn = self.item_list = self.new_btn = self.delete_btn = None
         self.pack_name = self.name_input = self.tag_display = None
-        self.desc_input = self.asset_input = None
+        self.desc_input = self.desc_string = self.asset_input = None
         self.cat_main = self.cat_sub = self.tags_combo = None
         self.const_enabled = self.build_process = self.location_req = None
         self.placement_type = self.foundation_rule = None
@@ -131,7 +131,7 @@ class ConstructionAdderTab(QWidget):
         refresh_item_list(self.item_list, self.tobis_json_dir, "DT_Constructions")
 
     def _build_basic_info(self, layout: QVBoxLayout) -> None:
-        """Pack name, display name, tag, and description fields."""
+        """Pack name, name, tag, description, and description string fields."""
         group = QGroupBox("Basic Info")
         form = QFormLayout()
         packs = self._const_fv.get("PackNames", {}).get("values", [])
@@ -139,17 +139,26 @@ class ConstructionAdderTab(QWidget):
         self.pack_name.setPlaceholderText("Enter your pack name (e.g., Tobi)")
         if packs:
             self.pack_name.setCompleter(QCompleter(sorted(packs)))
+        # Name — read-only, "display name (game name)" format
         self.name_input = QLineEdit()
         self.name_input.setReadOnly(True)
+        # Name Tag — the game row name
         self.tag_display = QLineEdit()
         self.tag_display.setPlaceholderText("No spaces, e.g. TobiPack_AleKeg_A")
         self.tag_display.textChanged.connect(self._sanitize_tag)
+        # Description — read-only, shows string table path
         self.desc_input = QLineEdit()
         self.desc_input.setReadOnly(True)
-        for label, widget in [("Pack Name", self.pack_name),
-                              ("Name", self.name_input),
-                              ("Name Tag", self.tag_display),
-                              ("Description", self.desc_input)]:
+        # Description String — resolved text or "NOT FOUND"
+        self.desc_string = QLineEdit()
+        self.desc_string.setReadOnly(True)
+        for label, widget in [
+            ("Pack Name", self.pack_name),
+            ("Name", self.name_input),
+            ("Name Tag", self.tag_display),
+            ("Description", self.desc_input),
+            ("Description String", self.desc_string),
+        ]:
             form.addRow(label, widget)
         group.setLayout(form)
         layout.addWidget(group)
@@ -285,7 +294,7 @@ class ConstructionAdderTab(QWidget):
             if "Pack" in part:
                 self.pack_name.setText("_".join(tag.split("_")[: i + 1]))
                 break
-        self._load_name_desc(tag)
+        self._load_name_desc(tag, row)
         const_vals = row.get("Value", [])
         self._load_asset(const_vals)
         self._load_const_tags(const_vals)
@@ -299,21 +308,58 @@ class ConstructionAdderTab(QWidget):
             self._material_picker.clear_all()
             self._material_picker.add_row()
 
-    def _load_name_desc(self, tag: str) -> None:
-        """Set name/description from string table or Architecture file."""
+    def _load_name_desc(  # pylint: disable=too-many-branches
+        self, tag: str, row: dict,
+    ) -> None:
+        """Set name, description path, and description string from data.
+
+        Name shows "display name (game name)" if found, else just game name.
+        Description shows the string table path from the JSON.
+        Description String shows the resolved text or "NOT FOUND".
+        """
+        # Name — "display name (game name)" format
         st = self._string_table.get(tag)
-        if st:
-            self.name_input.setText(st.get("name", ""))
-            self.desc_input.setText(st.get("description", ""))
-            return
-        ap = os.path.join(self.tobis_json_dir, "Architecture", f"{tag}.json")
-        if os.path.isfile(ap):
-            with open(ap, "r", encoding="utf-8") as fh:
-                for entry in json.load(fh).get("Entries", []):
-                    if entry[0].endswith(".Name"):
-                        self.name_input.setText(entry[1])
-                    elif entry[0].endswith(".Description"):
-                        self.desc_input.setText(entry[1])
+        display = st.get("name", "") if st else ""
+        if not display:
+            # Try Architecture file for construction display names
+            ap = os.path.join(self.tobis_json_dir, "Architecture", f"{tag}.json")
+            if os.path.isfile(ap):
+                with open(ap, "r", encoding="utf-8") as fh:
+                    for entry in json.load(fh).get("Entries", []):
+                        if entry[0].endswith(".Name"):
+                            display = entry[1]
+                            break
+        if display:
+            self.name_input.setText(f"{display} ({tag})")
+        else:
+            self.name_input.setText(tag)
+
+        # Description — string table path from the JSON row
+        desc_path = ""
+        for entry in row.get("Value", []):
+            if entry.get("Name") == "Description" and isinstance(
+                entry.get("Value"), str
+            ):
+                desc_path = entry["Value"]
+                break
+        self.desc_input.setText(desc_path)
+
+        # Description String — resolved text or NOT FOUND
+        desc_text = st.get("description", "") if st else ""
+        if not desc_text:
+            ap = os.path.join(self.tobis_json_dir, "Architecture", f"{tag}.json")
+            if os.path.isfile(ap):
+                with open(ap, "r", encoding="utf-8") as fh:
+                    for entry in json.load(fh).get("Entries", []):
+                        if entry[0].endswith(".Description"):
+                            desc_text = entry[1]
+                            break
+        if desc_text:
+            self.desc_string.setText(desc_text)
+            self.desc_string.setStyleSheet("")
+        else:
+            self.desc_string.setText("STRING NOT FOUND IN STRING TABLE")
+            self.desc_string.setStyleSheet("font-weight: bold; color: red;")
 
     def _load_asset(self, values: list) -> None:
         """Extract Actor asset path from DT_Constructions values."""
@@ -399,6 +445,8 @@ class ConstructionAdderTab(QWidget):
         self.name_input.clear()
         self.tag_display.clear()
         self.desc_input.clear()
+        self.desc_string.clear()
+        self.desc_string.setStyleSheet("")
         self.asset_input.clear()
         self.cat_main.setCurrentIndex(0)
         self.const_enabled.setCurrentIndex(0)
