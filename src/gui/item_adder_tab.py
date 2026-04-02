@@ -722,8 +722,9 @@ class ItemAdderTab(QWidget):
                               widgets: dict[str, QWidget]) -> None:
         """Write widget values back into a template row's Value array.
 
-        Supports dotted field names (e.g. "DamageType.TagName") by walking
-        into nested struct Value arrays.
+        Supports dotted field names (e.g. "DamageType.TagName" or
+        "InitialRepairCost.MaterialHandle.RowName") by recursively
+        walking into nested struct/array Value entries.
         """
         for entry in row.get("Value", []):
             name = entry.get("Name")
@@ -731,15 +732,33 @@ class ItemAdderTab(QWidget):
             if name in widgets:
                 self._apply_widget_to_entry(entry, widgets[name])
                 continue
-            # Dotted match — find child entry inside struct
+            # Dotted match — recurse into nested structs
             for wname, widget in widgets.items():
                 if not wname.startswith(f"{name}."):
                     continue
-                child_name = wname.split(".", maxsplit=1)[1]
-                for sub in entry.get("Value", []):
-                    if isinstance(sub, dict) and sub.get("Name") == child_name:
-                        self._apply_widget_to_entry(sub, widget)
-                        break
+                remainder = wname[len(name) + 1:]  # e.g. "MaterialHandle.RowName"
+                self._apply_nested(entry, remainder, widget)
+
+    def _apply_nested(self, entry: dict, path: str, widget) -> None:
+        """Walk into nested Value arrays to find and set a dotted field.
+
+        path may be "TagName" (1 level) or "MaterialHandle.RowName" (2+ levels).
+        Handles both struct Value lists and array Value lists (walks into [0]).
+        """
+        val = entry.get("Value")
+        if isinstance(val, list):
+            for sub in val:
+                if not isinstance(sub, dict):
+                    continue
+                sub_name = sub.get("Name", "")
+                if "." in path:
+                    first, rest = path.split(".", maxsplit=1)
+                    if sub_name == first:
+                        self._apply_nested(sub, rest, widget)
+                        return
+                elif sub_name == path:
+                    self._apply_widget_to_entry(sub, widget)
+                    return
 
     def _apply_widget_to_entry(  # pylint: disable=too-many-branches
         self, entry: dict, widget: QWidget,
@@ -939,8 +958,9 @@ class ItemAdderTab(QWidget):
                                   widgets: dict[str, QWidget]) -> None:
         """Set each widget's value from its corresponding JSON entry.
 
-        Supports dotted field names (e.g. "DamageType.TagName") for nested
-        struct fields — walks into the struct's Value array to find the child.
+        Supports dotted field names (e.g. "DamageType.TagName" or
+        "InitialRepairCost.MaterialHandle.RowName") by recursively
+        walking into nested struct/array Value entries.
         """
         for entry in values:
             fname = entry.get("Name")
@@ -948,15 +968,30 @@ class ItemAdderTab(QWidget):
             if fname in widgets:
                 self._set_widget(widgets[fname], entry)
                 continue
-            # Dotted match — e.g. "DamageType" entry with widget "DamageType.TagName"
+            # Dotted match — recurse into nested structs
             for wname, widget in widgets.items():
                 if not wname.startswith(f"{fname}."):
                     continue
-                child_name = wname.split(".", maxsplit=1)[1]
-                for sub in entry.get("Value", []):
-                    if isinstance(sub, dict) and sub.get("Name") == child_name:
-                        self._set_widget(widget, sub)
-                        break
+                remainder = wname[len(fname) + 1:]
+                found = self._find_nested(entry, remainder)
+                if found is not None:
+                    self._set_widget(widget, found)
+
+    def _find_nested(self, entry: dict, path: str) -> dict | None:
+        """Walk into nested Value arrays to find a dotted field entry."""
+        val = entry.get("Value")
+        if isinstance(val, list):
+            for sub in val:
+                if not isinstance(sub, dict):
+                    continue
+                sub_name = sub.get("Name", "")
+                if "." in path:
+                    first, rest = path.split(".", maxsplit=1)
+                    if sub_name == first:
+                        return self._find_nested(sub, rest)
+                elif sub_name == path:
+                    return sub
+        return None
 
     def _set_widget(self, widget: QWidget, entry: dict) -> None:
         """Set a single widget's value from a JSON property entry."""

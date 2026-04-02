@@ -60,7 +60,15 @@
       "IsZero": false,
       "PropertyTagFlags": "None",
       "PropertyTagExtensions": "NoExtension",
-      "Value": 0
+      "Value": {
+        "$type": "UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI",
+        "AssetPath": {
+          "$type": "UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI",
+          "PackageName": null,
+          "AssetName": "/Game/Mods/CeibaPack/Items/Icons/T_UI_Icon_CeibaCutting.T_UI_Icon_CeibaCutting"
+        },
+        "SubPathString": null
+      }
     },
     {
       "$type": "UAssetAPI.PropertyTypes.Objects.SoftObjectPropertyData, UAssetAPI",
@@ -69,7 +77,15 @@
       "IsZero": false,
       "PropertyTagFlags": "None",
       "PropertyTagExtensions": "NoExtension",
-      "Value": 0
+      "Value": {
+        "$type": "UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI",
+        "AssetPath": {
+          "$type": "UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI",
+          "PackageName": null,
+          "AssetName": "/Game/Mods/CeibaPack/Items/BP_CeibaCutting.BP_CeibaCutting_C"
+        },
+        "SubPathString": null
+      }
     },
     {
       "$type": "UAssetAPI.PropertyTypes.Objects.ObjectPropertyData, UAssetAPI",
@@ -278,7 +294,7 @@
       "IsZero": false,
       "PropertyTagFlags": "None",
       "PropertyTagExtensions": "NoExtension",
-      "Value": "EItemPortability::Storable"
+      "Value": ""
     },
     {
       "$type": "UAssetAPI.PropertyTypes.Objects.IntPropertyData, UAssetAPI",
@@ -316,7 +332,7 @@
       "IsZero": false,
       "PropertyTagFlags": "None",
       "PropertyTagExtensions": "NoExtension",
-      "Value": "ERowEnabledState::Live"
+      "Value": ""
     }
   ]
 }

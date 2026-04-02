@@ -18,7 +18,15 @@
       "IsZero": false,
       "PropertyTagFlags": "None",
       "PropertyTagExtensions": "NoExtension",
-      "Value": 0
+      "Value": {
+        "$type": "UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI",
+        "AssetPath": {
+          "$type": "UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI",
+          "PackageName": null,
+          "AssetName": "/Game/Environments/Voxels/Baking/Properties_RockBasic.Properties_RockBasic"
+        },
+        "SubPathString": null
+      }
     },
     {
       "$type": "UAssetAPI.PropertyTypes.Objects.TextPropertyData, UAssetAPI",
@@ -69,7 +77,15 @@
       "IsZero": false,
       "PropertyTagFlags": "None",
       "PropertyTagExtensions": "NoExtension",
-      "Value": 0
+      "Value": {
+        "$type": "UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI",
+        "AssetPath": {
+          "$type": "UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI",
+          "PackageName": null,
+          "AssetName": "/Game/UI/Textures/_Icons/ItemRenders/Items/T_UI_Icon_Items_Ore_Stone.T_UI_Icon_Items_Ore_Stone"
+        },
+        "SubPathString": null
+      }
     },
     {
       "$type": "UAssetAPI.PropertyTypes.Objects.SoftObjectPropertyData, UAssetAPI",
@@ -78,7 +94,15 @@
       "IsZero": false,
       "PropertyTagFlags": "None",
       "PropertyTagExtensions": "NoExtension",
-      "Value": 0
+      "Value": {
+        "$type": "UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI",
+        "AssetPath": {
+          "$type": "UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI",
+          "PackageName": null,
+          "AssetName": "/Game/Items/BP_StonePIeces.BP_StonePIeces_C"
+        },
+        "SubPathString": null
+      }
     },
     {
       "$type": "UAssetAPI.PropertyTypes.Objects.ObjectPropertyData, UAssetAPI",
@@ -287,7 +311,7 @@
       "IsZero": false,
       "PropertyTagFlags": "None",
       "PropertyTagExtensions": "NoExtension",
-      "Value": "EItemPortability::Storable"
+      "Value": ""
     },
     {
       "$type": "UAssetAPI.PropertyTypes.Objects.IntPropertyData, UAssetAPI",
@@ -325,7 +349,7 @@
       "IsZero": false,
       "PropertyTagFlags": "None",
       "PropertyTagExtensions": "NoExtension",
-      "Value": "ERowEnabledState::Live"
+      "Value": ""
     }
   ]
 }

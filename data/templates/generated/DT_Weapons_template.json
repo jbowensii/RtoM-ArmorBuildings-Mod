@@ -48,7 +48,7 @@
       "$type": "UAssetAPI.PropertyTypes.Objects.BytePropertyData, UAssetAPI",
       "ByteType": "Byte",
       "EnumType": "None",
-      "Value": 3,
+      "Value": 0,
       "Name": "Tier",
       "ArrayIndex": 0,
       "IsZero": false,
@@ -75,7 +75,7 @@
     },
     {
       "$type": "UAssetAPI.PropertyTypes.Objects.FloatPropertyData, UAssetAPI",
-      "Value": 0.0,
+      "Value": "",
       "Name": "ArmorPenetration",
       "ArrayIndex": 0,
       "IsZero": false,
@@ -84,7 +84,7 @@
     },
     {
       "$type": "UAssetAPI.PropertyTypes.Objects.FloatPropertyData, UAssetAPI",
-      "Value": 0.0,
+      "Value": "",
       "Name": "StaminaCost",
       "ArrayIndex": 0,
       "IsZero": false,
@@ -140,7 +140,80 @@
       "IsZero": false,
       "PropertyTagFlags": "None",
       "PropertyTagExtensions": "NoExtension",
-      "Value": []
+      "Value": [
+        {
+          "$type": "UAssetAPI.PropertyTypes.Structs.StructPropertyData, UAssetAPI",
+          "StructType": "MorRequiredRecipeMaterial",
+          "SerializeNone": true,
+          "StructGUID": "{00000000-0000-0000-0000-000000000000}",
+          "SerializationControl": "NoExtension",
+          "Operation": "None",
+          "Name": "InitialRepairCost",
+          "ArrayIndex": 0,
+          "IsZero": false,
+          "PropertyTagFlags": "None",
+          "PropertyTagExtensions": "NoExtension",
+          "Value": [
+            {
+              "$type": "UAssetAPI.PropertyTypes.Structs.StructPropertyData, UAssetAPI",
+              "StructType": "MorAnyItemRowHandle",
+              "SerializeNone": true,
+              "StructGUID": "{00000000-0000-0000-0000-000000000000}",
+              "SerializationControl": "NoExtension",
+              "Operation": "None",
+              "Name": "MaterialHandle",
+              "ArrayIndex": 0,
+              "IsZero": false,
+              "PropertyTagFlags": "None",
+              "PropertyTagExtensions": "NoExtension",
+              "Value": [
+                {
+                  "$type": "UAssetAPI.PropertyTypes.Objects.NamePropertyData, UAssetAPI",
+                  "Name": "RowName",
+                  "ArrayIndex": 0,
+                  "IsZero": false,
+                  "PropertyTagFlags": "None",
+                  "PropertyTagExtensions": "NoExtension",
+                  "Value": ""
+                }
+              ]
+            },
+            {
+              "$type": "UAssetAPI.PropertyTypes.Structs.StructPropertyData, UAssetAPI",
+              "StructType": "MorCategoryTagRowHandle",
+              "SerializeNone": true,
+              "StructGUID": "{00000000-0000-0000-0000-000000000000}",
+              "SerializationControl": "NoExtension",
+              "Operation": "None",
+              "Name": "WildcardHandle",
+              "ArrayIndex": 0,
+              "IsZero": false,
+              "PropertyTagFlags": "None",
+              "PropertyTagExtensions": "NoExtension",
+              "Value": [
+                {
+                  "$type": "UAssetAPI.PropertyTypes.Objects.NamePropertyData, UAssetAPI",
+                  "Name": "RowName",
+                  "ArrayIndex": 0,
+                  "IsZero": false,
+                  "PropertyTagFlags": "None",
+                  "PropertyTagExtensions": "NoExtension",
+                  "Value": ""
+                }
+              ]
+            },
+            {
+              "$type": "UAssetAPI.PropertyTypes.Objects.IntPropertyData, UAssetAPI",
+              "Name": "Count",
+              "ArrayIndex": 0,
+              "IsZero": false,
+              "PropertyTagFlags": "None",
+              "PropertyTagExtensions": "NoExtension",
+              "Value": 0
+            }
+          ]
+        }
+      ]
     },
     {
       "$type": "UAssetAPI.PropertyTypes.Objects.ObjectPropertyData, UAssetAPI",
@@ -200,7 +273,15 @@
       "IsZero": false,
       "PropertyTagFlags": "None",
       "PropertyTagExtensions": "NoExtension",
-      "Value": 0
+      "Value": {
+        "$type": "UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI",
+        "AssetPath": {
+          "$type": "UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI",
+          "PackageName": null,
+          "AssetName": "/Game/Mods/BearGuildPack/Icons/T_UI_Icon_BearGuild_Shield.T_UI_Icon_BearGuild_Shield"
+        },
+        "SubPathString": null
+      }
     },
     {
       "$type": "UAssetAPI.PropertyTypes.Objects.SoftObjectPropertyData, UAssetAPI",
@@ -209,7 +290,15 @@
       "IsZero": false,
       "PropertyTagFlags": "None",
       "PropertyTagExtensions": "NoExtension",
-      "Value": 0
+      "Value": {
+        "$type": "UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI",
+        "AssetPath": {
+          "$type": "UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI",
+          "PackageName": null,
+          "AssetName": "/Game/Mods/BearGuildPack/BearGuild_Shield/EQ_Wonderful_TBDSet_Shield.EQ_Wonderful_TBDSet_Shield_C"
+        },
+        "SubPathString": null
+      }
     },
     {
       "$type": "UAssetAPI.PropertyTypes.Objects.ObjectPropertyData, UAssetAPI",
@@ -418,7 +507,7 @@
       "IsZero": false,
       "PropertyTagFlags": "None",
       "PropertyTagExtensions": "NoExtension",
-      "Value": "EItemPortability::Storable"
+      "Value": ""
     },
     {
       "$type": "UAssetAPI.PropertyTypes.Objects.IntPropertyData, UAssetAPI",
@@ -456,7 +545,7 @@
       "IsZero": false,
       "PropertyTagFlags": "None",
       "PropertyTagExtensions": "NoExtension",
-      "Value": "ERowEnabledState::Disabled"
+      "Value": ""
     }
   ]
 }
