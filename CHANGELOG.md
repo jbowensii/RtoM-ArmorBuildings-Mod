@@ -32,6 +32,10 @@
   for multi-level dotted field names like `InitialRepairCost.MaterialHandle.RowName`
   (previously only handled 1 level like `DamageType.TagName`).
 
+- **ResultItemHandle prefix** — Recipe ResultItemHandle.RowName now uses the correct
+  prefix per item type: `Weapon.{tag}`, `Armor.{tag}`, `Tool.{tag}`, `Item.{tag}`.
+  Previously all tabs incorrectly used `Item.{tag}`.
+
 ### Testing
 
 - 174 automated tests, pylint 10.00/10
