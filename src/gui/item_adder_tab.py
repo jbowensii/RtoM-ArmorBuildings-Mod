@@ -620,7 +620,7 @@ class ItemAdderTab(QWidget):
         # e.g. /Game/.../EQ_Sword.EQ_Sword_C → /Game/.../EQ_Sword_Broken.EQ_Sword_Broken_C
         for entry in row.get("Value", []):
             if entry.get("Name") == "Actor":
-                # Actor might be a dict (AssetPath) or a plain string (from template)
+                # Actor is a SoftObjectPath dict after _apply_widgets_to_row
                 val = entry.get("Value")
                 if isinstance(val, dict):
                     asset = val.get("AssetPath", {}).get("AssetName", "")
@@ -635,11 +635,18 @@ class ItemAdderTab(QWidget):
                         broken_asset = f"{pkg}_Broken.{base}_Broken_C"
                     else:
                         broken_asset = f"{pkg}_Broken.{cls}"
-                    # Write back in the same format
-                    if isinstance(val, dict):
-                        val["AssetPath"]["AssetName"] = broken_asset
-                    else:
-                        entry["Value"] = broken_asset
+                    # Always write as proper SoftObjectPath dict
+                    entry["Value"] = {
+                        "$type": "UAssetAPI.PropertyTypes.Objects"
+                                 ".FSoftObjectPath, UAssetAPI",
+                        "AssetPath": {
+                            "$type": "UAssetAPI.PropertyTypes.Objects"
+                                     ".FTopLevelAssetPath, UAssetAPI",
+                            "PackageName": None,
+                            "AssetName": broken_asset,
+                        },
+                        "SubPathString": None,
+                    }
 
             # Override standard broken stats
             elif entry.get("Name") == "Damage":
