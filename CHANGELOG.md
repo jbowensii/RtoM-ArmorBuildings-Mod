@@ -1,5 +1,43 @@
 # Changelog
 
+## v3.5.0 (2026-04-02)
+
+### Bug Fixes
+
+- **Templates regenerated from real per-item files** — Previous templates were
+  blanked copies that lost nested structures. Now generated from actual mod data:
+  - `InitialRepairCost` has complete `MorRequiredRecipeMaterial` struct with
+    MaterialHandle, WildcardHandle, and Count
+  - Icon and Actor are proper `FSoftObjectPath` dicts (not integer placeholders)
+  - All 7 templates regenerated (Weapons, Armor, Tools, Items, Loot, Ores, ItemRecipes)
+
+- **Icon/Actor always saved as SoftObjectPath dict** — Template placeholders (0)
+  are now detected via `$type` and converted to the correct format:
+  ```json
+  {"$type": "...FSoftObjectPath...", "AssetPath": {"AssetName": "..."}}
+  ```
+
+- **Broken variant Actor always writes SoftObjectPath** — No longer falls back to
+  plain string format.
+
+- **String table keys follow vanilla patterns** — DisplayName/Description keys
+  now match the game's convention:
+  - Weapons: `Weapons.Battleaxe.Balin.Name` (not `Balin_Battleaxe.Name`)
+  - Broken: `Weapons.Battleaxe.Balin.Broken.Name`
+  - Armor: `Armor.BearGuild.Gloves.T4.Name`
+  - Tools: `Tools.Restoration.Hammer.Tobi.Name`
+  - Items: `Items.CeibaCutting.Name`
+
+- **Deep dotted field support** — Load/save now recursively walks nested structs
+  for multi-level dotted field names like `InitialRepairCost.MaterialHandle.RowName`
+  (previously only handled 1 level like `DamageType.TagName`).
+
+### Testing
+
+- 174 automated tests, pylint 10.00/10
+
+---
+
 ## v3.4.0 (2026-04-01)
 
 ### UI Improvements
