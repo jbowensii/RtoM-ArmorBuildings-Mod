@@ -689,10 +689,30 @@ class ItemAdderTab(QWidget):
         with open(path, "w", encoding="utf-8") as fh:
             json.dump(item_data, fh, indent=4, ensure_ascii=False)
 
+    # ResultItemHandle prefix per item table (singular form)
+    _RESULT_ITEM_PREFIX = {
+        "DT_Weapons": "Weapon",
+        "DT_Armor": "Armor",
+        "DT_Tools": "Tool",
+        "DT_Items": "Item",
+    }
+
     def _save_recipe_file(self, tag: str) -> None:
         """Write the recipe per-item JSON from template + form values."""
         row = copy.deepcopy(self._recipe_template)
         row["Name"] = tag
+
+        # Set ResultItemHandle.RowName with correct prefix
+        # e.g. Weapon.Mereak_Battleaxe, Armor.BearGuild_Gloves_T4
+        prefix = self._RESULT_ITEM_PREFIX.get(self.cfg.item_table, "Item")
+        result_handle = f"{prefix}.{tag}"
+        for entry in row.get("Value", []):
+            if entry.get("Name") == "ResultItemHandle":
+                for sub in entry.get("Value", []):
+                    if isinstance(sub, dict) and sub.get("Name") == "RowName":
+                        sub["Value"] = result_handle
+                        break
+                break
 
         # Apply recipe widget values
         self._apply_widgets_to_row(row, self._recipe_widgets)
