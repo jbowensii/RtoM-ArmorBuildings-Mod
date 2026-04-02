@@ -498,6 +498,49 @@ class ItemAdderTab(QWidget):
             self.item_list, self.tobis_json_dir, self.cfg.item_table)
         QMessageBox.information(self, "Saved", f"'{tag}' saved.")
 
+    # Vanilla string table key prefixes per table type
+    _ST_KEY_PREFIX = {
+        "DT_Weapons": "Weapons",
+        "DT_Armor": "Armor",
+        "DT_Tools": "Tools",
+        "DT_Items": "Items",
+        "DT_Ores": "Items",
+    }
+
+    def _make_string_key(self, tag: str, suffix: str) -> str:
+        """Build a vanilla-style string table key.
+
+        Follows the game's convention per table type:
+        - Weapons: Weapons.{WeaponType}.{AuthorName}.{suffix}
+          e.g. Weapons.Battleaxe.Balin.Name
+        - Armor: Armor.{Pack}.{Piece}.{suffix}
+        - Tools: Tools.{ToolType}.{AuthorName}.{suffix}
+        - Items/Ores: Items.{Tag}.{suffix}
+
+        Falls back to "{tag}.{suffix}" if the table has no known pattern.
+        """
+        prefix = self._ST_KEY_PREFIX.get(self.cfg.item_table, "")
+        if not prefix:
+            return f"{tag}.{suffix}"
+
+        # For weapons, use the weapon type from the master selector
+        if self.cfg.item_table == "DT_Weapons" and self._master_combo:
+            weapon_type = self._master_combo.currentText()
+            if weapon_type and weapon_type != "(select)":
+                # Extract the author/name part from tag
+                # e.g. "Balin_Battleaxe" → "Balin", "Mereak_Battleaxe" → "Mereak"
+                parts = tag.split("_")
+                # Remove "Broken" prefix if present
+                if parts[0] == "Broken" and len(parts) > 1:
+                    author = "_".join(parts[1:-1]) if len(parts) > 2 else parts[1]
+                    return f"Weapons.{weapon_type}.{author}.Broken.{suffix}"
+                author = "_".join(parts[:-1]) if len(parts) > 1 else tag
+                return f"Weapons.{weapon_type}.{author}.{suffix}"
+
+        # Generic: Prefix.{tag_parts_joined_by_dots}.{suffix}
+        parts = tag.replace("_", ".")
+        return f"{prefix}.{parts}.{suffix}"
+
     def _save_item_file(self, tag: str) -> None:
         """Write the item per-item JSON from template + form values."""
         if not self._item_template:
@@ -509,14 +552,14 @@ class ItemAdderTab(QWidget):
         row["Name"] = tag
 
         # Set DisplayName and Description string table keys
-        # DisplayName always uses "{tag}.Name"
-        # Description uses the user-edited path, or defaults to "{tag}.Description"
+        # Follows vanilla key patterns per table type
+        display_key = self._make_string_key(tag, "Name")
         desc_path = self.desc_input.text().strip() if self.desc_input else ""
         if not desc_path:
-            desc_path = f"{tag}.Description"
+            desc_path = self._make_string_key(tag, "Description")
         for entry in row.get("Value", []):
             if entry.get("Name") == "DisplayName":
-                entry["Value"] = f"{tag}.Name"
+                entry["Value"] = display_key
             elif entry.get("Name") == "Description":
                 entry["Value"] = desc_path
 
@@ -561,12 +604,14 @@ class ItemAdderTab(QWidget):
         row = copy.deepcopy(self._item_template)
         row["Name"] = broken_tag
 
-        # Set DisplayName and Description string table keys for the broken variant
+        # Set DisplayName and Description using vanilla key pattern
+        display_key = self._make_string_key(broken_tag, "Name")
+        desc_key = self._make_string_key(broken_tag, "Description")
         for entry in row.get("Value", []):
             if entry.get("Name") == "DisplayName":
-                entry["Value"] = f"{broken_tag}.Name"
+                entry["Value"] = display_key
             elif entry.get("Name") == "Description":
-                entry["Value"] = f"{broken_tag}.Description"
+                entry["Value"] = desc_key
 
         # Apply the same widget values as the original
         self._apply_widgets_to_row(row, self._item_widgets)
@@ -714,10 +759,22 @@ class ItemAdderTab(QWidget):
         elif isinstance(widget, QLineEdit):
             text = widget.text().strip()
             if isinstance(entry.get("Value"), dict):
+                # Value is already a SoftObjectPath dict — update AssetName
                 try:
                     entry["Value"]["AssetPath"]["AssetName"] = text
                 except (KeyError, TypeError):
                     entry["Value"] = text
+            elif "SoftObjectProperty" in dtype and text:
+                # Template has placeholder (0) — construct proper SoftObjectPath
+                entry["Value"] = {
+                    "$type": "UAssetAPI.PropertyTypes.Objects.FSoftObjectPath, UAssetAPI",
+                    "AssetPath": {
+                        "$type": "UAssetAPI.PropertyTypes.Objects.FTopLevelAssetPath, UAssetAPI",
+                        "PackageName": None,
+                        "AssetName": text,
+                    },
+                    "SubPathString": None,
+                }
             elif "FloatProperty" in dtype:
                 try:
                     entry["Value"] = float(text) if text else 0.0
