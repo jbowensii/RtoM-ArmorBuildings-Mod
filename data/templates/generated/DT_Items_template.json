@@ -257,7 +257,7 @@
           "IsZero": false,
           "PropertyTagFlags": "None",
           "PropertyTagExtensions": "NoExtension",
-          "Value": ""
+          "Value": "None"
         }
       ]
     },
@@ -281,7 +281,7 @@
           "IsZero": false,
           "PropertyTagFlags": "None",
           "PropertyTagExtensions": "NoExtension",
-          "Value": ""
+          "Value": "None"
         }
       ]
     },

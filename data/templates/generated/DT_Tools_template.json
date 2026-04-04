@@ -136,7 +136,7 @@
                   "IsZero": false,
                   "PropertyTagFlags": "None",
                   "PropertyTagExtensions": "NoExtension",
-                  "Value": ""
+                  "Value": "Item.Scrap"
                 }
               ]
             },
@@ -160,7 +160,7 @@
                   "IsZero": false,
                   "PropertyTagFlags": "None",
                   "PropertyTagExtensions": "NoExtension",
-                  "Value": ""
+                  "Value": "None"
                 }
               ]
             },
@@ -171,7 +171,7 @@
               "IsZero": false,
               "PropertyTagFlags": "None",
               "PropertyTagExtensions": "NoExtension",
-              "Value": 0
+              "Value": 5
             }
           ]
         }
@@ -184,7 +184,7 @@
       "IsZero": false,
       "PropertyTagFlags": "None",
       "PropertyTagExtensions": "NoExtension",
-      "Value": 0
+      "Value": -6
     },
     {
       "$type": "UAssetAPI.PropertyTypes.Objects.IntPropertyData, UAssetAPI",
@@ -450,7 +450,7 @@
           "IsZero": false,
           "PropertyTagFlags": "None",
           "PropertyTagExtensions": "NoExtension",
-          "Value": ""
+          "Value": "None"
         }
       ]
     },
@@ -474,7 +474,7 @@
           "IsZero": false,
           "PropertyTagFlags": "None",
           "PropertyTagExtensions": "NoExtension",
-          "Value": ""
+          "Value": "None"
         }
       ]
     },
