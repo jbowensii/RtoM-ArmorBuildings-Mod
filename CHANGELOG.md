@@ -1,5 +1,32 @@
 # Changelog
 
+## v3.6.0 (2026-04-04)
+
+### Improvements
+
+- **New button loads template defaults** — When clicking New on any tab, the
+  template's default values are loaded into the form widgets and displayed in
+  the right pane. Previously New blanked all fields to empty/zero, which meant
+  sane defaults (Item.Scrap, RepairCostCurve=-6, CosmeticConvertCost=None, etc.)
+  were lost on save. Now what you see in the form is exactly what gets saved.
+
+- **Template defaults set from Tobi's data** — Generated templates now have
+  correct default values instead of blanked zeros:
+  - Weapons: InitialRepairCost=Item.Scrap x10, RepairCostCurve=-6
+  - Armor: InitialRepairCost=Item.Scrap x3, RepairCostCurve=-6
+  - Tools: InitialRepairCost=Item.Scrap x5, RepairCostCurve=-6
+  - All: CosmeticConvertCost=None, ItemSetRowHandle=None
+
+- **ResultItemHandle prefix fix** — Recipe ResultItemHandle.RowName now uses
+  the correct prefix per item type: Weapon.{tag}, Armor.{tag}, Tool.{tag},
+  Item.{tag} (was incorrectly using Item.{tag} for all types).
+
+### Testing
+
+- 174 automated tests, pylint 10.00/10
+
+---
+
 ## v3.5.0 (2026-04-02)
 
 ### Bug Fixes
