@@ -435,7 +435,12 @@ class ItemAdderTab(QWidget):
     # ── New item ─────────────────────────────────────────────────
 
     def _new_item(self) -> None:
-        """Clear the form for a new item entry."""
+        """Clear the form and populate with template defaults.
+
+        Instead of blanking all fields, loads the template's default values
+        into the widgets so that sane defaults (Item.Scrap, None, -6, etc.)
+        are preserved when saving.
+        """
         # Deselect list so we're in "new" mode
         self.item_list.clearSelection()
         self.item_list.setCurrentItem(None)
@@ -450,18 +455,19 @@ class ItemAdderTab(QWidget):
         if self._master_combo:
             self._master_combo.setCurrentIndex(0)
         self._weapon_type_tag = ""
-        # Reset item field widgets to defaults
-        for widget in self._item_widgets.values():
-            if isinstance(widget, QCheckBox):
-                widget.setChecked(False)
-            elif isinstance(widget, QSpinBox):
-                widget.setValue(0)
-            elif isinstance(widget, QComboBox):
-                widget.setCurrentIndex(0)
-            elif isinstance(widget, QLineEdit):
-                widget.clear()
-        # Reset recipe widgets
-        self._clear_recipe_fields()
+        # Load template defaults into item field widgets
+        if self._item_template:
+            self._load_fields_into_widgets(
+                self._item_template.get("Value", []), self._item_widgets)
+        # Load template defaults into recipe field widgets
+        if self._recipe_template:
+            self._load_fields_into_widgets(
+                self._recipe_template.get("Value", []), self._recipe_widgets)
+            if self.cfg.recipe_has_materials and self._material_picker:
+                self._material_picker.load_from_values(
+                    self._recipe_template.get("Value", []))
+        else:
+            self._clear_recipe_fields()
 
     # Tables that require a Broken_ duplicate when saving
     _BROKEN_VARIANT_TABLES = frozenset({"DT_Weapons", "DT_Tools"})
