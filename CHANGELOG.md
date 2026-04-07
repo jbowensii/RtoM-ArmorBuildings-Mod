@@ -1,5 +1,18 @@
 # Changelog
 
+## v3.7.0 (2026-04-07)
+
+### Bug Fix
+
+- **Fixed incomplete recipe JSON** — Weapon/armor/tool recipe files were only
+  saving ResultItemHandle (1 field) instead of all 16 fields. The generated
+  DT_ItemRecipes template was truncated. Now uses Tobi's complete
+  MoreArmor/ItemRecipeTemplate.json with all 16 fields: ResultItemHandle,
+  ResultItemCount, CraftTimeSeconds, CraftingStations, DefaultRequiredMaterials,
+  DefaultUnlocks, EnabledState, and 9 others.
+
+---
+
 ## v3.6.0 (2026-04-04)
 
 ### Improvements
