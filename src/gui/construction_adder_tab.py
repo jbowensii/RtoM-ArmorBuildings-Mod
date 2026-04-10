@@ -17,8 +17,7 @@ from PySide6.QtWidgets import (
 )
 
 from src.construction.mod_utils import (
-    architecture_handle, dt_constructions_handle,
-    dt_construction_recipes_handle,
+    dt_constructions_handle, dt_construction_recipes_handle,
 )
 from src.gui.field_helpers import (
     enum_short_values, load_field_values, load_string_table, make_combo,
@@ -45,7 +44,7 @@ class ConstructionAdderTab(QWidget):
     def __init__(  # pylint: disable=too-many-arguments,too-many-positional-arguments
         self, tobis_json_dir: str, templates_dir: str,
         game_extract_dir: str, tobis_mod_dir: str,
-        items: dict, category_tags: dict, unlock_requirements: dict,
+        items: dict, unlock_requirements: dict,
         data_dir: str | None = None,
     ) -> None:
         super().__init__()
@@ -57,14 +56,6 @@ class ConstructionAdderTab(QWidget):
         self.items = items
         self.unlock_requirements = unlock_requirements
 
-        # Category helpers
-        self.category_tags_raw = category_tags
-        self.main_categories = sorted({k.split(".")[0] for k in category_tags})
-        self.sub_categories: dict[str, list[str]] = {}
-        for key in category_tags:
-            main, sub = key.split(".")
-            self.sub_categories.setdefault(main, []).append(sub)
-
         # Field-value indexes for autocomplete
         self._const_fv = load_field_values("DT_Constructions")
         self._recipe_fv = load_field_values("DT_ConstructionRecipes")
@@ -72,9 +63,9 @@ class ConstructionAdderTab(QWidget):
 
         # Pre-declare all widget attrs set by _setup_ui (avoids W0201)
         self.build_btn = self.item_list = self.new_btn = self.delete_btn = None
-        self.pack_name = self.name_input = self.tag_display = None
+        self.pack_name = self.tag_display = None
         self.desc_input = self.desc_string = self.asset_input = None
-        self.cat_main = self.cat_sub = self.tags_combo = None
+        self.tags_combo = None
         self.const_enabled = self.build_process = self.location_req = None
         self.placement_type = self.foundation_rule = None
         self.monument_type = self.recipe_enabled = None
@@ -131,7 +122,12 @@ class ConstructionAdderTab(QWidget):
         refresh_item_list(self.item_list, self.tobis_json_dir, "DT_Constructions")
 
     def _build_basic_info(self, layout: QVBoxLayout) -> None:
-        """Pack name, name, tag, description, and description string fields."""
+        """Pack name, tag, description path, and description string fields.
+
+        The in-game Name is not entered here — it's set in Unreal Engine.
+        The Name Tag is used as the row name and to auto-generate the
+        DisplayName/Description string table keys ({tag}.Name / {tag}.Description).
+        """
         group = QGroupBox("Basic Info")
         form = QFormLayout()
         packs = self._const_fv.get("PackNames", {}).get("values", [])
@@ -139,22 +135,19 @@ class ConstructionAdderTab(QWidget):
         self.pack_name.setPlaceholderText("Enter your pack name (e.g., Tobi)")
         if packs:
             self.pack_name.setCompleter(QCompleter(sorted(packs)))
-        # Name — read-only, "display name (game name)" format
-        self.name_input = QLineEdit()
-        self.name_input.setReadOnly(True)
-        # Name Tag — the game row name
+        # Name Tag — the game row name, also used as filename
         self.tag_display = QLineEdit()
         self.tag_display.setPlaceholderText("No spaces, e.g. TobiPack_AleKeg_A")
         self.tag_display.textChanged.connect(self._sanitize_tag)
         # Description — editable, string table path
         self.desc_input = QLineEdit()
-        self.desc_input.setPlaceholderText("String table path, e.g. TobiPack_AleKeg_A.Description")
+        self.desc_input.setPlaceholderText(
+            "String table path (auto: {tag}.Description)")
         # Description String — resolved text or "NOT FOUND"
         self.desc_string = QLineEdit()
         self.desc_string.setReadOnly(True)
         for label, widget in [
             ("Pack Name", self.pack_name),
-            ("Name", self.name_input),
             ("Name Tag", self.tag_display),
             ("Description", self.desc_input),
             ("Description String", self.desc_string),
@@ -164,7 +157,11 @@ class ConstructionAdderTab(QWidget):
         layout.addWidget(group)
 
     def _build_construction_fields(self, layout: QVBoxLayout) -> None:
-        """Asset path, category selectors, gameplay tags, enabled state."""
+        """Asset path, gameplay tags, enabled state.
+
+        The Gameplay Tags combo is the single source for the category —
+        pick a UI.Construction.Category.* value directly.
+        """
         group = QGroupBox("DT_Constructions")
         form = QFormLayout()
         actors = self._const_fv.get("Actor", {}).get("values", [])
@@ -172,17 +169,10 @@ class ConstructionAdderTab(QWidget):
         self.asset_input.setPlaceholderText("/Game/Items/Breakables/...")
         if actors:
             self.asset_input.setCompleter(QCompleter(actors))
-        self.cat_main = QComboBox()
-        self.cat_main.addItems(self.main_categories)
-        self.cat_main.currentTextChanged.connect(self._update_subcategories)
-        self.cat_sub = QComboBox()
-        self._update_subcategories(self.cat_main.currentText())
         enabled = (enum_short_values(self._const_fv.get("EnabledState", {}))
                    or ["Live", "Disabled"])
         self.const_enabled = make_combo(enabled, editable=False)
         form.addRow("Asset Path", self.asset_input)
-        form.addRow("Main Category", self.cat_main)
-        form.addRow("Sub Category", self.cat_sub)
         tag_vals = self._const_fv.get("Tags", {}).get("values", [])
         if tag_vals:
             self.tags_combo = make_combo(tag_vals)
@@ -308,32 +298,14 @@ class ConstructionAdderTab(QWidget):
             self._material_picker.clear_all()
             self._material_picker.add_row()
 
-    def _load_name_desc(  # pylint: disable=too-many-branches
-        self, tag: str, row: dict,
-    ) -> None:
-        """Set name, description path, and description string from data.
+    def _load_name_desc(self, tag: str, row: dict) -> None:
+        """Set description path and description string from data.
 
-        Name shows "display name (game name)" if found, else just game name.
         Description shows the string table path from the JSON.
         Description String shows the resolved text or "NOT FOUND".
+        (Name is no longer shown — it's set in Unreal Engine.)
         """
-        # Name — "display name (game name)" format
         st = self._string_table.get(tag)
-        display = st.get("name", "") if st else ""
-        if not display:
-            # Try Architecture file for construction display names
-            ap = os.path.join(self.tobis_json_dir, "Architecture", f"{tag}.json")
-            if os.path.isfile(ap):
-                with open(ap, "r", encoding="utf-8") as fh:
-                    for entry in json.load(fh).get("Entries", []):
-                        if entry[0].endswith(".Name"):
-                            display = entry[1]
-                            break
-        if display:
-            self.name_input.setText(f"{display} ({tag})")
-        else:
-            self.name_input.setText(tag)
-
         # Description — string table path from the JSON row
         desc_path = ""
         for entry in row.get("Value", []):
@@ -442,13 +414,13 @@ class ConstructionAdderTab(QWidget):
         self.item_list.clearSelection()
         self.item_list.setCurrentItem(None)
         self.pack_name.clear()
-        self.name_input.clear()
         self.tag_display.clear()
         self.desc_input.clear()
         self.desc_string.clear()
         self.desc_string.setStyleSheet("")
         self.asset_input.clear()
-        self.cat_main.setCurrentIndex(0)
+        if self.tags_combo:
+            self.tags_combo.setCurrentIndex(0)
         self.const_enabled.setCurrentIndex(0)
         # Reset recipe enums to defaults
         for combo in (self.build_process, self.location_req,
@@ -478,11 +450,6 @@ class ConstructionAdderTab(QWidget):
             refresh_item_list(self.item_list, self.tobis_json_dir, "DT_Constructions")
             QMessageBox.information(self, "Deleted", f"'{tag}' removed.")
 
-    def _update_subcategories(self, main: str) -> None:
-        """Refresh sub-category combo when main category changes."""
-        self.cat_sub.clear()
-        self.cat_sub.addItems(self.sub_categories.get(main, []))
-
     def _collect_recipe_overrides(self) -> dict:
         """Gather all recipe field values from the form for saving."""
         return {
@@ -509,47 +476,49 @@ class ConstructionAdderTab(QWidget):
             if os.path.isfile(old):
                 os.rename(old, new)
 
-    def _save(self) -> None:  # pylint: disable=too-many-locals
-        """Validate form, collect data, write per-item JSON files."""
+    def _save(self) -> None:
+        """Collect data, write per-item JSON files.
+
+        The Name Tag drives everything: DisplayName/Description string table
+        keys are auto-generated from it. The in-game display text is handled
+        in Unreal Engine, not here. The gameplay Tags combo provides the
+        category tag; recipe overrides from the form cover all placement
+        flags so no category lookup is needed.
+        """
         pack_name = self.pack_name.text().strip()
-        name = self.name_input.text().strip()
-        desc = self.desc_input.text().strip()
         asset = self.asset_input.text().strip()
-        if not name or not desc or not asset:
-            QMessageBox.warning(self, "Empty Fields", "Please fill all fields.")
+        custom_tag = self.tag_display.text().strip()
+        if not custom_tag or not asset:
+            QMessageBox.warning(
+                self, "Empty Fields", "Name Tag and Asset Path are required.")
             return
 
         materials = self._material_picker.collect()
-        cat_key = f"{self.cat_main.currentText()}.{self.cat_sub.currentText()}"
-        cat_tag = self.category_tags_raw.get(cat_key, "")
+        # Gameplay tag is the category (e.g. UI.Construction.Category.Deco.Jars)
+        cat_tag = self.tags_combo.currentText() if self.tags_combo else ""
 
-        # Determine tag (handle renames and new items)
-        custom_tag = self.tag_display.text().strip()
+        # Determine tag (handle renames)
         selected = self.item_list.currentItem()
         old_tag = selected.text() if selected else None
-        if custom_tag and old_tag and custom_tag != old_tag:
+        if old_tag and custom_tag != old_tag:
             self._rename_item(old_tag, custom_tag)
-            unique = custom_tag
-        elif custom_tag and not old_tag:
-            unique = custom_tag
-        else:
-            tag = f"{pack_name}Pack_{name.title().replace(' ', '')}"
-            unique = architecture_handle(tag, name, desc, self.tobis_json_dir)
+        unique = custom_tag
         self.tag_display.setText(unique)
 
-        # Architecture entry (name + description)
+        # Architecture entry — empty display text; resolved by Unreal string table
         arch_dir = os.path.join(self.tobis_json_dir, "Architecture")
         os.makedirs(arch_dir, exist_ok=True)
         arch_path = os.path.join(arch_dir, f"{unique}.json")
         with open(arch_path, "w", encoding="utf-8") as fh:
-            json.dump({"Entries": [[f"{unique}.Name", name],
-                                   [f"{unique}.Description", desc]]}, fh, indent=2)
+            json.dump({"Entries": [[f"{unique}.Name", ""],
+                                   [f"{unique}.Description", ""]]}, fh, indent=2)
 
         dt_constructions_handle(
             unique, asset, cat_tag,
             self.tobis_json_dir, self.templates_dir, pack_name)
+        # Pass empty cat_key — recipe overrides cover all placement flags
         dt_construction_recipes_handle(
-            unique, self.tobis_json_dir, self.templates_dir, cat_key,
+            unique, self.tobis_json_dir, self.templates_dir, "",
             materials, self._unlock_picker.unlock_type,
             self._unlock_picker.selected_tag,
             recipe_overrides=self._collect_recipe_overrides())

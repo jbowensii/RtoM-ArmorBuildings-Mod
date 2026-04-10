@@ -3,6 +3,7 @@
 Provides New/Save/Delete workflow: New creates an empty template on the
 right pane, Save writes the per-item JSON using the Name Tag as filename.
 """
+# pylint: disable=too-many-lines
 from __future__ import annotations
 
 import copy

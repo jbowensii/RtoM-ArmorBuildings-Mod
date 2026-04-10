@@ -48,9 +48,6 @@ class MainWindow(QMainWindow):
         items = load_json(os.path.join(
             templates_dir, "MoreBuildings", "Items.json",
         ))
-        cat_tags = load_json(os.path.join(
-            templates_dir, "MoreBuildings", "CategoryTags.json",
-        ))
         unlock_buildings = load_json(os.path.join(
             templates_dir, "MoreBuildings",
             "UnlockRequirementsItemsConstructions.json",
@@ -77,7 +74,7 @@ class MainWindow(QMainWindow):
         self.tabs.addTab(
             ConstructionAdderTab(
                 tobis_json_dir, templates_dir, game_extract_dir, tobis_mod_dir,
-                items, cat_tags, unlock_buildings, data_dir,
+                items, unlock_buildings, data_dir,
             ),
             "New Construction",
         )
