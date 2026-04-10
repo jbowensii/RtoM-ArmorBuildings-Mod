@@ -1,5 +1,23 @@
 # Changelog
 
+## v3.8.0 (2026-04-09)
+
+### New Construction tab simplified
+
+- **Removed Name field** — DisplayName is auto-generated from the Name Tag
+  (`{tag}.Name`). The actual in-game display text is set in Unreal Engine,
+  not in the mod tool. Consistent with how Weapons/Armor/Tools already work.
+- **Removed Main Category and Sub Category dropdowns** — redundant with the
+  existing Gameplay Tags dropdown which provides the `UI.Construction.Category.*`
+  value directly, and with the individual recipe placement fields
+  (bOnWall, bOnFloor, FoundationRule, etc.) which are already exposed.
+- **Basic Info now shows**: Pack Name, Name Tag, Description (editable string
+  table path), Description String (resolved lookup).
+- **Save requires only** Name Tag and Asset Path. Recipe overrides fully cover
+  all placement flags so no category-based flag lookup is needed.
+
+---
+
 ## v3.7.0 (2026-04-07)
 
 ### Bug Fix
