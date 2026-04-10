@@ -1,5 +1,15 @@
 # Changelog
 
+## v3.8.1 (2026-04-10)
+
+### Patch release
+
+- Test suite refinements (174 tests passing, pylint 10.00/10)
+- Minor tweaks to material picker display format handling
+- No user-visible behavior changes
+
+---
+
 ## v3.8.0 (2026-04-09)
 
 ### New Construction tab simplified
