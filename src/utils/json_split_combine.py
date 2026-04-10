@@ -33,6 +33,45 @@ def _save(path: str, data: Any) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Disabled-state helpers
+# ---------------------------------------------------------------------------
+
+def _is_disabled(row: dict) -> bool:
+    """Return True if the row's EnabledState property is Disabled."""
+    for prop in row.get("Value", []):
+        if prop.get("Name") == "EnabledState":
+            return "Disabled" in str(prop.get("Value", ""))
+    return False
+
+
+def collect_disabled_tags(source_dir: str) -> set[str]:
+    """Scan per-item files in *source_dir* and return tags marked Disabled.
+
+    Also includes ``Broken_{tag}`` variants so broken weapons/tools are
+    skipped alongside their disabled base items.
+    """
+    if not os.path.isdir(source_dir):
+        return set()
+    disabled: set[str] = set()
+    for fname in sorted(os.listdir(source_dir)):
+        if not fname.endswith(".json"):
+            continue
+        try:
+            item = _load(os.path.join(source_dir, fname))
+        except (OSError, json.JSONDecodeError):
+            continue
+        row = item.get("Row", {})
+        if not _is_disabled(row):
+            continue
+        tag = row.get("Name") or fname[:-5]
+        disabled.add(tag)
+        # Also skip the Broken_ variant if it exists
+        if not tag.startswith("Broken_"):
+            disabled.add(f"Broken_{tag}")
+    return disabled
+
+
+# ---------------------------------------------------------------------------
 # Combine
 # ---------------------------------------------------------------------------
 
@@ -41,6 +80,7 @@ def combine_dt_file(
     shell_path: str,
     output_path: str,
     has_imports: bool = False,
+    skip_tags: set[str] | None = None,
 ) -> int:
     """Combine per-item files back into a single DataTable JSON.
 
@@ -49,6 +89,9 @@ def combine_dt_file(
         shell_path: Path to the vanilla base JSON (from game_extract).
         output_path: Where to write the combined file.
         has_imports: If True, merge and reindex Imports (DT_Constructions).
+        skip_tags: Optional set of row names (tags) to exclude from the
+            combined output. Rows whose own EnabledState is Disabled are
+            always skipped.
 
     Returns:
         Number of items combined.
@@ -65,6 +108,7 @@ def combine_dt_file(
         _save(output_path, data)
         return 0
 
+    skip = set(skip_tags) if skip_tags else set()
     base_import_count = len(data.get("Imports", []))
     accumulated = 0
     namemap_set = set(data.get("NameMap", []))
@@ -73,6 +117,13 @@ def combine_dt_file(
     for fname in files:
         item = _load(os.path.join(source_dir, fname))
         row = item["Row"]
+        tag = row.get("Name") or fname[:-5]
+
+        # Skip if tag is in caller's skip set or the row is Disabled
+        if tag in skip or _is_disabled(row):
+            log.info("Skipping disabled row: %s", tag)
+            continue
+
         item_namemap = item.get("NameMap", [])
         item_imports = item.get("Imports", [])
 
@@ -148,20 +199,34 @@ def combine_architecture_file(
 # ---------------------------------------------------------------------------
 
 # Mapping: table_name → (game_path for vanilla base, combine options)
+#
+# Order matters: item tables are processed BEFORE recipe tables so the
+# combine_all() orchestrator can collect disabled item tags and pass them
+# to the recipe combiners (skip recipes whose result is disabled).
 _COMBINE_MAP = [
     ("Architecture", None, {"is_arch": True}),
+    # Item tables first
     ("DT_Constructions",
      "Moria/Content/Tech/Data/Building/DT_Constructions",
-     {"has_imports": True}),
-    ("DT_ConstructionRecipes", "Moria/Content/Tech/Data/Building/DT_ConstructionRecipes", {}),
-    ("DT_ItemRecipes", "Moria/Content/Tech/Data/Items/DT_ItemRecipes", {}),
-    ("DT_Armor", "Moria/Content/Tech/Data/Items/DT_Armor", {}),
-    ("DT_Weapons", "Moria/Content/Tech/Data/Items/DT_Weapons", {}),
-    ("DT_Items", "Moria/Content/Tech/Data/Items/DT_Items", {}),
-    ("DT_Tools", "Moria/Content/Tech/Data/Items/DT_Tools", {}),
+     {"has_imports": True, "is_item": True}),
+    ("DT_Armor", "Moria/Content/Tech/Data/Items/DT_Armor",
+     {"is_item": True}),
+    ("DT_Weapons", "Moria/Content/Tech/Data/Items/DT_Weapons",
+     {"is_item": True}),
+    ("DT_Items", "Moria/Content/Tech/Data/Items/DT_Items",
+     {"is_item": True}),
+    ("DT_Tools", "Moria/Content/Tech/Data/Items/DT_Tools",
+     {"is_item": True}),
     ("DT_Loot", "Moria/Content/Character/AI/DT_Loot", {}),
     ("DT_Ores", "Moria/Content/Tech/Data/Items/DT_Ores", {}),
     ("DT_CategoryTags", "Moria/Content/Tech/Data/DT_CategoryTags", {}),
+    # Recipe tables last — receive the collected skip set
+    ("DT_ConstructionRecipes",
+     "Moria/Content/Tech/Data/Building/DT_ConstructionRecipes",
+     {"is_recipe": True}),
+    ("DT_ItemRecipes",
+     "Moria/Content/Tech/Data/Items/DT_ItemRecipes",
+     {"is_recipe": True}),
 ]
 
 
@@ -190,6 +255,10 @@ def combine_all(
     results: dict[str, int] = {}
     uassetgui_dir = os.path.join(game_extract_dir, "uassetgui")
 
+    # Disabled tags collected from item tables are passed to recipe tables
+    # so recipes for disabled items are also skipped from the combined output.
+    disabled_tags: set[str] = set()
+
     for table_name, game_path, opts in _COMBINE_MAP:
         source = os.path.join(tobis_json_dir, table_name)
 
@@ -210,19 +279,40 @@ def combine_all(
                 output_dir, "Moria", "Content", "Tech", "Data",
                 "Building", "Architecture.json",
             )
-            results[table_name] = combine_architecture_file(source, arch_shell, output)
+            results[table_name] = combine_architecture_file(
+                source, arch_shell, output)
+            continue
+
+        shell = os.path.join(uassetgui_dir, f"{game_path}.json")
+        output = os.path.join(output_dir, f"{game_path}.json")
+
+        if not os.path.isfile(shell):
+            log.warning(
+                "Vanilla base not found: %s — skipping %s", shell, table_name)
+            results[table_name] = 0
+            continue
+
+        # Collect disabled tags from item tables BEFORE combining so they
+        # can be skipped and forwarded to recipe tables.
+        if opts.get("is_item"):
+            table_disabled = collect_disabled_tags(source)
+            disabled_tags.update(table_disabled)
+            if table_disabled:
+                log.info("%s: skipping %d disabled item(s)",
+                         table_name, len(table_disabled))
+            # Pass the table's own disabled set so Broken_ variants in the
+            # same table (not themselves disabled) are also skipped.
+            skip = table_disabled
+        elif opts.get("is_recipe"):
+            # Recipe tables use the full accumulated skip set
+            skip = disabled_tags
         else:
-            shell = os.path.join(uassetgui_dir, f"{game_path}.json")
-            output = os.path.join(output_dir, f"{game_path}.json")
+            skip = None
 
-            if not os.path.isfile(shell):
-                log.warning("Vanilla base not found: %s — skipping %s", shell, table_name)
-                results[table_name] = 0
-                continue
-
-            results[table_name] = combine_dt_file(
-                source, shell, output,
-                has_imports=opts.get("has_imports", False),
-            )
+        results[table_name] = combine_dt_file(
+            source, shell, output,
+            has_imports=opts.get("has_imports", False),
+            skip_tags=skip,
+        )
 
     return results

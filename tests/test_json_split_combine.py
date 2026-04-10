@@ -7,6 +7,7 @@ import pytest
 
 from src.utils.json_split_combine import (
     combine_dt_file, combine_architecture_file, combine_all,
+    collect_disabled_tags, _is_disabled,
 )
 
 
@@ -402,3 +403,232 @@ class TestCombineAll:
         assert data["Imports"][0]["OuterIndex"] == 0
         # Texture points to Package at index 0 → -(0+1) = -1
         assert data["Imports"][1]["OuterIndex"] == -1
+
+
+# -----------------------------------------------------------------------------
+# Disabled-state skip tests
+# -----------------------------------------------------------------------------
+
+def _make_row(name: str, enabled: bool = True) -> dict:
+    """Build a minimal row dict with an EnabledState property."""
+    state = "ERowEnabledState::Live" if enabled else "ERowEnabledState::Disabled"
+    return {
+        "Name": name,
+        "Value": [
+            {"Name": "EnabledState", "Value": state},
+        ],
+    }
+
+
+def _write_per_item(path, name: str, enabled: bool = True) -> None:
+    """Write a per-item JSON file with the given EnabledState."""
+    data = {"NameMap": [name], "Imports": [], "Row": _make_row(name, enabled)}
+    path.write_text(json.dumps(data), encoding="utf-8")
+
+
+class TestIsDisabled:
+    """Tests for _is_disabled()."""
+
+    def test_live_returns_false(self):
+        row = _make_row("Item", enabled=True)
+        assert _is_disabled(row) is False
+
+    def test_disabled_returns_true(self):
+        row = _make_row("Item", enabled=False)
+        assert _is_disabled(row) is True
+
+    def test_missing_enabled_state_returns_false(self):
+        assert _is_disabled({"Name": "X", "Value": []}) is False
+
+
+class TestCollectDisabledTags:
+    """Tests for collect_disabled_tags()."""
+
+    def test_empty_dir_returns_empty(self, tmp_path):
+        d = tmp_path / "empty"
+        d.mkdir()
+        assert collect_disabled_tags(str(d)) == set()
+
+    def test_missing_dir_returns_empty(self, tmp_path):
+        assert collect_disabled_tags(str(tmp_path / "none")) == set()
+
+    def test_collects_disabled_and_broken_variant(self, tmp_path):
+        d = tmp_path / "DT_Weapons"
+        d.mkdir()
+        _write_per_item(d / "Mereak_Battleaxe.json",
+                        "Mereak_Battleaxe", enabled=False)
+        _write_per_item(d / "Active_Sword.json",
+                        "Active_Sword", enabled=True)
+        result = collect_disabled_tags(str(d))
+        assert "Mereak_Battleaxe" in result
+        # Broken variant auto-skipped alongside the disabled base
+        assert "Broken_Mereak_Battleaxe" in result
+        assert "Active_Sword" not in result
+
+    def test_broken_item_does_not_add_double_prefix(self, tmp_path):
+        d = tmp_path / "DT_Weapons"
+        d.mkdir()
+        _write_per_item(d / "Broken_Thing.json",
+                        "Broken_Thing", enabled=False)
+        result = collect_disabled_tags(str(d))
+        assert "Broken_Thing" in result
+        assert "Broken_Broken_Thing" not in result
+
+
+class TestCombineDtFileSkipsDisabled:
+    """Tests for combine_dt_file() filtering disabled rows."""
+
+    @pytest.fixture
+    def shell_path(self, tmp_path):
+        shell = {
+            "$type": "UAssetAPI.UAsset, UAssetAPI",
+            "NameMap": [],
+            "Imports": [],
+            "Exports": [{"Table": {"Data": []}}],
+        }
+        path = tmp_path / "shell.json"
+        path.write_text(json.dumps(shell), encoding="utf-8")
+        return str(path)
+
+    def test_disabled_row_excluded(self, tmp_path, shell_path):
+        """Rows with EnabledState=Disabled should not appear in output."""
+        src = tmp_path / "src"
+        src.mkdir()
+        _write_per_item(src / "Live.json", "Live", enabled=True)
+        _write_per_item(src / "Dead.json", "Dead", enabled=False)
+
+        output = str(tmp_path / "out.json")
+        count = combine_dt_file(str(src), shell_path, output)
+
+        assert count == 1
+        with open(output, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        names = {r["Name"] for r in data["Exports"][0]["Table"]["Data"]}
+        assert names == {"Live"}
+
+    def test_skip_tags_excludes_matching_rows(self, tmp_path, shell_path):
+        """skip_tags parameter should exclude matching row names."""
+        src = tmp_path / "src"
+        src.mkdir()
+        _write_per_item(src / "KeepMe.json", "KeepMe", enabled=True)
+        _write_per_item(src / "SkipMe.json", "SkipMe", enabled=True)
+
+        output = str(tmp_path / "out.json")
+        count = combine_dt_file(
+            str(src), shell_path, output, skip_tags={"SkipMe"})
+
+        assert count == 1
+        with open(output, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        names = {r["Name"] for r in data["Exports"][0]["Table"]["Data"]}
+        assert names == {"KeepMe"}
+
+    def test_skip_and_disabled_combined(self, tmp_path, shell_path):
+        """Both skip_tags and disabled rows should be excluded."""
+        src = tmp_path / "src"
+        src.mkdir()
+        _write_per_item(src / "A.json", "A", enabled=True)
+        _write_per_item(src / "B.json", "B", enabled=False)  # disabled
+        _write_per_item(src / "C.json", "C", enabled=True)
+
+        output = str(tmp_path / "out.json")
+        count = combine_dt_file(
+            str(src), shell_path, output, skip_tags={"C"})
+
+        assert count == 1
+        with open(output, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        names = {r["Name"] for r in data["Exports"][0]["Table"]["Data"]}
+        assert names == {"A"}
+
+
+class TestCombineAllSkipsDisabledRecipes:
+    """End-to-end: disabled item tags propagate to recipe tables."""
+
+    def _build_tree(self, tmp_path):
+        """Create minimal tobis_json + game_extract + output dirs."""
+        tobis = tmp_path / "tobis"
+        (tobis / "DT_Weapons").mkdir(parents=True)
+        (tobis / "DT_ItemRecipes").mkdir(parents=True)
+        # Other tables just need their directories to exist (or not)
+        extract = tmp_path / "extract" / "uassetgui"
+
+        # Create minimal vanilla shells for every table the combiner touches
+        def _shell():
+            return {
+                "$type": "UAssetAPI.UAsset, UAssetAPI",
+                "NameMap": [],
+                "Imports": [],
+                "Exports": [{"Table": {"Data": []}}],
+            }
+
+        paths = [
+            "Moria/Content/Tech/Data/Building/DT_Constructions",
+            "Moria/Content/Tech/Data/Building/DT_ConstructionRecipes",
+            "Moria/Content/Tech/Data/Items/DT_ItemRecipes",
+            "Moria/Content/Tech/Data/Items/DT_Armor",
+            "Moria/Content/Tech/Data/Items/DT_Weapons",
+            "Moria/Content/Tech/Data/Items/DT_Items",
+            "Moria/Content/Tech/Data/Items/DT_Tools",
+            "Moria/Content/Character/AI/DT_Loot",
+            "Moria/Content/Tech/Data/Items/DT_Ores",
+            "Moria/Content/Tech/Data/DT_CategoryTags",
+        ]
+        for p in paths:
+            full = extract / f"{p}.json"
+            full.parent.mkdir(parents=True, exist_ok=True)
+            full.write_text(json.dumps(_shell()), encoding="utf-8")
+
+        output = tmp_path / "out"
+        return tobis, tmp_path / "extract", output
+
+    def test_disabled_weapon_and_recipe_excluded(self, tmp_path):
+        """Disabled weapon skips both DT_Weapons and DT_ItemRecipes rows."""
+        tobis, extract, output = self._build_tree(tmp_path)
+        weapons = tobis / "DT_Weapons"
+        recipes = tobis / "DT_ItemRecipes"
+
+        _write_per_item(weapons / "DeadSword.json", "DeadSword", enabled=False)
+        _write_per_item(weapons / "LiveSword.json", "LiveSword", enabled=True)
+        _write_per_item(recipes / "DeadSword.json", "DeadSword", enabled=True)
+        _write_per_item(recipes / "LiveSword.json", "LiveSword", enabled=True)
+
+        results = combine_all(str(tobis), str(extract), str(output))
+
+        # DT_Weapons should only contain LiveSword
+        weapons_out = output / "Moria/Content/Tech/Data/Items/DT_Weapons.json"
+        with open(weapons_out, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        names = {r["Name"] for r in data["Exports"][0]["Table"]["Data"]}
+        assert names == {"LiveSword"}
+
+        # DT_ItemRecipes should only contain LiveSword (DeadSword recipe skipped)
+        recipes_out = output / "Moria/Content/Tech/Data/Items/DT_ItemRecipes.json"
+        with open(recipes_out, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        names = {r["Name"] for r in data["Exports"][0]["Table"]["Data"]}
+        assert names == {"LiveSword"}
+
+        # results counts reflect the skipped rows
+        assert results["DT_Weapons"] == 1
+        assert results["DT_ItemRecipes"] == 1
+
+    def test_disabled_weapon_skips_broken_variant(self, tmp_path):
+        """Disabling base weapon also skips its Broken_ variant."""
+        tobis, extract, output = self._build_tree(tmp_path)
+        weapons = tobis / "DT_Weapons"
+
+        _write_per_item(
+            weapons / "DeadAxe.json", "DeadAxe", enabled=False)
+        _write_per_item(
+            weapons / "Broken_DeadAxe.json", "Broken_DeadAxe", enabled=True)
+
+        combine_all(str(tobis), str(extract), str(output))
+
+        weapons_out = output / "Moria/Content/Tech/Data/Items/DT_Weapons.json"
+        with open(weapons_out, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        names = {r["Name"] for r in data["Exports"][0]["Table"]["Data"]}
+        # Neither the disabled base nor its Broken_ variant should appear
+        assert "DeadAxe" not in names
+        assert "Broken_DeadAxe" not in names
