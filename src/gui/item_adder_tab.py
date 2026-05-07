@@ -9,10 +9,11 @@ from __future__ import annotations
 import copy
 import json
 import os
+import re
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
-    QCheckBox, QComboBox, QCompleter, QFormLayout, QGroupBox,
+    QCheckBox, QComboBox, QCompleter, QFormLayout, QGridLayout, QGroupBox,
     QLabel, QLineEdit, QMessageBox, QPushButton, QScrollArea,
     QSpinBox, QSplitter, QVBoxLayout, QWidget,
 )
@@ -97,6 +98,66 @@ def _collect_from_dict(  # pylint: disable=too-many-branches
             _collect_namemap_strings(child, names)
 
 
+def humanize_station_label(row_name: str, display_names: dict) -> str:
+    """Return a friendly UI label for a CraftingStations RowName.
+
+    Uses the field-values display_names map when present, otherwise strips
+    the CraftingStation_ prefix and inserts spaces before capital letters.
+    Also normalises the typo'd "Legenday" → "Legendary" used by some rows.
+    """
+    if row_name in display_names:
+        return display_names[row_name]
+    bare = row_name.replace("CraftingStation_", "").replace("Legenday", "Legendary")
+    return re.sub(r"(?<!^)(?=[A-Z])", " ", bare)
+
+
+def make_station_struct(row_name: str) -> dict:
+    """Build a single MorConstructionRowHandle entry for CraftingStations."""
+    return {
+        "$type": "UAssetAPI.PropertyTypes.Structs.StructPropertyData, UAssetAPI",
+        "StructType": "MorConstructionRowHandle",
+        "SerializeNone": True,
+        "StructGUID": "{00000000-0000-0000-0000-000000000000}",
+        "SerializationControl": "NoExtension",
+        "Operation": "None",
+        "Name": "CraftingStations",
+        "ArrayIndex": 0,
+        "IsZero": False,
+        "PropertyTagFlags": "None",
+        "PropertyTagExtensions": "NoExtension",
+        "Value": [
+            {
+                "$type": "UAssetAPI.PropertyTypes.Objects.NamePropertyData, UAssetAPI",
+                "Name": "RowName",
+                "ArrayIndex": 0,
+                "IsZero": False,
+                "PropertyTagFlags": "None",
+                "PropertyTagExtensions": "NoExtension",
+                "Value": row_name,
+            }
+        ],
+    }
+
+
+def extract_station_row_names(row_value_array: list) -> list[str]:
+    """Pull the list of crafting-station RowNames from a recipe row's Value."""
+    for entry in row_value_array:
+        if entry.get("Name") != "CraftingStations":
+            continue
+        names = []
+        for sub in entry.get("Value", []) or []:
+            if not isinstance(sub, dict):
+                continue
+            for field in sub.get("Value", []) or []:
+                if isinstance(field, dict) and field.get("Name") == "RowName":
+                    val = field.get("Value")
+                    if isinstance(val, str) and val:
+                        names.append(val)
+                    break
+        return names
+    return []
+
+
 class ItemAdderTab(QWidget):
     """Generic tab for viewing/editing any item table plus optional recipe.
 
@@ -137,6 +198,7 @@ class ItemAdderTab(QWidget):
         self.mat_layout: QVBoxLayout | None = None
         self._material_picker: MaterialPicker | None = None
         self._unlock_picker: UnlockPicker | None = None
+        self._station_checkboxes: dict[str, QCheckBox] = {}
         self._master_combo: QComboBox | None = None
         self._master_rules: dict | None = None
         self._master_driven_fields: set[str] = set()
@@ -350,6 +412,7 @@ class ItemAdderTab(QWidget):
                 self._recipe_widgets[name] = w
                 form.addRow(name, w)
             layout.addLayout(form)
+        self._build_crafting_stations_group(layout)
         if self.cfg.recipe_has_materials:
             layout.addWidget(QLabel("Required Materials (max 6):"))
             self.mat_layout = QVBoxLayout()
@@ -369,6 +432,33 @@ class ItemAdderTab(QWidget):
                 unlock_box, self.unlock_requirements, self._recipe_fv)
             layout.addLayout(unlock_box)
         group.setLayout(layout)
+        parent.addWidget(group)
+
+    def _build_crafting_stations_group(self, parent: QVBoxLayout) -> None:
+        """Build a 2-column QGroupBox of QCheckBoxes for CraftingStations.
+
+        Auto-populated from data/field_values/DT_ItemRecipes_fields.json so
+        every station the game ships (forges, furnaces, hearths, kitchens,
+        breweries, loom, mill, etc.) is selectable without manual mapping.
+        """
+        fv = self._recipe_fv.get("CraftingStations.RowName", {})
+        row_names = list(fv.get("values", []))
+        if not row_names:
+            return
+        display_names = fv.get("display_names", {})
+        # Sort by user-facing label so the grid reads alphabetically
+        labelled = sorted(
+            ((humanize_station_label(rn, display_names), rn) for rn in row_names),
+            key=lambda pair: pair[0].lower(),
+        )
+        group = QGroupBox("Crafting Stations")
+        grid = QGridLayout()
+        cols = 2
+        for idx, (label, row_name) in enumerate(labelled):
+            cb = QCheckBox(label)
+            self._station_checkboxes[row_name] = cb
+            grid.addWidget(cb, idx // cols, idx % cols)
+        group.setLayout(grid)
         parent.addWidget(group)
 
     def _create_field_widget(self, field_name: str, widget_type: str,
@@ -462,11 +552,11 @@ class ItemAdderTab(QWidget):
                 self._item_template.get("Value", []), self._item_widgets)
         # Load template defaults into recipe field widgets
         if self._recipe_template:
-            self._load_fields_into_widgets(
-                self._recipe_template.get("Value", []), self._recipe_widgets)
+            template_values = self._recipe_template.get("Value", [])
+            self._load_fields_into_widgets(template_values, self._recipe_widgets)
+            self._apply_stations_from_values(template_values)
             if self.cfg.recipe_has_materials and self._material_picker:
-                self._material_picker.load_from_values(
-                    self._recipe_template.get("Value", []))
+                self._material_picker.load_from_values(template_values)
         else:
             self._clear_recipe_fields()
 
@@ -724,6 +814,9 @@ class ItemAdderTab(QWidget):
         # Apply recipe widget values
         self._apply_widgets_to_row(row, self._recipe_widgets)
 
+        # Apply Crafting Stations checkboxes
+        self._apply_stations_to_row(row)
+
         # Apply materials from picker
         if self.cfg.recipe_has_materials and self._material_picker:
             materials = self._material_picker.collect()
@@ -853,6 +946,27 @@ class ItemAdderTab(QWidget):
                 pass
             return
 
+    def _apply_stations_to_row(self, row: dict) -> None:
+        """Rebuild the CraftingStations array from the checkbox group."""
+        if not self._station_checkboxes:
+            return
+        checked = [
+            row_name for row_name, cb in self._station_checkboxes.items()
+            if cb.isChecked()
+        ]
+        for entry in row.get("Value", []):
+            if entry.get("Name") == "CraftingStations":
+                entry["Value"] = [make_station_struct(rn) for rn in checked]
+                return
+
+    def _apply_stations_from_values(self, values: list) -> None:
+        """Set checkbox state from a recipe row's Value array."""
+        if not self._station_checkboxes:
+            return
+        active = set(extract_station_row_names(values))
+        for row_name, cb in self._station_checkboxes.items():
+            cb.setChecked(row_name in active)
+
     @staticmethod
     def _apply_materials_to_row(row: dict,
                                 materials: list[tuple[str, int]]) -> None:
@@ -961,6 +1075,7 @@ class ItemAdderTab(QWidget):
         with open(path, "r", encoding="utf-8") as fh:
             vals = json.load(fh).get("Row", {}).get("Value", [])
         self._load_fields_into_widgets(vals, self._recipe_widgets)
+        self._apply_stations_from_values(vals)
         if self.cfg.recipe_has_materials and self._material_picker:
             self._material_picker.load_from_values(vals)
         if self.cfg.recipe_has_unlocks and self._unlock_picker:
@@ -977,6 +1092,8 @@ class ItemAdderTab(QWidget):
                 widget.setCurrentIndex(0)
             elif isinstance(widget, QLineEdit):
                 widget.clear()
+        for cb in self._station_checkboxes.values():
+            cb.setChecked(False)
         if self.cfg.recipe_has_materials and self._material_picker:
             self._material_picker.clear_all()
             self._material_picker.add_row()

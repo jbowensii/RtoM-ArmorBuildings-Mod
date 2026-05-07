@@ -1,5 +1,42 @@
 # Changelog
 
+## v3.9.0 (2026-05-06)
+
+### Bug fix — recipe template was unreachable
+
+- **Fixed truncated DT_ItemRecipes JSON when saving** — Weapon / Armor /
+  Tool / Item recipe files were being written with only `Name` (and at most
+  `ResultItemHandle`) because the loader could not find the recipe template.
+  The loader looked for `DT_ItemRecipes_template.json`, but the file was
+  named `ItemRecipeTemplate.json`. Renamed to the expected name; saved
+  recipes now contain all 16 fields (`ResultItemHandle`, `ResultItemCount`,
+  `CraftTimeSeconds`, `bCanBePinned`, `CraftingStations`,
+  `DefaultRequiredMaterials`, `DefaultUnlocks`, `EnabledState`, etc.).
+
+### New feature — Crafting Stations checkbox group
+
+- Added a **Crafting Stations** group of checkboxes to all four recipe tabs
+  (New Weapon, New Armor, New Tool, New Item) so you can pick which
+  station(s) the recipe is craftable at.
+- The list is auto-populated from `data/field_values/DT_ItemRecipes_fields.json`
+  — every station the game ships is selectable: forges (Basic, Advanced,
+  Durin, Nogrod, Mithril, Flooded, Telchar, Elvish), all furnaces (Basic,
+  Advanced, plus the four Legendary furnaces), Workbench, Loom, Mill,
+  hearths, kitchens, breweries, etc. Display names from the field-values
+  JSON are used where available; the rest are humanised from the RowName
+  (e.g. `CraftingStation_DurinForge` → "Durin Forge").
+- Save writes proper `MorConstructionRowHandle` structs into
+  `CraftingStations.Value`; load on item-select restores checkbox state;
+  New / Clear flows uncheck everything.
+
+### Tests
+
+- 17 new tests (`tests/test_crafting_stations.py`) covering the helper
+  functions, build/extract round-trip, and Part A regression check.
+- 203 tests passing total (was 186).
+
+---
+
 ## v3.8.1 (2026-04-10)
 
 ### Patch release
