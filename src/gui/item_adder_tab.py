@@ -222,8 +222,11 @@ class ItemAdderTab(QWidget):
 
     def _load_template(self, table: str) -> dict:
         """Load a row template for creating new per-item files."""
-        # Try generated templates first, then MoreArmor
-        for subdir in ("generated", "MoreArmor"):
+        # MoreArmor first (Tobi's curated full-fidelity templates),
+        # then generated as fallback for tables MoreArmor doesn't cover.
+        # This ordering also defends against a stale stub re-appearing in
+        # generated/ — see plans/tried-to-create-a-synthetic-whisper.md
+        for subdir in ("MoreArmor", "generated"):
             path = os.path.join(
                 self.templates_dir, subdir, f"{table}_template.json",
             )

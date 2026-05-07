@@ -1,5 +1,35 @@
 # Changelog
 
+## v3.9.1 (2026-05-06)
+
+### Patch — actually fix the truncated recipe bug for upgrading users
+
+v3.9.0 fixed the truncated-recipe bug at the source level (renamed the
+recipe template so the loader's MoreArmor fallback could find it), but
+the fix did not reach users who were upgrading from v3.7.x / v3.8.x:
+
+- Older versions installed `data/templates/generated/DT_ItemRecipes_template.json`
+  (a 1-field stub left over from before commit b619503).
+- Inno Setup's `ignoreversion` flag overwrites files but does not delete
+  files removed in newer versions, so the stub stayed in place.
+- The loader checked `generated/` before `MoreArmor/`, so the stub
+  shadowed the real 16-field template and recipes still saved with only
+  `Name` + `ResultItemHandle`.
+
+### Fixes
+
+- **Inno Setup `[InstallDelete]` section** — explicitly removes the
+  legacy stub at `data/templates/generated/DT_ItemRecipes_template.json`
+  and the pre-v3.9.0 filename `data/templates/MoreArmor/ItemRecipeTemplate.json`
+  before installing the new files. Upgrades from any prior version now
+  produce a correct install.
+- **Loader subdir priority reversed** to `("MoreArmor", "generated")`.
+  Tobi's MoreArmor templates are the authoritative full-fidelity ones;
+  `generated/` is now a fallback only. Defence in depth — even if a stub
+  re-appears in `generated/`, it can no longer shadow a real template.
+
+---
+
 ## v3.9.0 (2026-05-06)
 
 ### Bug fix — recipe template was unreachable

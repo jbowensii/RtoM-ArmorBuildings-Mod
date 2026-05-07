@@ -47,6 +47,15 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
+[InstallDelete]
+; Remove legacy broken DT_ItemRecipes stub left over from v3.7.x and earlier.
+; The loader checks generated/ before MoreArmor/ in older code paths, so a
+; 1-field stub here would shadow the real 16-field MoreArmor template and
+; cause every saved recipe to truncate to just ResultItemHandle.
+Type: files; Name: "{app}\data\templates\generated\DT_ItemRecipes_template.json"
+; Remove the pre-v3.9.0 MoreArmor filename since we now ship under the new name.
+Type: files; Name: "{app}\data\templates\MoreArmor\ItemRecipeTemplate.json"
+
 [Files]
 ; ── Application executable ──
 Source: "..\..\release\RtoMModTools.exe"; DestDir: "{app}"; Flags: ignoreversion
